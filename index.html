@@ -267,6 +267,7 @@ table.sheet img.hw{position:absolute;left:50%;top:50%;transform:translate(-50%,-
   height:88%;width:auto;max-width:96%;object-fit:contain}
 table.sheet img.hw.sg{left:auto;right:38px;transform:translateY(-50%);height:82%;max-width:96px}
 table.sheet img.hw.bt{top:auto;bottom:1px;height:64%;transform:translateX(-50%)}
+table.sheet img.hw.cover{left:0;top:0;transform:none;width:100%;height:100%;max-width:100%;object-fit:cover}
 table.sheet .sgmark{position:absolute;right:3px;top:50%;transform:translateY(-50%)}
 table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
 .zoombar{display:flex;gap:8px;justify-content:center;padding:10px var(--pad) 0}
@@ -551,6 +552,13 @@ table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
         <button class="opt" type="button" data-v="본인 측정" data-i18n="opt.bpBy1">본인 측정</button>
         <button class="opt" type="button" data-v="보건관리자 측정" data-i18n="opt.bpBy2">보건관리자 측정</button></div>
       <div class="err" data-i18n="err.pick">선택해 주세요.</div></div></div>
+  <div class="card"><h3 data-i18n="card.bpPhoto">혈압 측정지 사진</h3>
+    <p style="margin:-6px 0 12px;font-size:.84rem;color:var(--steel)" data-i18n="hint.bpPhoto">측정기 화면이나 종이 결과지를 찍어 두면 확인이 빠릅니다. 선택 사항입니다.</p>
+    <div class="photoRow" id="bpPhotoRow">
+      <input type="file" accept="image/*" capture="environment" id="bpPhotoInput" class="hidden">
+      <label for="bpPhotoInput" class="photoBtn" id="bpPhotoBtn" data-i18n="photo.take">사진 촬영 · 선택</label>
+      <div class="photoThumb hidden" id="bpPhotoThumb"><img id="bpPhotoImg"><button type="button" class="photoDel" id="bpPhotoDel">✕</button></div>
+    </div></div>
 </section>
 
 <!-- 6 ─ 서약·동의 -->
@@ -673,7 +681,8 @@ table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
 
 <!-- 관리자 -->
 <section class="adm" id="adm">
-  <div class="lead"><h2>관리자</h2><p style="color:var(--steel);font-size:.9rem">오늘 작성된 서류 확인, 고위험군 관리, 양식 변경을 할 수 있습니다.</p></div>
+  <div class="lead"><h2>관리자</h2><p style="color:var(--steel);font-size:.9rem">오늘 작성된 서류 확인, 고위험군 관리, 양식 변경을 할 수 있습니다.</p>
+    <p style="margin-top:8px"><span class="tag" id="fbBadge" style="background:#EFF1F4;color:var(--steel)">확인 중…</span></p></div>
   <div class="admtabs">
     <button type="button" id="tabToday" aria-pressed="true">날짜별 제출</button>
     <button type="button" id="tabRisk" aria-pressed="false">고위험군 관리</button>
@@ -731,6 +740,7 @@ table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
     <button class="btn prime" type="button" id="btnNext" data-i18n="btn.next">다음</button>
     <button class="btn ghost hidden" type="button" id="btnAdmClose">닫기</button>
     <button class="btn danger hidden" type="button" id="btnPrint">🖨 출력</button>
+    <button class="btn ghost hidden" type="button" id="btnXlsx">📊 엑셀 저장</button>
   </div>
 </footer>
 
@@ -777,6 +787,45 @@ const LABEL_HINTS = {
 
 let ACTIVE_TEMPLATE = DEFAULT_TEMPLATE;
 let FM = DEFAULT_FIELD_MAP;
+
+/* ══════════════════════════════════════════════════════════════
+   Firebase 설정 (선택 사항)
+   여러 태블릿 · 관리자 컴퓨터가 데이터를 실시간으로 함께 보려면
+   아래 6개 값을 채우세요. 값을 채우지 않으면 지금처럼 이 브라우저
+   (이 기기)에만 저장됩니다. 설정 방법은 "Firebase_설정_가이드.md" 참고.
+   ══════════════════════════════════════════════════════════════ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAPBK7IjPPl01N-0pN5ZTCiN05ecH_d2gw",
+  authDomain: "newworker-5bbef.firebaseapp.com",
+  projectId: "newworker-5bbef",
+  storageBucket: "newworker-5bbef.firebasestorage.app",
+  messagingSenderId: "25468549460",
+  appId: "1:25468549460:web:40319941a387f45f6830c1"
+};
+function fbEnabled(){ return !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId); }
+let __fbApp = null, __fbDb = null, __fbLoading = null;
+function loadFirebase(){
+  if(__fbDb) return Promise.resolve(__fbDb);
+  if(__fbLoading) return __fbLoading;
+  __fbLoading = new Promise((resolve, reject) => {
+    const s1 = document.createElement("script");
+    s1.src = "https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js";
+    s1.onload = () => {
+      const s2 = document.createElement("script");
+      s2.src = "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js";
+      s2.onload = () => {
+        try{
+          __fbApp = firebase.initializeApp(FIREBASE_CONFIG);
+          __fbDb = firebase.firestore();
+          resolve(__fbDb);
+        }catch(e){ reject(e); }
+      };
+      s2.onerror = reject; document.head.appendChild(s2);
+    };
+    s1.onerror = reject; document.head.appendChild(s1);
+  });
+  return __fbLoading;
+}
 
 const I18N = {
 ko:{ "bigtext":"글씨 크게 보기",
@@ -830,6 +879,7 @@ ko:{ "bigtext":"글씨 크게 보기",
 "card.bp1":"1차 측정","field.sys":"수축기 (높은쪽)","field.dia":"이완기 (낮은쪽)","field.pulse":"맥박","hint.optional":"선택","unit.bpm":"회/분","err.bp":"혈압을 입력해 주세요.",
 "card.bp2":"2차 측정","card.bp2b":"· 5분 안정 후",
 "card.bpBy":"측정 확인","field.bpBy":'측정 방식 <span class="req">*</span>',"opt.bpBy1":"본인 측정","opt.bpBy2":"보건관리자 측정",
+"card.bpPhoto":"혈압 측정지 사진","hint.bpPhoto":"측정기 화면이나 종이 결과지를 찍어 두면 확인이 빠릅니다. 선택 사항입니다.",
 "lead.6.h":"서약 및 동의","lead.6.p":"끝까지 읽은 뒤 서명해 주세요.",
 "note.legalKo":"아래 서약·동의 문구의 법적 효력은 한국어 원문을 기준으로 합니다.",
 "card.pledge":"준수사항 서약","pledge.scroll":"아래까지 내려서 모두 읽어 주세요","pledge.agree":"17개 항목을 모두 읽고 서약합니다","err.pledge":"서약에 동의해 주세요.",
@@ -899,6 +949,7 @@ vi:{ "bigtext":"Phóng to chữ",
 "card.bp1":"Đo lần 1","field.sys":"Tâm thu (số trên)","field.dia":"Tâm trương (số dưới)","field.pulse":"Nhịp tim","hint.optional":"Không bắt buộc","unit.bpm":"lần/phút","err.bp":"Vui lòng nhập huyết áp.",
 "card.bp2":"Đo lần 2","card.bp2b":"· Sau khi nghỉ 5 phút",
 "card.bpBy":"Xác nhận đo","field.bpBy":'Ai đo? <span class="req">*</span>',"opt.bpBy1":"Tự đo","opt.bpBy2":"Cán bộ y tế đo",
+"card.bpPhoto":"Ảnh kết quả đo huyết áp","hint.bpPhoto":"Chụp màn hình máy đo hoặc phiếu kết quả giấy để xác nhận nhanh hơn. Không bắt buộc.",
 "lead.6.h":"Cam kết & Đồng ý","lead.6.p":"Đọc hết rồi ký tên.",
 "note.legalKo":"Hiệu lực pháp lý của nội dung dưới đây căn cứ theo bản gốc tiếng Hàn.",
 "card.pledge":"Cam kết tuân thủ","pledge.scroll":"Cuộn xuống để đọc hết","pledge.agree":"Tôi đã đọc hết 17 mục và cam kết","err.pledge":"Vui lòng đồng ý cam kết.",
@@ -968,6 +1019,7 @@ zh:{ "bigtext":"放大字体",
 "card.bp1":"第1次测量","field.sys":"收缩压（高压）","field.dia":"舒张压（低压）","field.pulse":"脉搏","hint.optional":"选填","unit.bpm":"次/分","err.bp":"请输入血压。",
 "card.bp2":"第2次测量","card.bp2b":"· 静息5分钟后",
 "card.bpBy":"测量确认","field.bpBy":'测量方式 <span class="req">*</span>',"opt.bpBy1":"本人测量","opt.bpBy2":"保健管理员测量",
+"card.bpPhoto":"血压测量单照片","hint.bpPhoto":"拍下测量仪画面或纸质结果单，方便快速确认。选填。",
 "lead.6.h":"誓约及同意","lead.6.p":"请阅读完毕后签名。",
 "note.legalKo":"以下誓约·同意条款的法律效力以韩文原文为准。",
 "card.pledge":"遵守事项誓约","pledge.scroll":"请下滑阅读全部内容","pledge.agree":"已阅读全部17项并签署誓约","err.pledge":"请同意誓约。",
@@ -1037,6 +1089,7 @@ th:{ "bigtext":"ขยายตัวอักษร",
 "card.bp1":"การวัดครั้งที่ 1","field.sys":"ตัวบน (ซิสโตลิก)","field.dia":"ตัวล่าง (ไดแอสโตลิก)","field.pulse":"ชีพจร","hint.optional":"ไม่บังคับ","unit.bpm":"ครั้ง/นาที","err.bp":"กรุณากรอกค่าความดันโลหิต",
 "card.bp2":"การวัดครั้งที่ 2","card.bp2b":"· หลังพัก 5 นาที",
 "card.bpBy":"ยืนยันการวัด","field.bpBy":'วิธีการวัด <span class="req">*</span>',"opt.bpBy1":"วัดด้วยตนเอง","opt.bpBy2":"เจ้าหน้าที่อนามัยวัดให้",
+"card.bpPhoto":"รูปผลการวัดความดันโลหิต","hint.bpPhoto":"ถ่ายรูปหน้าจอเครื่องวัดหรือใบผลตรวจกระดาษเพื่อให้ตรวจสอบได้เร็วขึ้น ไม่บังคับ",
 "lead.6.h":"การให้คำมั่นและยินยอม","lead.6.p":"กรุณาอ่านจนจบแล้วจึงเซ็นชื่อ",
 "note.legalKo":"ผลทางกฎหมายของข้อความคำมั่น/ยินยอมด้านล่างนี้ยึดตามต้นฉบับภาษาเกาหลี",
 "card.pledge":"คำมั่นในการปฏิบัติตามกฎ","pledge.scroll":"เลื่อนลงเพื่ออ่านจนจบ","pledge.agree":"อ่านครบ 17 ข้อแล้วและให้คำมั่น","err.pledge":"กรุณายอมรับคำมั่น",
@@ -1092,14 +1145,32 @@ const Store = (() => {
   return {
     hasBackend: hasCloud, hasLocal,
     async load(key, dflt){
+      if(fbEnabled()){
+        try{
+          const db = await loadFirebase();
+          const doc = await db.collection("kv").doc(key).get();
+          if(doc.exists) return JSON.parse(doc.data().json);
+        }catch(e){ console.warn("firebase load 실패, 로컬 저장소 사용:", e); }
+      }
       if(hasCloud){ try{ const r = await window.storage.get(key, true); if(r) return JSON.parse(r.value); }catch(e){} }
       if(hasLocal){ try{ const v = localStorage.getItem(LKEY(key)); if(v) return JSON.parse(v); }catch(e){} }
       return mem[key] !== undefined ? mem[key] : dflt;
     },
     async save(key, v){
       mem[key] = v;
+      if(fbEnabled()){
+        try{
+          const db = await loadFirebase();
+          await db.collection("kv").doc(key).set({ json: JSON.stringify(v), updatedAt: Date.now() });
+        }catch(e){ console.warn("firebase save 실패, 로컬 저장소에만 저장:", e); }
+      }
       if(hasCloud){ try{ await window.storage.set(key, JSON.stringify(v), true); }catch(e){} }
       if(hasLocal){ try{ localStorage.setItem(LKEY(key), JSON.stringify(v)); }catch(e){} }
+    },
+    async checkFirebase(){
+      if(!fbEnabled()) return { on:false };
+      try{ await loadFirebase(); return { on:true }; }
+      catch(e){ return { on:false, error: e && e.message || String(e) }; }
     }
   };
 })();
@@ -1122,6 +1193,7 @@ function paint(){
   $("#adm").classList.remove("on");
   $("#sheetWrap").classList.remove("on");
   $("#btnPrint").classList.add("hidden");
+  $("#btnXlsx").classList.add("hidden");
   $("#btnPrev").classList.remove("hidden");
   $("#btnNext").classList.remove("hidden");
   $("#btnAdmClose").classList.add("hidden");
@@ -1173,7 +1245,7 @@ $("#trade").addEventListener("change", e => {
 });
 
 /* ── 신분증 · 이수증 사진 ── */
-const PHOTO = { id:"", edu:"" };
+const PHOTO = { id:"", edu:"", bp:"" };
 function compressImage(file, maxW, quality){
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -1215,6 +1287,7 @@ function wirePhoto(prefix, key){
 }
 wirePhoto("idPhoto","id");
 wirePhoto("eduPhoto","edu");
+wirePhoto("bpPhoto","bp");
 function openLightbox(src){
   if(!src) return;
   $("#lightboxImg").src = src; $("#lightbox").classList.remove("hidden");
@@ -1398,7 +1471,7 @@ function buildRecord(){
     phone: val("phone"), guardian: val("guardian"), address: val("address"),
     trade: ($("#trade").value==="기타" ? (val("tradeEtc")||"기타") : $("#trade").value),
     careerY: val("carY")||"0", careerM: val("carM")||"0",
-    idPhoto: PHOTO.id||"", eduCertPhoto: PHOTO.edu||"",
+    idPhoto: PHOTO.id||"", eduCertPhoto: PHOTO.edu||"", bpPhoto: PHOTO.bp||"",
     basicEdu: pick.basicEdu||"", eduOrg: val("eduOrg"), eduDate: val("eduDate"),
     interview: pick.interview||"", interviewReason: val("itvReason"),
     prevSite: val("prevSite"), prevWork: val("prevWork"),
@@ -1586,6 +1659,7 @@ function fillDefault(r){
     setCell(ref,"서명"); putImg(ref, (p[qk]||0) > 0 ? p[sk] : "", "bt");
   });
   setHTML("A52", '<img class="logo" src="'+(ACTIVE_TEMPLATE.logo||"")+'">&nbsp;&nbsp;학동 4구역  현장소장 귀하');
+  putImg("H22", r.bpPhoto, "cover");
   const FIT_REFS = ("B3 F3 I3 F4 I4 B5 I5 B6 F6 I6 G7 I7 D8 G8 B9 D9 F9 H9 B11 G11 B12 G12 "
     + "C13 C14 G14 B15 B16 C16 D16 F16 G16 H16 I16 C17 C18 C19 A44 D44 G44 A47 G47 H49").split(" ");
   FIT_REFS.forEach(fitText);
@@ -1656,6 +1730,7 @@ $("#zFull").addEventListener("click", () => { zoomFit=false; $("#zFit").setAttri
 window.addEventListener("resize", () => { if($("#sheetWrap").classList.contains("on")) fitSheetView(); });
 
 function openSheetFor(r, title){
+  current = r;
   renderSheetDOM();
   fillSheet(r);
   $("#sheetTitleText").textContent = title || (r.name+" 양식");
@@ -1664,10 +1739,12 @@ function openSheetFor(r, title){
   $("#sheetWrap").classList.add("on");
   $("#btnPrev").classList.add("hidden"); $("#btnNext").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden"); $("#btnPrint").classList.remove("hidden");
+  $("#btnXlsx").classList.remove("hidden");
   const ph = $("#sheetPhotos");
   const items = [];
   if(r.idPhoto) items.push(["신분증", r.idPhoto]);
   if(r.eduCertPhoto) items.push(["기초안전보건교육 이수증", r.eduCertPhoto]);
+  if(r.bpPhoto) items.push(["혈압 측정지", r.bpPhoto]);
   if(items.length){
     ph.classList.remove("hidden");
     ph.innerHTML = items.map(([label,src]) =>
@@ -1678,6 +1755,80 @@ function openSheetFor(r, title){
 }
 $("#sheetClose").addEventListener("click", () => { $("#sheetWrap").classList.remove("on"); openAdm(lastAdmTab); });
 $("#btnPrint").addEventListener("click", () => window.print());
+
+/* ── 엑셀(.xlsx) 로 저장 ── */
+let exceljsLoading = null;
+function loadExcelJS(){
+  if(window.ExcelJS) return Promise.resolve();
+  if(exceljsLoading) return exceljsLoading;
+  exceljsLoading = new Promise((resolve,reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
+    s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
+  });
+  return exceljsLoading;
+}
+function colToNum(letters){ let n=0; for(const ch of letters) n = n*26 + (ch.charCodeAt(0)-64); return n; }
+function numToCol(n){ let s=""; while(n>0){ const m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=Math.floor((n-1)/26); } return s; }
+function parseRef(ref){ const m = ref.match(/^([A-Z]+)(\d+)$/); return {col:colToNum(m[1]), row:+m[2]}; }
+function dataUrlInfo(url){
+  const m = /^data:image\/(png|jpe?g);base64,(.*)$/i.exec(url||"");
+  if(!m) return null;
+  return { extension: /jpe?g/i.test(m[1]) ? "jpeg" : "png", base64: m[2] };
+}
+async function exportSheetToXlsx(record){
+  if(!record){ alert("먼저 근로자 양식을 열어 주세요."); return; }
+  const btn = $("#btnXlsx"); const oldTxt = btn.textContent;
+  btn.textContent = "만드는 중…"; btn.disabled = true;
+  try{
+    await loadExcelJS();
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("신규채용자준수사항");
+    const cols = $$("#sheetPage col");
+    ws.columns = cols.map(c => ({ width: Math.max(4, (parseInt(c.style.width,10)-5)/7) }));
+    const tds = $$("#sheetPage .sheet td[data-ref]");
+    for(const td of tds){
+      const ref = td.dataset.ref;
+      const pos = parseRef(ref); if(!pos) continue;
+      const cs = td.colSpan || 1, rs = td.rowSpan || 1;
+      if(cs > 1 || rs > 1){
+        const endRef = numToCol(pos.col + cs - 1) + String(pos.row + rs - 1);
+        try{ ws.mergeCells(ref + ":" + endRef); }catch(e){}
+      }
+      const cell = ws.getCell(ref);
+      const img = td.querySelector("img");
+      if(img && img.src && img.src.indexOf("data:image") === 0){
+        const info = dataUrlInfo(img.src);
+        if(info){
+          const imgId = wb.addImage({ base64: info.base64, extension: info.extension });
+          ws.addImage(imgId, {
+            tl: { col: pos.col - 1 + 0.06, row: pos.row - 1 + 0.06 },
+            br: { col: pos.col + cs - 1 - 0.06, row: pos.row + rs - 1 - 0.06 },
+            editAs: "oneCell"
+          });
+        }
+      } else {
+        const txt = td.textContent || "";
+        if(txt) cell.value = txt;
+      }
+      if(td.classList.contains("mk")) cell.font = { bold:true, color:{argb:"FFC00000"} };
+      cell.alignment = { vertical:"middle", horizontal:"center", wrapText:true };
+    }
+    ws.pageSetup = { paperSize:9, orientation:"portrait", fitToPage:true, fitToWidth:1, fitToHeight:1 };
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (record.code||"양식") + "_" + (record.name||"근로자") + "_신규채용자준수사항.xlsx";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }catch(err){
+    alert("엑셀 파일을 만들지 못했습니다: " + (err && err.message || err)
+      + "\n인터넷 연결이 필요합니다 (엑셀 변환 라이브러리를 불러옵니다).");
+  }
+  btn.textContent = oldTxt; btn.disabled = false;
+}
+$("#btnXlsx").addEventListener("click", () => exportSheetToXlsx(current));
 
 let adminUnlocked = false, lastAdmTab = "today";
 const ADM_PW = "0309";
@@ -1704,11 +1855,21 @@ function openAdm(tab){
   $("#sheetWrap").classList.remove("on");
   $("#adm").classList.add("on");
   $("#btnNext").classList.add("hidden"); $("#btnPrev").classList.add("hidden"); $("#btnPrint").classList.add("hidden");
+  $("#btnXlsx").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden");
   $("#hTitle").textContent = "관리자"; $("#hStep").textContent = "";
   $$("#prog i").forEach(el => el.className = "done");
   setAdmTab(lastAdmTab);
+  updateFbBadge();
   window.scrollTo(0,0);
+}
+async function updateFbBadge(){
+  const b = $("#fbBadge");
+  if(!fbEnabled()){ b.textContent = "💾 이 기기에만 저장 (Firebase 미설정)"; b.style.background="#EFF1F4"; b.style.color="var(--steel)"; return; }
+  b.textContent = "☁ Firebase 연결 확인 중…";
+  const r = await Store.checkFirebase();
+  if(r.on){ b.textContent = "☁ Firebase 연결됨 — 모든 기기에서 공유됩니다"; b.style.background="var(--go-8)"; b.style.color="#075C32"; }
+  else{ b.textContent = "⚠ Firebase 연결 실패 — 이 기기에만 저장됩니다"; b.style.background="var(--signal-8)"; b.style.color="#960014"; }
 }
 $("#btnAdmClose").addEventListener("click", () => { adminUnlocked = false; location.reload(); });
 function ymd(iso){ const d = new Date(iso); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
