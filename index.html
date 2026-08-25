@@ -232,6 +232,10 @@ table.admTable .riskNo{color:var(--mute)}
 .copyBtn{min-height:36px;min-width:44px;padding:0 12px;border:1.5px solid var(--line);border-radius:7px;background:#fff;
   font-weight:800;color:var(--go);cursor:pointer;font-size:.9rem}
 .copyBtn[disabled]{opacity:.5;cursor:default}
+.appToast{position:fixed;left:50%;bottom:100px;transform:translate(-50%,20px);background:#15171C;color:#fff;
+  padding:12px 20px;border-radius:10px;font-size:.9rem;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.3);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:95;max-width:90vw;text-align:center}
+.appToast.on{opacity:1;transform:translate(-50%,0)}
 .tbl{background:#fff;border:1px solid var(--line);border-top:none;border-radius:0 0 10px 10px;overflow:hidden}
 .tr{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid var(--line-2)}
 .tr:last-child{border-bottom:none}
@@ -311,8 +315,8 @@ table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
   html,body{background:#fff !important;padding:0 !important;margin:0 !important}
   header,footer,main,.zoombar,.sheetTitleBar,.docTabs,.overlay{display:none !important}
   #sheetWrap{display:block !important;background:#fff !important;padding:0 !important}
-  #sheetScroll{overflow:visible !important}
-  #sheetPage{transform:none !important;box-shadow:none !important;margin:0 !important;width:auto !important}
+  #sheetScroll{overflow:visible !important;height:auto !important}
+  #sheetPage{transform:none !important;zoom:0.84;box-shadow:none !important;margin:0 !important;width:auto !important}
   table.sheet{width:100% !important}
   table.sheet td.mk{background:#FFF2CC !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
@@ -1567,6 +1571,17 @@ function flags(r){
   return o;
 }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+let __toastTimer = null;
+function showToast(msg){
+  let t = document.getElementById("appToast");
+  if(!t){
+    t = document.createElement("div"); t.id = "appToast"; t.className = "appToast";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.classList.add("on");
+  clearTimeout(__toastTimer);
+  __toastTimer = setTimeout(() => t.classList.remove("on"), 3200);
+}
 function renderReview(){
   const r = { company:val("company"), name:val("name"),
     trade: ($("#trade").value==="기타" ? (val("tradeEtc")||"기타") : $("#trade").value),
@@ -1799,17 +1814,24 @@ function renderSheetDOM(){
 let zoomFit = true;
 function fitSheetView(){
   const page = $("#sheetPage"), scroll = $("#sheetScroll");
-  const avail = scroll.clientWidth - 24;
+  const availW = scroll.clientWidth - 24;
   const W = activeSheetTemplate().totalPx;
-  if(zoomFit){
-    const s = Math.min(1, avail / W);
-    page.style.transform = "scale("+s+")";
-    scroll.style.height = Math.ceil(page.scrollHeight * s + 20) + "px";
-    page.style.marginLeft = Math.max(0,(avail - W*s)/2 + 12) + "px";
-  } else {
-    page.style.transform = "none"; page.style.marginLeft = "12px";
-    scroll.style.height = (page.scrollHeight + 20) + "px";
+  const naturalH = page.scrollHeight;
+  let s = Math.min(1, availW / W);
+  if(window.innerWidth >= 860){
+    // 컴퓨터 화면에서는 세로로도 화면에 맞춰서 스크롤(드래그) 없이 한번에 보이게 한다.
+    // 실측 기준: 스케일 1일 때 전체 문서 높이에서 시트 콘텐츠 높이를 빼면
+    // 그 외 화면 요소(헤더·탭·여백 등)가 차지하는 실제 공간이 정확히 나온다.
+    const prevTransform = page.style.transform, prevHeight = scroll.style.height;
+    page.style.transform = "none"; scroll.style.height = "auto";
+    const chromeH = document.documentElement.scrollHeight - naturalH;
+    page.style.transform = prevTransform; scroll.style.height = prevHeight;
+    const availH = Math.max(240, window.innerHeight - chromeH - 24);
+    s = Math.min(s, availH / naturalH);
   }
+  page.style.transform = "scale("+s+")";
+  scroll.style.height = Math.ceil(naturalH * s + 20) + "px";
+  page.style.marginLeft = Math.max(0,(availW - W*s)/2 + 12) + "px";
 }
 window.addEventListener("resize", () => { if($("#sheetWrap").classList.contains("on")) fitSheetView(); });
 
@@ -1872,9 +1894,12 @@ function loadExcelJS(){
   if(window.ExcelJS) return Promise.resolve();
   if(exceljsLoading) return exceljsLoading;
   exceljsLoading = new Promise((resolve,reject) => {
+    const timer = setTimeout(() => reject(new Error("엑셀 라이브러리 응답 시간 초과 (네트워크 확인 필요)")), 15000);
     const s = document.createElement("script");
     s.src = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
-    s.onload = resolve; s.onerror = reject; document.head.appendChild(s);
+    s.onload = () => { clearTimeout(timer); resolve(); };
+    s.onerror = () => { clearTimeout(timer); reject(new Error("엑셀 라이브러리를 불러오지 못했습니다 (네트워크 확인 필요)")); };
+    document.head.appendChild(s);
   });
   return exceljsLoading;
 }
@@ -2019,6 +2044,7 @@ async function exportSheetToXlsx(record){
     a.download = (record.code||"양식") + "_" + (record.name||"근로자") + suffix + ".xlsx";
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    showToast("다운로드 완료: " + a.download);
   }catch(err){
     alert("엑셀 파일을 만들지 못했습니다: " + (err && err.message || err)
       + "\n인터넷 연결이 필요합니다 (엑셀 변환 라이브러리를 불러옵니다).");
@@ -2140,16 +2166,24 @@ async function quickExport(code, kind){
     wrap.classList.add("on");
   }
   const prevCurrent = current, prevKind = sheetKind;
-  current = rec; sheetKind = kind;
-  renderSheetDOM();
-  fillActiveSheet(rec);
-  await exportSheetToXlsx(rec);
-  if(!wasOn){
-    wrap.classList.remove("on");
-    wrap.style.position = ""; wrap.style.left = ""; wrap.style.top = "";
+  try{
+    current = rec; sheetKind = kind;
+    renderSheetDOM();
+    fillActiveSheet(rec);
+    await exportSheetToXlsx(rec);
+  }catch(err){
+    alert("복사(내보내기)에 실패했습니다: " + (err && err.message || err));
+  }finally{
+    if(!wasOn){
+      wrap.classList.remove("on");
+      wrap.style.position = ""; wrap.style.left = ""; wrap.style.top = "";
+    }
+    current = prevCurrent; sheetKind = prevKind;
   }
-  current = prevCurrent; sheetKind = prevKind;
 }
+window.addEventListener("unhandledrejection", (e) => {
+  console.error("unhandled rejection:", e.reason);
+});
 
 let todayCompanyFilter = "";
 function renderTodayTable(){
