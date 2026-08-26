@@ -28,6 +28,7 @@ body{font-family:var(--sans);background:var(--field);color:var(--ink);font-size:
   -webkit-text-size-adjust:100%;padding-bottom:env(safe-area-inset-bottom)}
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 input,textarea,select{-webkit-appearance:none;appearance:none}
+input[type=checkbox]{-webkit-appearance:checkbox;appearance:checkbox}
 
 header{position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) var(--pad) 0}
 .brandrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -231,6 +232,8 @@ table.admTable .riskYes{color:var(--signal);font-weight:800}
 table.admTable .riskNo{color:var(--mute)}
 .copyBtn{min-height:36px;min-width:44px;padding:0 12px;border:1.5px solid var(--line);border-radius:7px;background:#fff;
   font-weight:800;color:var(--go);cursor:pointer;font-size:.9rem}
+table.admTable .rowChk,table.admTable #chkAll{width:18px;height:18px;cursor:pointer}
+table.admTable thead th #chkAll{margin-top:4px}
 .copyBtn[disabled]{opacity:.5;cursor:default}
 .appToast{position:fixed;left:50%;bottom:100px;transform:translate(-50%,20px);background:#15171C;color:#fff;
   padding:12px 20px;border-radius:10px;font-size:.9rem;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.3);
@@ -2321,18 +2324,19 @@ function renderTodayTable(){
   const allChecked = list.length>0 && list.every(r => selectedCodes.has(r.code));
   const rows = list.map(r =>
     '<tr>'
-    +'<td><input type="checkbox" class="rowChk" data-code="'+r.code+'" '+(selectedCodes.has(r.code)?"checked":"")+'></td>'
     +'<td>'+esc(r.company||"미지정")+'</td>'
     +'<td class="who" data-code="'+r.code+'">'+esc(r.name)+'</td>'
     +'<td class="'+(r.highRisk?"riskYes":"riskNo")+'">'+(r.highRisk?"유":"무")+'</td>'
     +'<td><button class="copyBtn" type="button" data-code="'+r.code+'" data-kind="form">V</button></td>'
     +'<td><button class="copyBtn" type="button" data-code="'+r.code+'" data-kind="photoboard">V</button></td>'
+    +'<td><input type="checkbox" class="rowChk" data-code="'+r.code+'" '+(selectedCodes.has(r.code)?"checked":"")+'></td>'
     +'</tr>'
   ).join("");
 
   box.innerHTML = filterHtml + '<div class="admTableWrap"><table class="admTable"><thead>'
-    + '<tr><th rowspan="2"><input type="checkbox" id="chkAll" '+(allChecked?"checked":"")+'></th>'
-    + '<th rowspan="2">업체명</th><th rowspan="2">이름</th><th rowspan="2">취약근로자 유무</th><th colspan="2">전체 복사</th></tr>'
+    + '<tr><th rowspan="2">업체명</th><th rowspan="2">이름</th><th rowspan="2">취약근로자 유무</th>'
+    + '<th colspan="2">전체 복사</th>'
+    + '<th rowspan="2">선택 삭제<br><input type="checkbox" id="chkAll" '+(allChecked?"checked":"")+'></th></tr>'
     + '<tr><th>준수사항 복사</th><th>사진대지 복사</th></tr>'
     + '</thead><tbody>' + rows + '</tbody></table></div>';
 
