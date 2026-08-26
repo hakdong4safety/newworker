@@ -766,6 +766,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div class="admbar">
       <button class="btn" type="button" id="expCsv">CSV 내보내기</button>
       <button class="btn" type="button" id="expJson">백업(JSON)</button>
+      <button class="btn" type="button" id="delSelected" disabled>선택 삭제</button>
       <button class="btn danger" type="button" id="wipe">전체 삭제</button>
     </div>
   </div>
@@ -2194,7 +2195,17 @@ async function updateFbBadge(){
   if(r.on){ b.textContent = "☁ Firebase 연결됨 — 모든 기기에서 공유됩니다"; b.style.background="var(--go-8)"; b.style.color="#075C32"; }
   else{ b.textContent = "⚠ Firebase 연결 실패 — 이 기기에만 저장됩니다"; b.style.background="var(--signal-8)"; b.style.color="#960014"; }
 }
-$("#btnAdmClose").addEventListener("click", () => { adminUnlocked = false; location.reload(); });
+$("#btnAdmClose").addEventListener("click", () => {
+  if($("#sheetWrap").classList.contains("on")){
+    // 근로자 양식/사진대지를 보고 있던 경우 → 관리자 탭 메인 화면으로
+    $("#sheetWrap").classList.remove("on");
+    openAdm(lastAdmTab);
+  } else {
+    // 관리자 탭 자체에서 닫은 경우 → 완전히 종료
+    adminUnlocked = false;
+    location.reload();
+  }
+});
 function ymd(iso){ const d = new Date(iso); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function setAdmTab(tab){
   lastAdmTab = tab;
@@ -2286,21 +2297,31 @@ window.addEventListener("unhandledrejection", (e) => {
 });
 
 let todayCompanyFilter = "";
+let selectedCodes = new Set();
 function renderTodayTable(){
   const box = $("#companyGroups");
   const all = submissions.filter(r => ymd(r.submittedAt) === admDate);
-  if(!all.length){ box.innerHTML = '<div class="empty">이 날짜에 제출된 서류가 없습니다.</div>'; return; }
+  if(!all.length){
+    box.innerHTML = '<div class="empty">이 날짜에 제출된 서류가 없습니다.</div>';
+    updateDeleteSelectedBtn();
+    return;
+  }
   const companies = Array.from(new Set(all.map(r => r.company || "미지정"))).sort();
   if(todayCompanyFilter && companies.indexOf(todayCompanyFilter) === -1) todayCompanyFilter = "";
   const list = todayCompanyFilter ? all.filter(r => (r.company||"미지정") === todayCompanyFilter) : all;
+  const listCodes = list.map(r => r.code);
+  // 필터가 바뀌어 화면에서 사라진 항목은 선택에서도 제거
+  selectedCodes.forEach(c => { if(listCodes.indexOf(c) === -1) selectedCodes.delete(c); });
 
   const filterHtml = '<div class="filterRow"><label>업체명 (업체명 고르기)</label>'
     + '<select id="companyFilter"><option value="">전체</option>'
     + companies.map(c => '<option value="'+esc(c)+'"'+(c===todayCompanyFilter?" selected":"")+'>'+esc(c)+'</option>').join("")
     + '</select></div>';
 
+  const allChecked = list.length>0 && list.every(r => selectedCodes.has(r.code));
   const rows = list.map(r =>
     '<tr>'
+    +'<td><input type="checkbox" class="rowChk" data-code="'+r.code+'" '+(selectedCodes.has(r.code)?"checked":"")+'></td>'
     +'<td>'+esc(r.company||"미지정")+'</td>'
     +'<td class="who" data-code="'+r.code+'">'+esc(r.name)+'</td>'
     +'<td class="'+(r.highRisk?"riskYes":"riskNo")+'">'+(r.highRisk?"유":"무")+'</td>'
@@ -2310,11 +2331,23 @@ function renderTodayTable(){
   ).join("");
 
   box.innerHTML = filterHtml + '<div class="admTableWrap"><table class="admTable"><thead>'
-    + '<tr><th rowspan="2">업체명</th><th rowspan="2">이름</th><th rowspan="2">취약근로자 유무</th><th colspan="2">전체 복사</th></tr>'
+    + '<tr><th rowspan="2"><input type="checkbox" id="chkAll" '+(allChecked?"checked":"")+'></th>'
+    + '<th rowspan="2">업체명</th><th rowspan="2">이름</th><th rowspan="2">취약근로자 유무</th><th colspan="2">전체 복사</th></tr>'
     + '<tr><th>준수사항 복사</th><th>사진대지 복사</th></tr>'
     + '</thead><tbody>' + rows + '</tbody></table></div>';
 
   $("#companyFilter").addEventListener("change", (e) => { todayCompanyFilter = e.target.value; renderTodayTable(); });
+  $("#chkAll").addEventListener("change", (e) => {
+    if(e.target.checked) list.forEach(r => selectedCodes.add(r.code));
+    else list.forEach(r => selectedCodes.delete(r.code));
+    renderTodayTable();
+  });
+  box.querySelectorAll(".rowChk").forEach(cb => cb.addEventListener("change", () => {
+    if(cb.checked) selectedCodes.add(cb.dataset.code); else selectedCodes.delete(cb.dataset.code);
+    updateDeleteSelectedBtn();
+    const allNowChecked = list.length>0 && list.every(r => selectedCodes.has(r.code));
+    const headChk = $("#chkAll"); if(headChk) headChk.checked = allNowChecked;
+  }));
   box.querySelectorAll("td.who").forEach(w => w.addEventListener("click", () => {
     const rec = submissions.find(x => x.code === w.dataset.code);
     if(rec) openSheetFor(rec, rec.name+" · "+rec.code);
@@ -2324,6 +2357,13 @@ function renderTodayTable(){
     try{ await quickExport(b.dataset.code, b.dataset.kind); }
     finally{ b.disabled = false; b.textContent = old; }
   }));
+  updateDeleteSelectedBtn();
+}
+function updateDeleteSelectedBtn(){
+  const btn = $("#delSelected"); if(!btn) return;
+  const n = selectedCodes.size;
+  btn.textContent = n > 0 ? "선택 삭제 ("+n+")" : "선택 삭제";
+  btn.disabled = n === 0;
 }
 function renderToday(){ renderTodayTable(); }
 function renderRisk(){
@@ -2361,6 +2401,15 @@ $("#expJson").addEventListener("click", () => {
 $("#wipe").addEventListener("click", async () => {
   if(!confirm("제출된 모든 자료를 삭제합니다. 내보내기를 먼저 하셨나요?")) return;
   submissions = []; await Store.save("submissions", submissions); setAdmTab(lastAdmTab);
+});
+$("#delSelected").addEventListener("click", async () => {
+  const n = selectedCodes.size;
+  if(n === 0) return;
+  if(!confirm("선택한 "+n+"건을 삭제합니다. 내보내기를 먼저 하셨나요?")) return;
+  submissions = submissions.filter(r => !selectedCodes.has(r.code));
+  selectedCodes.clear();
+  await Store.save("submissions", submissions);
+  setAdmTab(lastAdmTab);
 });
 
 let xlsxLoading = null;
