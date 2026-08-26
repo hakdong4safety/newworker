@@ -43,7 +43,7 @@ header{position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;padding
 .prog i.on{background:var(--signal)} .prog i.done{background:#6E7683}
 
 main{padding:16px var(--pad) 140px;max-width:720px;margin:0 auto}
-.admPage{padding:16px var(--pad) 140px;max-width:720px;margin:0 auto}
+.admPage{display:none;padding:16px var(--pad) 140px;max-width:720px;margin:0 auto}
 .step{display:none} .step.on{display:block;animation:rise .28s ease}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .lead{margin:2px 0 18px}
@@ -1254,6 +1254,7 @@ const progEl = $("#prog");
 for(let i=0;i<TOTAL;i++) progEl.appendChild(document.createElement("i"));
 
 function paint(){
+  $("main").style.display = "";
   $$("#prog i").forEach((el,i)=>{ el.className = i===step ? "on" : (i<step ? "done" : ""); });
   $("#hStep").textContent = (step+1)+" / "+TOTAL;
   $("#hTitle").textContent = STEP_NAME[step];
@@ -1269,6 +1270,7 @@ function paint(){
   $("#btnNext").classList.toggle("hidden", step===9);
   $("#btnNext").textContent = step===7 ? "확인하기" : (step===8 ? "저장" : (I18N[LANG]["btn.next"]||"다음"));
   $("#btnNext").classList.toggle("danger", step===8);
+  if(step===6) PADS.padSign.fit();
   if(step===7) syncPpeSigns();
   if(step===8) renderReview();
   window.scrollTo({top:0,behavior:"instant"});
@@ -1859,6 +1861,8 @@ $("#sheetRiskChk").addEventListener("change", async (e) => {
 function openSheetFor(r, title){
   current = r;
   sheetKind = "form";
+  $("main").style.display = "none";
+  document.querySelector(".admPage").style.display = "none";
   $("#tabDocForm").setAttribute("aria-pressed","true"); $("#tabDocPhoto").setAttribute("aria-pressed","false");
   $("#docTabs").classList.remove("hidden");
   $("#sheetRiskChk").closest(".riskToggle").classList.remove("hidden");
@@ -2074,6 +2078,8 @@ function tryPw(){
 }
 function openAdm(tab){
   lastAdmTab = tab || "today";
+  $("main").style.display = "none";
+  document.querySelector(".admPage").style.display = "block";
   $$(".step").forEach(s => s.classList.remove("on"));
   $("#sheetWrap").classList.remove("on");
   $("#adm").classList.add("on");
