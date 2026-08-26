@@ -1825,7 +1825,8 @@ function renderSheetDOM(){
   const tpl = activeSheetTemplate();
   const page = $("#sheetPage");
   page.style.width = tpl.totalPx + "px";
-  page.innerHTML = '<table class="sheet"><colgroup>'+tpl.colgroup+'</colgroup><tbody>'+tpl.rows+'</tbody></table>';
+  page.innerHTML = '<table class="sheet" style="width:'+tpl.totalPx+'px">'
+    + '<colgroup>'+tpl.colgroup+'</colgroup><tbody>'+tpl.rows+'</tbody></table>';
   ORIG = {};
 }
 let zoomFit = true;
@@ -1887,12 +1888,12 @@ function openSheetFor(r, title){
   $("#docTabs").classList.remove("hidden");
   $("#sheetRiskChk").closest(".riskToggle").classList.remove("hidden");
   $("#sheetRiskChk").checked = !!r.highRisk;
+  $$(".step").forEach(s => s.classList.remove("on"));
+  $("#adm").classList.remove("on");
+  $("#sheetWrap").classList.add("on");   // 채우기 전에 먼저 보이게 해야 글자 크기 자동조정이 동작한다
   renderSheetDOM();
   fillActiveSheet(r);
   $("#sheetTitleText").textContent = title || (r.name+" 양식");
-  $$(".step").forEach(s => s.classList.remove("on"));
-  $("#adm").classList.remove("on");
-  $("#sheetWrap").classList.add("on");
   $("#btnPrev").classList.add("hidden"); $("#btnNext").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden"); $("#btnPrint").classList.remove("hidden");
   $("#btnPdf").classList.remove("hidden");
@@ -2074,12 +2075,32 @@ async function exportSheetToPdf(record){
   const oldTxt = btn ? btn.textContent : "";
   if(btn){ btn.textContent = "만드는 중…"; btn.disabled = true; }
   const page = $("#sheetPage");
+  const scroll = $("#sheetScroll");
+  const wrap = $("#sheetWrap");
   const prevTransform = page.style.transform;
+  const prevPageW = page.style.width;
+  const prevScrollOverflow = scroll.style.overflow;
+  const prevScrollH = scroll.style.height;
+  const prevWrapW = wrap.style.width;
   try{
     await loadPdfLibs();
+    // 캡처 전에 잘림 요인을 모두 제거한다:
+    // 축소(transform) 해제 + 실제 내용 폭으로 확장 + 상위 컨테이너 클리핑 해제
     page.style.transform = "none";
-    await new Promise(r => setTimeout(r, 60)); // 리플로우 대기
-    const canvas = await html2canvas(page, { scale: 2.5, backgroundColor: "#ffffff", useCORS: true });
+    scroll.style.overflow = "visible";
+    scroll.style.height = "auto";
+    const table = page.querySelector("table.sheet");
+    const fullW = Math.max(page.scrollWidth, table ? table.scrollWidth : 0);
+    page.style.width = fullW + "px";
+    wrap.style.width = (fullW + 40) + "px";
+    await new Promise(r => setTimeout(r, 80)); // 리플로우 대기
+    const w = Math.max(page.scrollWidth, fullW);
+    const h = page.scrollHeight;
+    const canvas = await html2canvas(page, {
+      scale: 2.5, backgroundColor: "#ffffff", useCORS: true,
+      width: w, height: h, windowWidth: w + 80, windowHeight: h + 80,
+      scrollX: 0, scrollY: 0
+    });
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
     const pageW = 210, pageH = 297, margin = 6;
@@ -2098,6 +2119,10 @@ async function exportSheetToPdf(record){
       + "\n인터넷 연결이 필요합니다 (PDF 변환 라이브러리를 불러옵니다).");
   }
   page.style.transform = prevTransform;
+  page.style.width = prevPageW;
+  scroll.style.overflow = prevScrollOverflow;
+  scroll.style.height = prevScrollH;
+  wrap.style.width = prevWrapW;
   if(btn){ btn.textContent = oldTxt; btn.disabled = false; }
 }
 async function exportSheetToXlsx(record){
