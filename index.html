@@ -152,6 +152,17 @@ input::placeholder,textarea::placeholder{color:#B2B9C2;font-weight:400}
 .sheetPhotos .pdel{flex:0 0 auto;color:var(--signal);border-color:#F2BFC6}
 /* 파일 입력은 display:none 대신 화면 밖으로 밀어 둔다.
    일부 브라우저는 display:none 인 file input 을 프로그램에서 열지 못한다. */
+.bpBox{background:#fff;border-radius:10px;padding:14px}
+.bpRow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bpRow b{flex:0 0 34px;font-size:.8rem;color:var(--steel)}
+.bpRow span{color:var(--mute);font-weight:700}
+.bpRow input{flex:1;min-width:0;min-height:46px;text-align:center;font-size:1.15rem;font-weight:700}
+.bpRow2{margin:10px 0}
+.bpRow2 label{display:block;font-size:.78rem;color:var(--steel);margin-bottom:5px}
+.bpRow2 input{min-height:42px}
+.bpNote{font-size:.78rem;color:#8A5400;background:var(--amber-8);border-radius:8px;padding:8px 10px;margin-bottom:10px}
+.bpBox .verdict{margin-bottom:10px}
+.bpBox #bpSave{width:100%;min-height:46px}
 .filepick{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0);border:0;padding:0;margin:-1px}
 @media print{ .sheetPhotos{display:none !important} }
 
@@ -222,9 +233,26 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .admtabs button{flex:1;min-width:100px;min-height:48px;border-radius:9px;border:1.5px solid var(--line);
   background:#fff;font-size:.9rem;font-weight:700;cursor:pointer}
 .admtabs button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
-.datebar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.datebar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .datebar button{min-height:44px;min-width:44px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-size:1.1rem;cursor:pointer}
-.datebar input{flex:1;min-height:44px}
+.datebar input{flex:1 1 150px;min-height:44px}
+.datebar #btnReload{font-size:.82rem;min-width:130px;font-weight:700}
+.findBar{display:flex;gap:8px;margin-bottom:12px}
+.findBar input{flex:1;min-width:0;min-height:50px;font-size:1.02rem}
+.findBar .btn{flex:0 0 auto;min-width:88px}
+.findCount{font-size:.84rem;color:var(--steel);font-weight:700;margin-left:auto}
+.findEmpty{padding:26px 14px;text-align:center;color:var(--mute);font-size:.92rem;
+  border:1.5px dashed var(--line);border-radius:12px;background:#fff}
+.hit{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;
+  border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;min-height:var(--tap)}
+.hit:hover{border-color:var(--ink)}
+.hit .nm{font-weight:800;font-size:1.05rem}
+.hit .sub{font-size:.8rem;color:var(--steel);margin-top:3px}
+.hit .flags{margin-left:auto;display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:0 0 auto}
+.hit .fl{font-size:.72rem;font-weight:800;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.fl.need{background:var(--signal-8);color:#960014}
+.fl.done{background:var(--go-8);color:#075C32}
+.fl.risky{background:var(--signal);color:#fff}
 .grp{margin-bottom:14px}
 .grp > summary{list-style:none;cursor:pointer;padding:12px 14px;background:#EFF1F4;border:1px solid var(--line);
   border-radius:10px;font-weight:800;font-size:1rem;display:flex;justify-content:space-between;align-items:center}
@@ -429,8 +457,11 @@ html.xl{--shell:820px}
   #sheetWrap > .sheetTitleBar{grid-area:bar;max-width:none;padding:0;margin:0 0 12px}
   #sheetWrap > .docTabs{grid-area:tabs;max-width:none;padding:0;margin:0 0 14px}
   #sheetWrap > #sheetScroll{grid-area:sheet;min-width:0}
-  #sheetWrap > .sheetPhotos{grid-area:photos;max-width:none;margin:0;padding:0;
-    align-self:stretch;position:sticky;top:100px}
+  #sheetWrap > #sheetBp{grid-area:photos;max-width:none;margin:0 0 14px;padding:0;align-self:start}
+  #sheetWrap > #sheetPhotos{grid-area:photos;max-width:none;margin:0;padding:0;align-self:start}
+  #sheetWrap.on{grid-template-areas:"bar bar" "tabs tabs" "sheet bp" "sheet photos";
+    grid-template-rows:auto auto auto 1fr}
+  #sheetWrap > #sheetBp{grid-area:bp}
   .photoSlots{display:grid;grid-template-columns:1fr;gap:12px}
   /* 사이드바에서는 썸네일을 왼쪽에 두는 가로형으로 바꿔 3칸이 한 화면에 들어오게 한다 */
   .sheetPhotos .pslot{width:auto;display:grid;
@@ -856,9 +887,24 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div class="lead"><h2>관리자</h2><p style="color:var(--steel);font-size:.9rem">오늘 작성된 서류 확인, 취약 근로자 관리, 양식 변경을 할 수 있습니다.</p>
     <p style="margin-top:8px"><span class="tag" id="fbBadge" style="background:#EFF1F4;color:var(--steel)">확인 중…</span></p></div>
   <div class="admtabs">
-    <button type="button" id="tabToday" aria-pressed="true">날짜별 제출</button>
+    <button type="button" id="tabFind" aria-pressed="true">근로자 찾기</button>
+    <button type="button" id="tabToday" aria-pressed="false">날짜별 제출</button>
     <button type="button" id="tabRisk" aria-pressed="false">취약 근로자</button>
     <button type="button" id="tabTpl" aria-pressed="false">양식 변경</button>
+  </div>
+
+  <div id="admFind" class="hidden">
+    <p class="note">근로자가 <b>미리 작성해 온 서류</b>를 찾는 화면입니다. 날짜와 상관없이 전부 검색합니다.</p>
+    <div class="findBar">
+      <input type="search" id="findName" placeholder="이름을 입력하세요 (예: 홍길동)" autocomplete="off">
+      <button type="button" class="btn small" id="findClear">지우기</button>
+    </div>
+    <div class="filterRow">
+      <label for="findCo">업체</label>
+      <select id="findCo"><option value="">전체</option></select>
+      <span class="findCount" id="findCount"></span>
+    </div>
+    <div id="findList"></div>
   </div>
 
   <div id="admToday">
@@ -867,6 +913,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
       <input type="date" id="dPick">
       <button type="button" id="dNext">›</button>
       <button type="button" id="dToday" class="btn small">오늘</button>
+      <button type="button" id="btnReload" class="btn small">↻ 다시 불러오기</button>
     </div>
     <div id="companyGroups"><div class="empty">이 날짜에 제출된 서류가 없습니다.</div></div>
     <div class="admbar">
@@ -912,6 +959,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button type="button" id="tabDocPhoto" aria-pressed="false">사진 대지</button>
   </div>
   <div id="sheetScroll"><div id="sheetPage"></div></div>
+  <div class="sheetPhotos hidden" id="sheetBp"></div>
   <div class="sheetPhotos hidden" id="sheetPhotos"></div>
 </div>
 
@@ -994,7 +1042,15 @@ let __fbApp = null, __fbDb = null, __fbLoading = null;
 function loadFirebase(){
   if(__fbDb) return Promise.resolve(__fbDb);
   if(__fbLoading) return __fbLoading;
+  const netErr = () => new Error("Firebase 프로그램을 내려받지 못했습니다. 인터넷 연결이나 사내망 차단 여부를 확인해 주세요.");
   __fbLoading = new Promise((resolve, reject) => {
+    if(window.firebase && window.firebase.firestore){
+      try{
+        __fbApp = firebase.apps && firebase.apps.length ? firebase.apps[0] : firebase.initializeApp(FIREBASE_CONFIG);
+        __fbDb = firebase.firestore();
+        resolve(__fbDb); return;
+      }catch(e){ reject(e); return; }
+    }
     const s1 = document.createElement("script");
     s1.src = "https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js";
     s1.onload = () => {
@@ -1007,10 +1063,12 @@ function loadFirebase(){
           resolve(__fbDb);
         }catch(e){ reject(e); }
       };
-      s2.onerror = reject; document.head.appendChild(s2);
+      s2.onerror = () => reject(netErr()); document.head.appendChild(s2);
     };
-    s1.onerror = reject; document.head.appendChild(s1);
+    s1.onerror = () => reject(netErr()); document.head.appendChild(s1);
   });
+  // 실패한 약속을 남겨 두면 다시 시도해도 계속 같은 실패가 나온다
+  __fbLoading.catch(() => { __fbLoading = null; });
   return __fbLoading;
 }
 
@@ -1332,7 +1390,13 @@ const Store = (() => {
   return {
     hasBackend: hasCloud, hasLocal,
     lastError: null,
+    /* 지금 화면에 보이는 목록이 어디서 온 것인지 기록해 둔다.
+       "서버 연결됨"이라고 표시해 놓고 실제로는 이 기기 자료를 보여 주는
+       상황을 막기 위한 것이다. */
+    source: null,        // "server" | "local" | "memory"
+    loadError: null,     // 서버에서 못 읽었을 때 그 이유
     async load(key, dflt){
+      if(key === "submissions"){ this.source = null; this.loadError = null; }
       if(fbEnabled()){
         try{
           const db = await loadFirebase();
@@ -1341,18 +1405,35 @@ const Store = (() => {
             const snap = await db.collection("records").get();
             const arr = [];
             snap.forEach(d => { try{ arr.push(JSON.parse(d.data().json)); }catch(e){} });
-            if(arr.length){
-              arr.sort((a,b) => String(a.submittedAt).localeCompare(String(b.submittedAt)));
-              return arr;
-            }
+            arr.sort((a,b) => String(a.submittedAt).localeCompare(String(b.submittedAt)));
+            // 서버를 정상적으로 읽었으면 0건이라도 그대로 쓴다.
+            // (예전에는 0건일 때 이 기기 자료로 되돌아가서, 서버가 비었는지
+            //  연결이 끊겼는지 구분할 수 없었다)
+            this.source = "server";
+            return arr;
           } else {
             const doc = await db.collection("kv").doc(key).get();
             if(doc.exists) return JSON.parse(doc.data().json);
           }
-        }catch(e){ console.warn("firebase load 실패, 로컬 저장소 사용:", e); }
+        }catch(e){
+          if(key === "submissions") this.loadError = (e && e.message) || String(e);
+          console.warn("firebase load 실패, 로컬 저장소 사용:", e);
+        }
       }
-      if(hasCloud){ try{ const r = await window.storage.get(key, true); if(r) return JSON.parse(r.value); }catch(e){} }
-      if(hasLocal){ try{ const v = localStorage.getItem(LKEY(key)); if(v) return JSON.parse(v); }catch(e){} }
+      if(hasCloud){
+        try{
+          const r = await window.storage.get(key, true);
+          if(r){ if(key==="submissions") this.source = "server"; return JSON.parse(r.value); }
+        }catch(e){}
+      }
+      // 이 기기에 남아 있는 목록은 관리자가 목록을 연 뒤에만 쓴다
+      if(hasLocal && (key !== "submissions" || submissionsLoaded || fbEnabled())){
+        try{
+          const v = localStorage.getItem(LKEY(key));
+          if(v){ if(key==="submissions") this.source = "local"; return JSON.parse(v); }
+        }catch(e){}
+      }
+      if(key === "submissions") this.source = fbEnabled() && this.loadError ? "local" : "memory";
       return mem[key] !== undefined ? mem[key] : dflt;
     },
     /* 저장 결과를 반환한다: {ok:true} 또는 {ok:false, where, message} */
@@ -1369,12 +1450,12 @@ const Store = (() => {
             const list = Array.isArray(v) ? v : [];
             const keep = {};
             for(const rec of list){
-              keep[rec.code] = true;
+              keep[docId(rec)] = true;
               const json = JSON.stringify(rec);
               if(json.length > 950000){
                 throw new Error("한 건의 자료가 너무 큽니다("+Math.round(json.length/1024)+"KB). 사진을 줄여 주세요.");
               }
-              await db.collection("records").doc(String(rec.code)).set({ json, updatedAt: Date.now() });
+              await db.collection("records").doc(docId(rec)).set({ json, updatedAt: Date.now() });
             }
             // 목록에서 빠진 건은 서버에서도 삭제
             const snap = await db.collection("records").get();
@@ -1405,6 +1486,30 @@ const Store = (() => {
       this.lastError = firstErr;
       return { ok:false, where: firstErr && firstErr.where, message: firstErr && firstErr.message };
     },
+    /* 서버에서 받은 목록을 이 기기에도 복사해 둔다 (서버는 건드리지 않는다).
+       나중에 인터넷이 끊긴 상태로 열어도 마지막 내용은 보이게 하기 위함. */
+    remember(list){
+      mem["submissions"] = list;
+      if(hasLocal && submissionsLoaded){ try{ localStorage.setItem(LKEY("submissions"), JSON.stringify(list)); }catch(e){} }
+    },
+    /* 그날의 순번을 서버에서 하나 받아 온다.
+       기기마다 자기 목록 길이로 번호를 매기면, 두 태블릿이 같은 관리번호를
+       뽑아 서류에 같은 번호가 두 장 찍힌다. 서버에 작은 카운터 문서를 두고
+       한 번에 하나씩 올려 받는다. 실패하면 이 기기 기준 번호를 그대로 쓴다. */
+    async nextSeq(dateKey, fallback){
+      if(!fbEnabled()) return fallback;
+      try{
+        const db = await loadFirebase();
+        const ref = db.collection("kv").doc("seq-"+dateKey);
+        if(typeof db.runTransaction !== "function") return fallback;
+        return await db.runTransaction(async tx => {
+          const d = await tx.get(ref);
+          const cur = (d && d.exists && +d.data().n) || 0;
+          tx.set(ref, { n: cur + 1, updatedAt: Date.now() });
+          return cur + 1;
+        });
+      }catch(e){ console.warn("순번 받기 실패, 이 기기 기준으로 매깁니다:", e); return fallback; }
+    },
     /* 한 사람의 기록만 저장한다.
        save()는 전체 목록을 서버에 다시 써 넣기 때문에 인원이 늘수록 급격히 느려지고
        (사진 1장 추가에 전원 재업로드) 무료 사용량 한도에도 금방 걸린다.
@@ -1421,7 +1526,7 @@ const Store = (() => {
           if(json.length > 950000){
             throw new Error("한 건의 자료가 너무 큽니다("+Math.round(json.length/1024)+"KB). 사진을 줄여 주세요.");
           }
-          await db.collection("records").doc(String(rec.code)).set({ json, updatedAt: Date.now() });
+          await db.collection("records").doc(docId(rec)).set({ json, updatedAt: Date.now() });
           savedRemote = true;
         }catch(e){
           firstErr = { where:"Firebase", message:(e && e.message) || String(e) };
@@ -1430,11 +1535,20 @@ const Store = (() => {
       }
       if(hasCloud){ try{ await window.storage.set("submissions", JSON.stringify(list), true); savedRemote = true; }catch(e){} }
       if(hasLocal){
-        try{ localStorage.setItem(LKEY("submissions"), JSON.stringify(list)); savedLocal = true; }
+        try{
+          if(submissionsLoaded){
+            localStorage.setItem(LKEY("submissions"), JSON.stringify(list));
+          } else {
+            // 근로자 폰: 남의 기록은 한 건도 남기지 않고, 자기 것만 따로 백업한다.
+            // (서버 저장이 실패했을 때 다시 시도할 수 있게 하기 위함)
+            localStorage.setItem(LKEY("mine"), JSON.stringify(rec));
+          }
+          savedLocal = true;
+        }
         catch(e){
           firstErr = firstErr || { where:"이 기기 저장공간",
             message: (e && e.name === "QuotaExceededError")
-              ? "저장공간이 가득 찼습니다. 관리자 탭에서 예전 자료를 내보낸 뒤 삭제해 주세요."
+              ? "저장공간이 가득 찼습니다. 사진을 줄이거나 지운 뒤 다시 시도해 주세요."
               : ((e && e.message) || String(e)) };
         }
       }
@@ -1460,29 +1574,44 @@ const Store = (() => {
       }
       return ok ? { ok:true } : { ok:false, where: firstErr && firstErr.where, message: firstErr && firstErr.message };
     },
+    /* 스크립트만 불러오는 게 아니라 실제로 읽기까지 해 봐야
+       "연결됨"이라고 말할 수 있다. */
     async checkFirebase(){
-      if(!fbEnabled()) return { on:false };
-      try{ await loadFirebase(); return { on:true }; }
-      catch(e){ return { on:false, error: e && e.message || String(e) }; }
+      if(!fbEnabled()) return { on:false, reason:"미설정" };
+      try{
+        const db = await loadFirebase();
+        const snap = await db.collection("records").get();
+        return { on:true, count: snap.size };
+      }
+      catch(e){ return { on:false, error: (e && e.message) || String(e) }; }
     }
   };
 })();
 
 const TOTAL = 10;
 const STEP_NAME = ["시작","인적사항","교육·경력","보건면담","생활습관","혈압 측정","서약·동의","보호구 수령","최종 확인","완료"];
+/* 혈압은 현장에서 담당자가 측정해 넣는다.
+   근로자는 집에서 혈압계가 없으므로 이 단계를 아예 건너뛴다.
+   (현장에서 근로자가 직접 넣게 하려면 아래를 false 로 바꾸면 된다) */
+const BP_AT_SITE = true;
+const FLOW = BP_AT_SITE ? [0,1,2,3,4,6,7,8,9] : [0,1,2,3,4,5,6,7,8,9];
+const flowIdx  = st => Math.max(0, FLOW.indexOf(st));
+const nextStep = st => FLOW[Math.min(FLOW.length-1, flowIdx(st)+1)];
+const prevStep = st => FLOW[Math.max(0, flowIdx(st)-1)];
 let step = 0, submissions = [], current = null;
 const pick = {}, multi = {};
 const $ = s => document.querySelector(s), $$ = s => Array.from(document.querySelectorAll(s));
 const val = id => { const e = document.getElementById(id); return e ? e.value.trim() : ""; };
 
 const progEl = $("#prog");
-for(let i=0;i<TOTAL;i++) progEl.appendChild(document.createElement("i"));
+for(let i=0;i<FLOW.length;i++) progEl.appendChild(document.createElement("i"));
 
 function paint(){
   $("main").style.display = "";
   document.body.classList.remove("admmode");
-  $$("#prog i").forEach((el,i)=>{ el.className = i===step ? "on" : (i<step ? "done" : ""); });
-  $("#hStep").textContent = (step+1)+" / "+TOTAL;
+  const fi = flowIdx(step);
+  $$("#prog i").forEach((el,i)=>{ el.className = i===fi ? "on" : (i<fi ? "done" : ""); });
+  $("#hStep").textContent = (fi+1)+" / "+FLOW.length;
   $("#hTitle").textContent = STEP_NAME[step];
   $$(".step").forEach(s => s.classList.toggle("on", +s.dataset.step === step));
   $("#adm").classList.remove("on");
@@ -1741,7 +1870,7 @@ function validate(){
     (multi.checkup||[]).length ? setErr(cf,false) : fail(cf);
   }
   if(step===4){ needPick("smoke",'[data-pick=smoke]'); needPick("drinkDays",'[data-pick=drinkDays]'); }
-  if(step===5){
+  if(step===5 && !BP_AT_SITE){
     const cf=$("#sys1").closest(".card");
     (+val("sys1")>=50 && +val("dia1")>=30) ? cf.querySelector(".err").classList.remove("on")
       : (cf.querySelector(".err").classList.add("on"), first = first||cf, ok=false);
@@ -1771,13 +1900,22 @@ function validate(){
 function qty(k){ return +document.querySelector('[data-num="'+k+'"] input').value || 0; }
 function buildRecord(){
   const now = new Date();
+  const today = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
+  // 관리번호 뒷자리는 "그날의 몇 번째"가 되도록 오늘 것만 센다
+  // (예전에는 전체 건수를 세서, 이튿날 첫 사람이 011번이 되곤 했다)
+  const seq = submissions.filter(r => recDate(r) === today).length + 1;
   const code = "HD4-"+String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,"0")
-    +String(now.getDate()).padStart(2,"0")+"-"+String(submissions.length+1).padStart(3,"0");
+    +String(now.getDate()).padStart(2,"0")+"-"+String(seq).padStart(3,"0");
   const nation = pick.nation==="기타" ? (val("nationEtc")||"기타") : (pick.nation||"");
   const dz = (multi.diseaseTags||[]).slice(); if(val("diseaseEtc")) dz.push(val("diseaseEtc"));
   const j = judge(+val("sys2"), +val("dia2")) || judge(+val("sys1"), +val("dia1")) || {};
   return {
-    code, submittedAt: now.toISOString(), lang: LANG, highRisk: false,
+    code, uid: "R"+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+    submittedAt: now.toISOString(), lang: LANG, highRisk: false,
+    // 작성한 기기의 "그날 날짜"를 값으로 박아 둔다.
+    // submittedAt(세계표준시)만 두면, 기기 시간대가 다를 때(예: 외국인 근로자 폰이
+    // 본국 시간으로 맞춰져 있는 경우) 밤늦게 작성한 건이 다른 날짜로 잡힌다.
+    dateKey: today,
     company: val("company"), name: val("name"),
     birth: val("birth"), gender: pick.gender||"", nation, visa: val("visa"), blood: pick.blood||"",
     phone: val("phone"), guardian: val("guardian"), address: val("address"),
@@ -1814,6 +1952,11 @@ function flags(r){
   if(r.interview==="불가능") o.push("의사소통 불가 — 통역 배치 필요");
   return o;
 }
+/* 문서를 구분하는 진짜 열쇠.
+   code(관리번호)는 기기마다 따로 만들기 때문에 두 태블릿이 같은 번호를
+   뽑을 수 있다. 그대로 문서 이름으로 쓰면 한 건이 다른 건을 덮어써서
+   자료가 사라진다. 새 기록은 uid를 따로 갖고, 예전 기록만 code를 쓴다. */
+function docId(r){ return String((r && r.uid) || (r && r.code) || ""); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 let __toastTimer = null;
 function showToast(msg){
@@ -1848,13 +1991,19 @@ function renderReview(){
     '</div>';
 }
 
-$("#btnPrev").addEventListener("click", () => { if(step>0){ step--; paint(); } });
+$("#btnPrev").addEventListener("click", () => { if(step>0){ step = prevStep(step); paint(); } });
 $("#btnNext").addEventListener("click", async () => {
   if(!validate()) return;
   if(step===8){
     const btn = $("#btnNext");
     btn.disabled = true; const oldTxt = btn.textContent; btn.textContent = "저장 중…";
     current = buildRecord();
+    // 관리번호 뒷자리는 서버에서 받아 온다 (기기끼리 번호가 겹치지 않게)
+    const seq = await Store.nextSeq(current.dateKey, null);
+    if(seq){
+      current.code = "HD4-" + current.dateKey.replace(/-/g,"").slice(2)
+        + "-" + String(seq).padStart(3,"0");
+    }
     submissions.push(current);
     // 새로 쓴 1건만 올린다 (전원 재업로드를 하면 인원이 많을 때 몇 분씩 걸린다)
     const res = await Store.saveRecord(current, submissions);
@@ -1873,7 +2022,7 @@ $("#btnNext").addEventListener("click", async () => {
     step = 9; paint();
     return;
   }
-  step++; paint();
+  step = nextStep(step); paint();
 });
 $("#newOne").addEventListener("click", () => location.reload());
 
@@ -2135,7 +2284,7 @@ $("#tabDocPhoto").addEventListener("click", () => switchSheetKind("photoboard"))
 $("#sheetRiskChk").addEventListener("change", async (e) => {
   if(!current) return;
   current.highRisk = e.target.checked;
-  const rec = submissions.find(x => x.code === current.code);
+  const rec = submissions.find(x => docId(x) === docId(current));
   if(rec) rec.highRisk = e.target.checked;
   const res = await Store.saveRecord(rec || current, submissions);
   if(!res || !res.ok){
@@ -2176,6 +2325,7 @@ function openSheetFor(r, title){
   $("#btnPrev").classList.add("hidden"); $("#btnNext").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden"); $("#btnPrint").classList.remove("hidden");
   $("#btnPdf").classList.remove("hidden");
+  renderSheetBp(r);
   renderSheetPhotos(r);
   fitSheetView(); window.scrollTo(0,0);
 }
@@ -2186,6 +2336,138 @@ const PHOTO_SLOTS = [
   { key:"eduCertPhoto", label:"기초안전보건교육 이수증" },
   { key:"bpPhoto",      label:"혈압 측정지" }
 ];
+/* ── 근로자 찾기 ────────────────────────────────────────────────
+   근로자가 며칠 전에 미리 작성해 오므로, 날짜별 목록으로는 못 찾는다.
+   이름 검색 + 업체별 목록 두 가지를 한 화면에서 쓴다. */
+let findQ = "", findCo = "";
+
+function bpDone(r){ return !!(r && r.bp && r.bp.sys1 && r.bp.dia1); }
+
+function renderFind(){
+  const coSel = $("#findCo");
+  const cos = Array.from(new Set(submissions.map(r => r.company).filter(Boolean))).sort();
+  if(coSel.dataset.sig !== cos.join("|")){
+    coSel.dataset.sig = cos.join("|");
+    coSel.innerHTML = '<option value="">전체</option>'
+      + cos.map(c => '<option value="'+esc(c)+'">'+esc(c)+'</option>').join("");
+  }
+  coSel.value = findCo;
+  $("#findName").value = findQ;
+
+  const q = findQ.trim().toLowerCase();
+  let list = submissions.slice();
+  if(findCo) list = list.filter(r => r.company === findCo);
+  if(q) list = list.filter(r => String(r.name||"").toLowerCase().includes(q)
+                             || String(r.code||"").toLowerCase().includes(q));
+  // 최근 작성한 사람이 위로
+  list.sort((a,b) => String(b.submittedAt).localeCompare(String(a.submittedAt)));
+
+  const total = submissions.length;
+  $("#findCount").textContent = (q || findCo)
+    ? list.length+"명 / 전체 "+total+"명"
+    : "전체 "+total+"명";
+
+  const box = $("#findList");
+  if(!total){ box.innerHTML = '<div class="findEmpty">아직 제출된 서류가 없습니다.</div>'; return; }
+  if(!list.length){
+    box.innerHTML = '<div class="findEmpty">'+esc(findQ||findCo)+' — 찾는 사람이 없습니다.<br>이름 철자나 업체를 다시 확인해 주세요.</div>';
+    return;
+  }
+
+  box.innerHTML = list.slice(0, 300).map(r =>
+    '<button class="hit" type="button" data-code="'+esc(docId(r))+'">'
+    + '<span><span class="nm">'+esc(r.name)+'</span>'
+    +   '<span class="sub">'+esc(r.company)+' · '+esc(r.trade||"")+' · '+recDate(r)+' 작성 · '+esc(r.code)+'</span></span>'
+    + '<span class="flags">'
+    +   (r.highRisk ? '<span class="fl risky">취약</span>' : '')
+    +   (bpDone(r) ? '<span class="fl done">혈압 '+esc(r.bp.sys1)+'/'+esc(r.bp.dia1)+'</span>'
+                   : '<span class="fl need">혈압 미측정</span>')
+    + '</span></button>').join("")
+    + (list.length > 300 ? '<div class="findEmpty">…외 '+(list.length-300)+'명. 이름으로 검색해 주세요.</div>' : '');
+
+  box.querySelectorAll(".hit").forEach(b => b.addEventListener("click", () => {
+    const rec = submissions.find(x => docId(x) === b.dataset.code);
+    if(rec) openSheetFor(rec, rec.name+" · "+rec.company);
+  }));
+}
+
+$("#findName").addEventListener("input", e => { findQ = e.target.value; renderFind(); });
+$("#findCo").addEventListener("change", e => { findCo = e.target.value; renderFind(); });
+$("#findClear").addEventListener("click", () => { findQ = ""; findCo = ""; renderFind(); $("#findName").focus(); });
+
+/* ── 현장 혈압 입력 ────────────────────────────────────────────
+   근로자는 집에서 작성해 오고, 혈압은 현장에서 담당자가 재서 여기에 넣는다.
+   140/90 이상이면 2차 측정 칸이 자동으로 열린다. */
+function renderSheetBp(r){
+  const el = $("#sheetBp");
+  if(!BP_AT_SITE){ el.classList.add("hidden"); return; }
+  el.classList.remove("hidden");
+  const bp = r.bp || {};
+  const j1 = judge(+bp.sys1, +bp.dia1);
+  const need2 = !!(j1 && (j1.lv==="고혈압" || j1.lv==="위기"));
+  const j2 = judge(+bp.sys2, +bp.dia2);
+  const fin = j2 || j1;
+
+  el.innerHTML = '<div class="photoPanelTitle">현장 혈압 측정 <span>담당자가 재서 입력합니다. 양식에 바로 반영됩니다.</span></div>'
+    + '<div class="bpBox">'
+    + '<div class="bpRow"><b>1차</b>'
+    +   '<input type="number" id="bpS1" inputmode="numeric" placeholder="120" value="'+esc(bp.sys1||"")+'">'
+    +   '<span>/</span>'
+    +   '<input type="number" id="bpD1" inputmode="numeric" placeholder="80" value="'+esc(bp.dia1||"")+'">'
+    + '</div>'
+    + (need2
+        ? '<div class="bpRow"><b>2차</b>'
+        +   '<input type="number" id="bpS2" inputmode="numeric" placeholder="120" value="'+esc(bp.sys2||"")+'">'
+        +   '<span>/</span>'
+        +   '<input type="number" id="bpD2" inputmode="numeric" placeholder="80" value="'+esc(bp.dia2||"")+'">'
+        + '</div>'
+        + '<div class="bpNote">140/90 이상입니다. 5분 안정 후 2차 측정을 해 주세요.</div>'
+        : '')
+    + (fin ? '<div class="verdict on '+fin.cls+'"><b>'+esc(fin.lv)+' · '+esc(fin.t)+'</b><span>'+esc(fin.m)+'</span></div>' : '')
+    + '<div class="bpRow2"><label>측정자</label><input type="text" id="bpBy2" placeholder="예) 안전관리자 김철수" value="'+esc(bp.by||"")+'"></div>'
+    + '<button class="btn small padd" type="button" id="bpSave">혈압 저장</button>'
+    + '</div>';
+
+  const live = () => {
+    const s1=+($("#bpS1").value), d1=+($("#bpD1").value);
+    const jj = judge(s1,d1);
+    const want2 = !!(jj && (jj.lv==="고혈압"||jj.lv==="위기"));
+    if(want2 !== need2){   // 2차 칸이 새로 필요해졌거나 필요 없어짐 → 다시 그린다
+      const draft = Object.assign({}, r.bp||{}, {sys1:$("#bpS1").value, dia1:$("#bpD1").value});
+      const tmp = Object.assign({}, r, {bp:draft});
+      renderSheetBp(tmp);
+      const inp = $("#bpD1"); if(inp){ inp.focus(); }
+    }
+  };
+  $("#bpS1").addEventListener("input", live);
+  $("#bpD1").addEventListener("input", live);
+
+  $("#bpSave").addEventListener("click", async () => {
+    const s1=$("#bpS1").value.trim(), d1=$("#bpD1").value.trim();
+    if(!(+s1>=50 && +d1>=30)){ alert("혈압을 확인해 주세요. 수축기(높은쪽)와 이완기(낮은쪽)를 모두 넣어야 합니다."); return; }
+    const s2 = $("#bpS2") ? $("#bpS2").value.trim() : "";
+    const d2 = $("#bpD2") ? $("#bpD2").value.trim() : "";
+    const jFin = judge(+s2,+d2) || judge(+s1,+d1) || {};
+    const btn = $("#bpSave"); btn.disabled = true; const t=btn.textContent; btn.textContent="저장 중…";
+
+    const rec = submissions.find(x => docId(x) === docId(r)) || r;
+    const backup = rec.bp;
+    const next = { sys1:s1, dia1:d1, pulse1:(rec.bp&&rec.bp.pulse1)||"", sys2:s2, dia2:d2,
+                   by:$("#bpBy2").value.trim(), level:jFin.lv||"", note:jFin.t||"" };
+    rec.bp = next; r.bp = next;
+    const res = await Store.saveRecord(rec, submissions);
+    btn.disabled = false; btn.textContent = t;
+    if(!res || !res.ok){
+      rec.bp = backup; r.bp = backup;
+      alert("혈압을 저장하지 못했습니다.\n\n" + ((res && res.message) || "알 수 없는 오류"));
+    } else {
+      showToast("혈압을 저장했습니다 ("+(jFin.lv||"")+")");
+    }
+    renderSheetBp(r);
+    renderSheetDOM(); fillActiveSheet(r); fitSheetView();
+  });
+}
+
 /* 사진대지를 보고 있으면 방금 바뀐 사진이 바로 보이도록 다시 그린다 */
 function refreshPhotoBoardIfShown(r){
   if(sheetKind === "photoboard"){ renderSheetDOM(); fillActiveSheet(r); fitSheetView(); }
@@ -2231,7 +2513,7 @@ function renderSheetPhotos(r){
       try{
         const data = await compressImage(f, 1000, 190000);
         // 목록에 들어 있는 실제 객체를 찾아 함께 고쳐야 화면·저장이 어긋나지 않는다
-        const rec = submissions.find(x => x.code === r.code) || r;
+        const rec = submissions.find(x => docId(x) === docId(r)) || r;
         const backup = rec[key] || "";
         rec[key] = data; r[key] = data;
         const res = await Store.saveRecord(rec, submissions);
@@ -2256,7 +2538,7 @@ function renderSheetPhotos(r){
     if(del) del.addEventListener("click", async () => {
       if(!confirm("이 사진을 삭제할까요?")) return;
       del.disabled = true; go.disabled = true;
-      const rec = submissions.find(x => x.code === r.code) || r;
+      const rec = submissions.find(x => docId(x) === docId(r)) || r;
       const backup = rec[key];
       rec[key] = ""; r[key] = "";
       const res = await Store.saveRecord(rec, submissions);
@@ -2359,7 +2641,7 @@ let adminUnlocked = false, lastAdmTab = "today";
 const ADM_PW = "0309";
 $("#admEnter").addEventListener("click", openAdminGate);
 function openAdminGate(){
-  if(adminUnlocked){ openAdm("today"); return; }
+  if(adminUnlocked){ openAdm("find"); return; }
   $("#pwInput").value = ""; $("#pwErr").classList.remove("on");
   $("#pwOverlay").classList.remove("hidden");
   setTimeout(()=>$("#pwInput").focus(), 50);
@@ -2369,13 +2651,14 @@ $("#pwOk").addEventListener("click", tryPw);
 $("#pwInput").addEventListener("keydown", e => { if(e.key==="Enter") tryPw(); });
 function tryPw(){
   if($("#pwInput").value.trim() === ADM_PW){
-    adminUnlocked = true; $("#pwOverlay").classList.add("hidden"); openAdm("today");
+    adminUnlocked = true; $("#pwOverlay").classList.add("hidden"); openAdm("find");
   } else {
     $("#pwErr").classList.add("on");
   }
 }
-function openAdm(tab){
+async function openAdm(tab){
   lastAdmTab = tab || "today";
+  await ensureSubmissionsLoaded();   // 여기서 처음으로 목록을 받아 온다
   document.body.classList.add("admmode");
   $("main").style.display = "none";
   document.querySelector(".admPage").style.display = "block";
@@ -2393,11 +2676,113 @@ function openAdm(tab){
 }
 async function updateFbBadge(){
   const b = $("#fbBadge");
-  if(!fbEnabled()){ b.textContent = "💾 이 기기에만 저장 (Firebase 미설정)"; b.style.background="#EFF1F4"; b.style.color="var(--steel)"; return; }
-  b.textContent = "☁ Firebase 연결 확인 중…";
+  const mine = submissions.length;
+  const paint = (txt, bg, fg) => { b.textContent = txt; b.style.background = bg; b.style.color = fg; };
+
+  if(!fbEnabled()){
+    paint("💾 이 기기에만 저장 (Firebase 미설정) · "+mine+"건", "#EFF1F4", "var(--steel)");
+    return;
+  }
+  if(LIVE.on){
+    // 실시간 연결 중에는 항상 최신이므로 따로 확인할 필요가 없다
+    paint("☁ 실시간 연결됨 · "+mine+"건 — 다른 기기 변경이 바로 반영됩니다",
+      "var(--go-8)", "#075C32");
+    return;
+  }
+  paint("☁ 서버 확인 중…", "#EFF1F4", "var(--steel)");
   const r = await Store.checkFirebase();
-  if(r.on){ b.textContent = "☁ Firebase 연결됨 — 모든 기기에서 공유됩니다"; b.style.background="var(--go-8)"; b.style.color="#075C32"; }
-  else{ b.textContent = "⚠ Firebase 연결 실패 — 이 기기에만 저장됩니다"; b.style.background="var(--signal-8)"; b.style.color="#960014"; }
+
+  if(!r.on){
+    paint("⚠ 서버에 연결하지 못했습니다 — 지금 보이는 "+mine+"건은 이 기기 자료입니다",
+      "var(--signal-8)", "#960014");
+    console.warn("Firebase 연결 실패:", r.error);
+    return;
+  }
+  if(Store.source !== "server"){
+    // 서버는 살아 있는데 화면 자료는 이 기기 것 → 페이지를 연 뒤 연결이 끊겼다가 돌아온 경우
+    paint("⚠ 화면 자료가 오래되었습니다 (이 기기 "+mine+"건 / 서버 "+r.count+"건) · 다시 불러오기를 누르세요",
+      "var(--amber-8)", "#8A5400");
+    return;
+  }
+  if(r.count !== mine){
+    paint("⚠ 서버에 "+r.count+"건이 있는데 화면에는 "+mine+"건입니다 · 다시 불러오기를 누르세요",
+      "var(--amber-8)", "#8A5400");
+    return;
+  }
+  paint("☁ 서버에서 "+mine+"건 불러옴 — 모든 기기에서 공유됩니다", "var(--go-8)", "#075C32");
+}
+
+/* ── 실시간 동기화 ────────────────────────────────────────────────
+   다른 기기가 저장·수정·삭제하면 그 즉시 이 화면에도 반영된다.
+   처음 한 번만 전체를 받고, 그 뒤로는 바뀐 건만 오므로 통신량이 적다.
+   연결이 끊기면 자동으로 다시 붙고, 그동안 밀린 변경도 따라잡는다. */
+let LIVE = { on:false, unsub:null, error:null };
+
+function startLiveSync(){
+  if(!fbEnabled() || LIVE.unsub) return;
+  loadFirebase().then(db => {
+    const col = db.collection("records");
+    if(typeof col.onSnapshot !== "function") return;   // 옛 SDK 대비
+    LIVE.unsub = col.onSnapshot(
+      snap => {
+        const arr = [];
+        snap.forEach(d => { try{ arr.push(JSON.parse(d.data().json)); }catch(e){} });
+        arr.sort((a,b) => String(a.submittedAt).localeCompare(String(b.submittedAt)));
+        applyLiveSnapshot(arr);
+      },
+      err => {
+        LIVE.on = false;
+        LIVE.error = (err && err.message) || String(err);
+        console.warn("실시간 동기화 끊김:", err);
+        if($("#adm").classList.contains("on")) updateFbBadge();
+      }
+    );
+  }).catch(e => { LIVE.error = (e && e.message) || String(e); });
+}
+
+function applyLiveSnapshot(arr){
+  const before = submissions.length;
+  LIVE.on = true; LIVE.error = null;
+  Store.source = "server"; Store.loadError = null;
+  Store.remember(arr);
+  submissions = arr;
+
+  // 열어 놓고 보던 근로자가 있으면 새 목록의 같은 사람으로 다시 연결한다
+  if(current){
+    const fresh = submissions.find(x => docId(x) === docId(current));
+    if(fresh) current = fresh;
+  }
+
+  const admOn   = $("#adm").classList.contains("on");
+  const sheetOn = $("#sheetWrap").classList.contains("on");
+  // 양식을 들여다보는 중에는 화면을 갈아엎지 않는다 (작업 중 방해 금지)
+  if(admOn && !sheetOn){
+    setAdmTab(lastAdmTab);
+    updateFbBadge();
+    if(before && arr.length > before) showToast("새 제출 "+(arr.length-before)+"건이 도착했습니다");
+  }
+}
+async function reloadSubmissions(){
+  const btn = $("#btnReload");
+  const old = btn ? btn.textContent : "";
+  if(btn){ btn.disabled = true; btn.textContent = "불러오는 중…"; }
+  try{
+    const list = await Store.load("submissions", []);
+    submissions = Array.isArray(list) ? list : [];
+    if(Store.source === "server"){
+      showToast("서버에서 "+submissions.length+"건을 불러왔습니다");
+    } else {
+      alert("서버에서 자료를 가져오지 못했습니다.\n\n"
+        + (Store.loadError || "인터넷 연결을 확인해 주세요.")
+        + "\n\n지금 보이는 목록은 이 기기에 저장된 자료입니다.");
+    }
+  }catch(e){
+    alert("다시 불러오기에 실패했습니다: " + ((e && e.message) || e));
+  }
+  startLiveSync();   // 실시간 연결이 끊겨 있었다면 다시 붙인다
+  if(btn){ btn.disabled = false; btn.textContent = old; }
+  setAdmTab(lastAdmTab);
+  updateFbBadge();
 }
 $("#btnAdmClose").addEventListener("click", () => {
   if($("#sheetWrap").classList.contains("on")){
@@ -2411,16 +2796,21 @@ $("#btnAdmClose").addEventListener("click", () => {
   }
 });
 function ymd(iso){ const d = new Date(iso); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+/* 목록·필터에 쓰는 날짜. 새 기록은 작성 기기가 박아 둔 dateKey를 그대로 쓰고,
+   dateKey가 없는 예전 기록만 submittedAt에서 계산한다. */
+function recDate(r){ return (r && r.dateKey) ? r.dateKey : ymd(r.submittedAt); }
 function setAdmTab(tab){
   lastAdmTab = tab;
-  ["today","risk","tpl"].forEach(t => {
+  ["find","today","risk","tpl"].forEach(t => {
     $("#tab"+t[0].toUpperCase()+t.slice(1)).setAttribute("aria-pressed", String(t===tab));
     $("#adm"+t[0].toUpperCase()+t.slice(1)).classList.toggle("hidden", t!==tab);
   });
+  if(tab==="find") renderFind();
   if(tab==="today") renderToday();
   if(tab==="risk") renderRisk();
   if(tab==="tpl") renderTpl();
 }
+$("#tabFind").addEventListener("click", () => setAdmTab("find"));
 $("#tabToday").addEventListener("click", () => setAdmTab("today"));
 $("#tabRisk").addEventListener("click", () => setAdmTab("risk"));
 $("#tabTpl").addEventListener("click", () => setAdmTab("tpl"));
@@ -2431,6 +2821,7 @@ $("#dPick").addEventListener("change", () => { admDate = $("#dPick").value; rend
 $("#dPrev").addEventListener("click", () => { admDate = shiftDate(admDate,-1); $("#dPick").value = admDate; renderToday(); });
 $("#dNext").addEventListener("click", () => { admDate = shiftDate(admDate,1); $("#dPick").value = admDate; renderToday(); });
 $("#dToday").addEventListener("click", () => { admDate = ymd(new Date()); $("#dPick").value = admDate; renderToday(); });
+$("#btnReload").addEventListener("click", reloadSubmissions);
 function shiftDate(iso,n){ const d = new Date(iso+"T00:00:00"); d.setDate(d.getDate()+n); return ymd(d); }
 
 function groupByCompany(list){
@@ -2444,14 +2835,14 @@ function riskTag(r){
 }
 function rowHTML(r){
   return '<div class="tr">'
-    +'<input type="checkbox" class="chk" data-code="'+r.code+'" '+(r.highRisk?"checked":"")+' title="취약 근로자">'
-    +'<div class="who" data-code="'+r.code+'"><b>'+esc(r.name)+(r.highRisk?' <span class="tag risk">취약근로자</span>':'')+'</b>'
-    +'<span>'+esc(r.trade)+' · '+esc(r.code)+' · '+ymd(r.submittedAt)+'</span></div>'
+    +'<input type="checkbox" class="chk" data-code="'+esc(docId(r))+'" '+(r.highRisk?"checked":"")+' title="취약 근로자">'
+    +'<div class="who" data-code="'+esc(docId(r))+'"><b>'+esc(r.name)+(r.highRisk?' <span class="tag risk">취약근로자</span>':'')+'</b>'
+    +'<span>'+esc(r.trade)+' · '+esc(r.code)+' · '+recDate(r)+'</span></div>'
     +'<span class="tag '+riskTag(r)+'">'+esc((r.bp.sys2||r.bp.sys1||"—")+"/"+(r.bp.dia2||r.bp.dia1||"—"))+'</span></div>';
 }
 function bindRows(container, list){
   container.querySelectorAll(".chk").forEach(cb => cb.addEventListener("change", async () => {
-    const rec = submissions.find(x => x.code === cb.dataset.code);
+    const rec = submissions.find(x => docId(x) === cb.dataset.code);
     if(rec){
       rec.highRisk = cb.checked;
       const res = await Store.saveRecord(rec, submissions);
@@ -2463,7 +2854,7 @@ function bindRows(container, list){
     }
   }));
   container.querySelectorAll(".who").forEach(w => w.addEventListener("click", () => {
-    const rec = submissions.find(x => x.code === w.dataset.code);
+    const rec = submissions.find(x => docId(x) === w.dataset.code);
     if(rec) openSheetFor(rec, rec.name+" · "+rec.code);
   }));
 }
@@ -2482,7 +2873,7 @@ function renderGroups(container, list, emptyMsg){
    html2canvas 는 화면 밖(left:-99999px)에 있는 요소를 제대로 못 찍는 경우가 있어,
    잠깐 화면 위에 올려 두고 그 위를 "처리 중" 화면으로 덮는다. */
 async function quickExport(code, kind){
-  const rec = submissions.find(x => x.code === code);
+  const rec = submissions.find(x => docId(x) === code);
   if(!rec) return;
   const wrap = $("#sheetWrap");
   const wasOn = wrap.classList.contains("on");
@@ -2524,7 +2915,7 @@ let todayCompanyFilter = "";
 let selectedCodes = new Set();
 function renderTodayTable(){
   const box = $("#companyGroups");
-  const all = submissions.filter(r => ymd(r.submittedAt) === admDate);
+  const all = submissions.filter(r => recDate(r) === admDate);
   if(!all.length){
     box.innerHTML = '<div class="empty">이 날짜에 제출된 서류가 없습니다.</div>';
     updateDeleteSelectedBtn();
@@ -2533,7 +2924,7 @@ function renderTodayTable(){
   const companies = Array.from(new Set(all.map(r => r.company || "미지정"))).sort();
   if(todayCompanyFilter && companies.indexOf(todayCompanyFilter) === -1) todayCompanyFilter = "";
   const list = todayCompanyFilter ? all.filter(r => (r.company||"미지정") === todayCompanyFilter) : all;
-  const listCodes = list.map(r => r.code);
+  const listCodes = list.map(r => docId(r));
   // 필터가 바뀌어 화면에서 사라진 항목은 선택에서도 제거
   selectedCodes.forEach(c => { if(listCodes.indexOf(c) === -1) selectedCodes.delete(c); });
 
@@ -2542,15 +2933,15 @@ function renderTodayTable(){
     + companies.map(c => '<option value="'+esc(c)+'"'+(c===todayCompanyFilter?" selected":"")+'>'+esc(c)+'</option>').join("")
     + '</select></div>';
 
-  const allChecked = list.length>0 && list.every(r => selectedCodes.has(r.code));
+  const allChecked = list.length>0 && list.every(r => selectedCodes.has(docId(r)));
   const rows = list.map(r =>
     '<tr>'
     +'<td>'+esc(r.company||"미지정")+'</td>'
-    +'<td class="who" data-code="'+r.code+'">'+esc(r.name)+'</td>'
+    +'<td class="who" data-code="'+esc(docId(r))+'">'+esc(r.name)+'</td>'
     +'<td class="'+(r.highRisk?"riskYes":"riskNo")+'">'+(r.highRisk?"유":"무")+'</td>'
-    +'<td><button class="copyBtn" type="button" data-code="'+r.code+'" data-kind="form">V</button></td>'
-    +'<td><button class="copyBtn" type="button" data-code="'+r.code+'" data-kind="photoboard">V</button></td>'
-    +'<td><input type="checkbox" class="rowChk" data-code="'+r.code+'" '+(selectedCodes.has(r.code)?"checked":"")+'></td>'
+    +'<td><button class="copyBtn" type="button" data-code="'+esc(docId(r))+'" data-kind="form">V</button></td>'
+    +'<td><button class="copyBtn" type="button" data-code="'+esc(docId(r))+'" data-kind="photoboard">V</button></td>'
+    +'<td><input type="checkbox" class="rowChk" data-code="'+esc(docId(r))+'" '+(selectedCodes.has(docId(r))?"checked":"")+'></td>'
     +'</tr>'
   ).join("");
 
@@ -2563,18 +2954,18 @@ function renderTodayTable(){
 
   $("#companyFilter").addEventListener("change", (e) => { todayCompanyFilter = e.target.value; renderTodayTable(); });
   $("#chkAll").addEventListener("change", (e) => {
-    if(e.target.checked) list.forEach(r => selectedCodes.add(r.code));
-    else list.forEach(r => selectedCodes.delete(r.code));
+    if(e.target.checked) list.forEach(r => selectedCodes.add(docId(r)));
+    else list.forEach(r => selectedCodes.delete(docId(r)));
     renderTodayTable();
   });
   box.querySelectorAll(".rowChk").forEach(cb => cb.addEventListener("change", () => {
     if(cb.checked) selectedCodes.add(cb.dataset.code); else selectedCodes.delete(cb.dataset.code);
     updateDeleteSelectedBtn();
-    const allNowChecked = list.length>0 && list.every(r => selectedCodes.has(r.code));
+    const allNowChecked = list.length>0 && list.every(r => selectedCodes.has(docId(r)));
     const headChk = $("#chkAll"); if(headChk) headChk.checked = allNowChecked;
   }));
   box.querySelectorAll("td.who").forEach(w => w.addEventListener("click", () => {
-    const rec = submissions.find(x => x.code === w.dataset.code);
+    const rec = submissions.find(x => docId(x) === w.dataset.code);
     if(rec) openSheetFor(rec, rec.name+" · "+rec.code);
   }));
   box.querySelectorAll(".copyBtn").forEach(b => b.addEventListener("click", async () => {
@@ -2603,7 +2994,7 @@ function dl(name, text, type){
 }
 const stamp = () => { const d=new Date(); return ""+d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0"); };
 $("#expCsv").addEventListener("click", () => {
-  const list = submissions.filter(r => ymd(r.submittedAt) === admDate);
+  const list = submissions.filter(r => recDate(r) === admDate);
   if(!list.length) return alert("내보낼 자료가 없습니다.");
   const cols = [["관리번호","code"],["성명","name"],["협력회사","company"],["공종","trade"],["생년월일","birth"],
     ["성별","gender"],["국적","nation"],["체류자격","visa"],["혈액형","blood"],["연락처","phone"],["비상연락처","guardian"],
@@ -2641,8 +3032,8 @@ $("#delSelected").addEventListener("click", async () => {
   if(n === 0) return;
   if(!confirm("선택한 "+n+"건을 삭제합니다. 내보내기를 먼저 하셨나요?")) return;
   const codes = Array.from(selectedCodes);
-  const removed = submissions.filter(r => selectedCodes.has(r.code));
-  submissions = submissions.filter(r => !selectedCodes.has(r.code));
+  const removed = submissions.filter(r => selectedCodes.has(docId(r)));
+  submissions = submissions.filter(r => !selectedCodes.has(docId(r)));
   selectedCodes.clear();
   setBusy(true, "삭제하는 중입니다…");
   const res = await Store.deleteRecords(codes, submissions);
@@ -2805,8 +3196,32 @@ function autoMapFields(built){
   return {map, foundCount};
 }
 
+/* ── 개인정보 보호: 근로자 화면은 "쓰기 전용" ──────────────────────
+   근로자는 링크를 열어 자기 것만 작성하고 저장합니다.
+   다른 사람의 기록은 **한 건도 내려받지 않습니다.**
+   (예전에는 페이지를 여는 순간 전원의 이름·주소·연락처·지병·혈압·
+    신분증 사진까지 그 폰으로 전부 내려왔습니다. 링크를 여러 사람에게
+    나눠 주는 방식에서는 그대로 두면 안 되는 구조였습니다.)
+   목록은 관리자 비밀번호를 통과한 뒤에만 불러옵니다. */
+let submissionsLoaded = false;
+
+async function ensureSubmissionsLoaded(){
+  if(submissionsLoaded) return true;
+  setBusy(true, "목록을 불러오는 중입니다…");
+  try{
+    const list = await Store.load("submissions", []);
+    submissions = Array.isArray(list) ? list : [];
+    submissionsLoaded = true;
+    startLiveSync();     // 관리자 화면에서만 실시간 수신을 켠다
+  }catch(e){
+    alert("목록을 불러오지 못했습니다: " + ((e && e.message) || e));
+  }
+  setBusy(false);
+  return submissionsLoaded;
+}
+
 (async () => {
-  submissions = await Store.load("submissions", []);
+  // 시작할 때는 양식 설정만 읽는다. 제출 기록은 건드리지 않는다.
   const savedTpl = await Store.load("template", null);
   if(savedTpl && savedTpl.colgroup){ ACTIVE_TEMPLATE = savedTpl; FM = savedTpl.fieldMap || DEFAULT_FIELD_MAP; }
   applyLang();
