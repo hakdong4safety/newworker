@@ -150,6 +150,9 @@ input::placeholder,textarea::placeholder{color:#B2B9C2;font-weight:400}
 .sheetPhotos .pslotBtns .btn{flex:1;min-height:42px;font-size:.8rem;padding:0 8px;cursor:pointer}
 .sheetPhotos .padd{background:var(--ink);color:#fff;border-color:var(--ink)}
 .sheetPhotos .pdel{flex:0 0 auto;color:var(--signal);border-color:#F2BFC6}
+.sheetPhotos .pcam{flex:0 0 auto;min-width:64px;font-weight:800}
+/* 마우스를 쓰는 컴퓨터에는 카메라가 없으므로 촬영 버튼을 감춘다 */
+@media (hover:hover) and (pointer:fine){ .sheetPhotos .pcam{display:none} }
 /* 파일 입력은 display:none 대신 화면 밖으로 밀어 둔다.
    일부 브라우저는 display:none 인 file input 을 프로그램에서 열지 못한다. */
 .bpBox{background:#fff;border-radius:10px;padding:14px}
@@ -447,6 +450,31 @@ html.xl{--shell:820px}
 
 @media (min-width:1500px){
   :root{--shell:1120px;--shell-wide:1360px}
+}
+
+/* ── 양식 미리보기 : 좁은 화면에서는 작업칸(혈압·사진)을 양식 위로 ──
+   현장에서 휴대폰으로 열면 할 일은 "혈압 넣기 · 사진 보태기"인데,
+   이게 A4 양식 미리보기 아래에 있으면 650px 넘게 스크롤해야 닿는다.
+   그래서 좁은 화면에서는 순서를 바꿔 화면을 열자마자 보이게 한다. */
+@media (max-width:1099px){
+  #sheetWrap.on{display:flex;flex-direction:column}
+  #sheetWrap > .sheetTitleBar{order:1}
+  #sheetWrap > .docTabs{order:2}
+  #sheetWrap > #sheetBp{order:3}
+  #sheetWrap > #sheetPhotos{order:4;margin-bottom:14px}
+  #sheetWrap > #sheetScroll{order:5}
+  .photoSlots{display:grid;grid-template-columns:1fr;gap:8px}
+  .sheetPhotos .pslot{width:auto;display:grid;
+    grid-template-columns:58px minmax(0,1fr);
+    grid-template-areas:"img name" "img btns";
+    column-gap:10px;row-gap:6px;align-items:center;text-align:left;padding:9px 10px}
+  .sheetPhotos .pslot b{grid-area:name;margin:0;white-space:normal;font-size:.74rem;line-height:1.2}
+  .sheetPhotos .pthumb,.sheetPhotos .pempty{grid-area:img;width:58px;height:58px}
+  .sheetPhotos .pempty{font-size:.62rem;line-height:1.15;text-align:center;padding:2px}
+  .sheetPhotos .pslotBtns{grid-area:btns;margin:0;gap:5px}
+  .sheetPhotos .pslotBtns .btn{min-height:36px;font-size:.76rem;padding:0 6px}
+  .photoPanelTitle{margin-bottom:8px}
+  .photoPanelTitle span{margin-top:1px}
 }
 
 /* ── 양식 미리보기 : 넓은 화면에서는 사진 첨부칸을 오른쪽에 붙인다 ── */
@@ -2246,12 +2274,9 @@ function fitSheetView(){
     // 화면 아래 고정된 footer(출력·PDF 버튼 줄) 높이도 반드시 빼 준다.
     const footer = document.querySelector("footer");
     const footerH = footer ? footer.offsetHeight : 90;
-    // 넓은 화면에서는 사진칸이 오른쪽에 붙으므로 세로 공간을 차지하지 않는다
-    const sideBySide = window.innerWidth >= 1100;
-    const photos = $("#sheetPhotos");
-    const photoH = (sideBySide || !photos || photos.classList.contains("hidden"))
-      ? 0 : photos.offsetHeight + 16;
-    const availH = Math.max(240, window.innerHeight - topOffset - footerH - photoH - 28);
+    // 혈압·사진칸은 넓은 화면에선 오른쪽, 좁은 화면에선 양식 위에 있다.
+    // 어느 쪽이든 양식의 시작 위치(topOffset)에 이미 반영되어 있으므로 따로 빼지 않는다.
+    const availH = Math.max(240, window.innerHeight - topOffset - footerH - 28);
     const hFit = availH / naturalH;
     // 세로로 맞추려다 글씨를 못 알아볼 만큼 작아지면(예: 노트북 가로 태블릿)
     // 차라리 가로에 맞추고 세로 스크롤을 쓰게 둔다.
@@ -2488,8 +2513,10 @@ function renderSheetPhotos(r){
               ? '<img class="pthumb" src="'+src+'" alt="'+esc(s.label)+'">'
               : '<div class="pempty">사진 없음</div>')
           + '<input type="file" accept="image/*" class="pfile filepick">'
+          + '<input type="file" accept="image/*" capture="environment" class="pcamfile filepick">'
           + '<div class="pslotBtns">'
-          + '<button class="btn small padd pgo" type="button">'+(src?"사진 바꾸기":"사진 첨부")+'</button>'
+          + '<button class="btn small pcam" type="button">촬영</button>'
+          + '<button class="btn small padd pgo" type="button">'+(src?"앨범에서 바꾸기":"앨범")+'</button>'
           + (src ? '<button class="btn small pdel" type="button">삭제</button>' : '')
           + '</div></div>';
       }).join("")
@@ -2500,18 +2527,21 @@ function renderSheetPhotos(r){
   ph.querySelectorAll(".pslot").forEach(slot => {
     const key  = slot.dataset.key;
     const file = slot.querySelector(".pfile");
+    const cam  = slot.querySelector(".pcamfile");
     const go   = slot.querySelector(".pgo");
+    const camB = slot.querySelector(".pcam");
     const del  = slot.querySelector(".pdel");
 
     // label[for] 대신 버튼에서 직접 연다. 화면 밖 input 이라 어떤 브라우저에서도 열린다.
     go.addEventListener("click", () => file.click());
+    camB.addEventListener("click", () => cam.click());   // 바로 카메라 실행 (휴대폰)
 
-    file.addEventListener("change", async () => {
-      const f = file.files && file.files[0];
-      file.value = "";
+    const take = async (input) => {
+      const f = input.files && input.files[0];
+      input.value = "";
       if(!f) return;
       const old = go.textContent;
-      go.textContent = "처리 중…"; go.disabled = true;
+      go.textContent = "처리 중…"; go.disabled = true; camB.disabled = true;
       if(del) del.disabled = true;
       try{
         const data = await compressImage(f, 1000, 190000);
@@ -2533,10 +2563,12 @@ function renderSheetPhotos(r){
       }catch(e){
         alert("사진을 불러오지 못했습니다: " + ((e && e.message) || e));
       }
-      go.textContent = old; go.disabled = false;
+      go.textContent = old; go.disabled = false; camB.disabled = false;
       renderSheetPhotos(r);
       refreshPhotoBoardIfShown(r);
-    });
+    };
+    file.addEventListener("change", () => take(file));
+    cam.addEventListener("change", () => take(cam));
 
     if(del) del.addEventListener("click", async () => {
       if(!confirm("이 사진을 삭제할까요?")) return;
