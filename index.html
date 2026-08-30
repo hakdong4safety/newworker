@@ -245,6 +245,47 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .findBar{display:flex;gap:8px;margin-bottom:12px}
 .findBar input{flex:1;min-width:0;min-height:50px;font-size:1.02rem}
 .findBar .btn{flex:0 0 auto;min-width:88px}
+#coChips{display:flex;flex-wrap:wrap;gap:8px}
+.coChip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);
+  border-radius:999px;padding:8px 8px 8px 14px;font-size:.88rem;font-weight:700}
+.coChip button{border:0;background:#EFF1F4;color:var(--steel);border-radius:50%;
+  width:26px;height:26px;font-size:1rem;line-height:1;cursor:pointer}
+.coChip button:hover{background:var(--signal-8);color:var(--signal)}
+.statRow{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+/* ── 휴대폰에서 "근로자 찾기"가 첫 화면에 나오도록 위쪽을 줄인다.
+   현장 담당자는 폰으로 이 화면을 열자마자 이름을 봐야 한다. ── */
+@media (max-width:759px){
+  .admPage > .lead{margin-bottom:12px}
+  .admPage > .lead h2{font-size:1.5rem}
+  .admPage > .lead p:not(.badgeRow){display:none}
+  .admtabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;margin-bottom:12px}
+  .admtabs::-webkit-scrollbar{display:none}
+  .admtabs button{flex:0 0 auto;min-width:0;white-space:nowrap;padding:0 16px;min-height:46px}
+  #admFind > .note{display:none}
+  .findBar{margin-bottom:8px}
+  .findBar input{min-height:46px}
+  .filterRow{margin-bottom:8px}
+  .statRow{gap:6px;margin-bottom:10px}
+  .stat{flex:1 1 0;padding:8px 4px;min-height:54px}
+  .stat b{font-size:1.2rem}
+  .stat u{font-size:.66rem}
+  .hit{padding:11px 12px;margin-bottom:8px}
+}
+.stat{flex:1 1 96px;background:#fff;border:1.5px solid var(--line);border-radius:12px;
+  padding:12px 10px;text-align:center;cursor:pointer;min-height:64px}
+.stat[aria-pressed=true]{border-color:var(--ink);background:var(--ink);color:#fff}
+.stat[aria-pressed=true] u{color:#fff}
+.stat b{display:block;font-size:1.5rem;line-height:1.1;font-weight:800}
+.stat u{display:block;font-size:.74rem;text-decoration:none;color:var(--steel);margin-top:3px}
+.stat.warnStat b{color:var(--signal)}
+.stat[aria-pressed=true].warnStat b{color:#fff}
+.hitMain{flex:1;min-width:0}
+.hit .age{font-style:normal;font-size:.78rem;color:var(--steel);font-weight:700;margin-left:4px}
+.hit .age.senior{color:var(--signal)}
+.hit .miss{display:block;font-size:.76rem;color:var(--signal);font-weight:700;margin-top:4px}
+.hit .okline{display:block;font-size:.76rem;color:#0B7A46;font-weight:700;margin-top:4px}
+.fl.warn{background:var(--amber-8);color:#8A5400}
 .findCount{font-size:.84rem;color:var(--steel);font-weight:700;margin-left:auto}
 .findEmpty{padding:26px 14px;text-align:center;color:var(--mute);font-size:.92rem;
   border:1.5px dashed var(--line);border-radius:12px;background:#fff}
@@ -309,6 +350,21 @@ table.admTable thead th #chkAll{margin-top:4px}
 .overlay{position:fixed;inset:0;background:rgba(15,17,20,.6);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px}
 .overlay.hidden{display:none}
 .modal{background:#fff;border-radius:14px;padding:24px;max-width:340px;width:100%;text-align:center}
+.modal.login{max-width:400px;text-align:left}
+.modal.login .mlab{display:block;font-size:.8rem;font-weight:700;color:var(--steel);margin:12px 0 5px}
+.modal.login input,.modal.login select{width:100%;min-height:50px}
+.modal.login .mbtns{margin-top:16px}
+.whoami{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;color:var(--steel);margin-top:8px}
+.whoami .role{font-weight:800;border-radius:999px;padding:3px 10px;font-size:.74rem}
+.role.gc{background:var(--ink);color:#fff}
+.role.sub{background:var(--go-8);color:#075C32}
+.acct{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);
+  border-radius:12px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap}
+.acct .ai{flex:1;min-width:0}
+.acct .ai b{display:block}
+.acct .ai span{display:block;font-size:.78rem;color:var(--steel);margin-top:2px}
+.acct .btn{flex:0 0 auto;min-height:38px;font-size:.78rem;min-width:74px}
+.acct.pending{border-color:#F0C97A;background:var(--amber-8)}
 .modal h3{margin:0 0 6px;font-size:1.2rem;font-weight:800}
 .modal p{margin:0 0 16px;font-size:.86rem;color:var(--steel)}
 .modal input{text-align:center;font-size:1.5rem;letter-spacing:.3em;font-weight:700}
@@ -324,6 +380,14 @@ table.admTable thead th #chkAll{margin-top:4px}
   border-top-color:var(--ink);animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+.resume,.done-note{border-radius:14px;padding:16px;margin-bottom:16px}
+.resume{background:var(--amber-8);border:1.5px solid #F0C97A}
+.done-note{background:var(--go-8);border:1.5px solid #9BD9BA}
+.resume b,.done-note b{display:block;font-size:1.05rem;margin-bottom:4px}
+.resume span,.done-note span{display:block;font-size:.88rem;color:var(--steel);margin-bottom:12px;line-height:1.5}
+.resumeBtns{display:flex;gap:8px}
+.resumeBtns .btn{flex:1;min-height:50px}
+.done-note .btn{width:100%;min-height:50px;background:#fff}
 .upl{border:2px dashed var(--line);border-radius:12px;padding:26px 16px;text-align:center;margin-bottom:14px;background:#fff}
 .upl input[type=file]{display:none}
 .upl label{display:inline-block;background:var(--ink);color:#fff;font-weight:700;border-radius:9px;padding:12px 22px;cursor:pointer;font-size:.92rem}
@@ -359,6 +423,8 @@ table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
 .sheetTitleBar button{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;
   border-radius:8px;padding:8px 14px;font-size:.82rem;font-weight:700;cursor:pointer}
 .sheetTitleBar #sheetTitleText{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.riskWhy{flex:0 1 auto;font-size:.76rem;font-weight:700;background:var(--amber-8);color:#8A5400;
+  border-radius:999px;padding:5px 11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}
 .zoomBtns{display:flex;gap:6px;flex:none}
 .zoomBtns button[aria-pressed=true]{background:#fff;color:var(--ink);border-color:#fff}
 .riskToggle{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);
@@ -554,15 +620,29 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   </div>
   <div class="lead"><h2 data-i18n="start.title">안전교육 전<br>작성해 주세요</h2>
     <p data-i18n="start.sub">약 5분 걸립니다. 다 쓰면 저장 버튼을 누르세요.</p></div>
+  <div class="resume hidden" id="resumeBox">
+    <b>쓰다 만 내용이 있습니다</b>
+    <span id="resumeInfo"></span>
+    <div class="resumeBtns">
+      <button class="btn prime" type="button" id="resumeGo">이어서 쓰기</button>
+      <button class="btn" type="button" id="resumeNew">처음부터</button>
+    </div>
+  </div>
+  <div class="done-note hidden" id="alreadyBox">
+    <b>이미 제출하셨습니다</b>
+    <span id="alreadyInfo"></span>
+    <button class="btn" type="button" id="alreadyNew">다른 사람 것 작성하기</button>
+  </div>
   <div class="card"><h3 data-i18n="start.prepTitle">준비물</h3>
     <div style="font-size:.97rem;line-height:2">
       <span data-i18n="start.prep1">· 신분증 (생년월일·국적 확인)</span><br>
-      <span data-i18n="start.prep2">· 기초안전보건교육 이수증</span><br>
-      <span data-i18n="start.prep3">· 혈압 측정 결과</span></div></div>
+      <span data-i18n="start.prep2">· 기초안전보건교육 이수증</span></div>
+    <div class="note info" style="margin:12px 0 0">혈압은 <b>현장에 오시면 담당자가 측정</b>합니다. 미리 재실 필요 없습니다.</div></div>
   <div class="note info" data-i18n="start.note">작성한 내용은 <b>현장 안전보건팀만</b> 열람하며, 준공 후 3년간 보관 후 파기합니다.</div>
   <div class="card">
     <div class="f"><label data-i18n="field.company">협력회사 <span class="req">*</span></label>
-      <input type="text" id="company" placeholder="예) 대한철골" autocomplete="organization">
+      <input type="text" id="company" placeholder="예) 대한철골" autocomplete="organization" list="coList">
+      <datalist id="coList"></datalist>
       <div class="err" data-i18n="err.company">협력회사명을 입력해 주세요.</div></div>
     <div class="f" style="margin-bottom:0"><label data-i18n="field.name">성명 <span class="req">*</span></label>
       <input type="text" id="name" placeholder="예) 홍길동" autocomplete="name">
@@ -916,12 +996,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 <section class="adm" id="adm">
   <div class="lead"><h2>관리자</h2><p style="color:var(--steel);font-size:.9rem">오늘 작성된 서류 확인, 취약 근로자 관리, 양식 변경을 할 수 있습니다.</p>
     <p style="margin-top:8px" class="badgeRow"><span class="tag" id="fbBadge" style="background:#EFF1F4;color:var(--steel)">확인 중…</span>
-      <button type="button" class="btn small" id="btnDiag">연결 진단</button></p></div>
+      <button type="button" class="btn small" id="btnDiag">연결 진단</button></p>
+    <p class="whoami hidden" id="whoami"></p></div>
   <div class="admtabs">
     <button type="button" id="tabFind" aria-pressed="true">근로자 찾기</button>
     <button type="button" id="tabToday" aria-pressed="false">날짜별 제출</button>
     <button type="button" id="tabRisk" aria-pressed="false">취약 근로자</button>
-    <button type="button" id="tabTpl" aria-pressed="false">양식 변경</button>
+    <button type="button" id="tabAcct" aria-pressed="false">계정 관리</button>
+    <button type="button" id="tabTpl" aria-pressed="false">설정</button>
   </div>
 
   <div id="admFind" class="hidden">
@@ -935,6 +1017,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
       <select id="findCo"><option value="">전체</option></select>
       <span class="findCount" id="findCount"></span>
     </div>
+    <div class="statRow" id="statRow"></div>
     <div id="findList"></div>
   </div>
 
@@ -960,7 +1043,25 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div id="riskGroups"><div class="empty">취약 근로자로 지정된 근로자가 없습니다.</div></div>
   </div>
 
+  <div id="admAcct" class="hidden">
+    <p class="note info">협력사 담당자가 가입 신청하면 여기에 뜹니다.
+      <b>승인해야 자기 회사 근로자를 볼 수 있습니다.</b> 승인 전에는 아무 자료도 보이지 않습니다.</p>
+    <div id="acctList"></div>
+  </div>
+
   <div id="admTpl" class="hidden">
+    <div class="card">
+      <h3>협력사 목록</h3>
+      <p class="note info" style="margin:0 0 12px">여기에 등록해 두면 근로자 작성 화면에서
+        <b>목록에서 골라</b> 넣습니다. 같은 회사를 "대한철골 / (주)대한철골 / 대한 철골"처럼
+        제각각 적어 업체별 집계가 어긋나는 일을 막아 줍니다.</p>
+      <div class="findBar">
+        <input type="text" id="coNew" placeholder="협력사명을 입력하고 추가를 누르세요">
+        <button class="btn small padd" type="button" id="coAdd">추가</button>
+      </div>
+      <div id="coChips"></div>
+    </div>
+
     <div class="curtpl">
       <span>현재 양식: <b id="curTplName">기본 (Rev.5)</b></span>
       <button class="btn small" type="button" id="tplReset">기본으로 되돌리기</button>
@@ -982,7 +1083,6 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
       <button type="button" id="zoomFitBtn" aria-pressed="true">화면 맞춤</button>
       <button type="button" id="zoomWideBtn" aria-pressed="false">크게 보기</button>
     </div>
-    <label class="riskToggle"><input type="checkbox" id="sheetRiskChk"> 취약 근로자</label>
     <button type="button" id="sheetClose">닫기</button>
   </div>
   <div class="docTabs hidden" id="docTabs">
@@ -990,6 +1090,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button type="button" id="tabDocPhoto" aria-pressed="false">사진 대지</button>
   </div>
   <div id="sheetScroll"><div id="sheetPage"></div></div>
+  <div class="sheetPhotos hidden" id="sheetRisk"></div>
   <div class="sheetPhotos hidden" id="sheetBp"></div>
   <div class="sheetPhotos hidden" id="sheetPhotos"></div>
 </div>
@@ -1003,6 +1104,38 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button class="btn ghost hidden" type="button" id="btnPdf">📄 PDF 저장</button>
   </div>
 </footer>
+
+<div class="overlay hidden" id="loginOverlay">
+  <div class="modal login">
+    <h3 id="loginTitle">관리자 로그인</h3>
+    <p id="loginSub">원청 안전보건팀 · 협력사 담당자용입니다. 근로자는 로그인이 필요 없습니다.</p>
+
+    <div id="loginForm">
+      <label class="mlab">이메일</label>
+      <input type="email" id="lgEmail" placeholder="name@company.com" autocomplete="username">
+      <label class="mlab">비밀번호</label>
+      <input type="password" id="lgPw" placeholder="6자 이상" autocomplete="current-password">
+      <div id="signupExtra" class="hidden">
+        <label class="mlab">소속 협력사</label>
+        <select id="lgCo"><option value="">협력사를 고르세요</option></select>
+        <label class="mlab">담당자 성함</label>
+        <input type="text" id="lgName" placeholder="예) 김철수">
+      </div>
+      <div class="merr" id="lgErr"></div>
+      <div class="mbtns">
+        <button class="btn ghost" type="button" id="lgCancel">취소</button>
+        <button class="btn prime" type="button" id="lgGo">로그인</button>
+      </div>
+      <button class="linkbtn" type="button" id="lgSwap" style="margin-top:12px">협력사 담당자 계정 만들기</button>
+    </div>
+
+    <div id="loginWait" class="hidden">
+      <div class="note info" style="margin:0 0 14px">가입 신청이 접수되었습니다.<br>
+        <b>원청 안전보건팀의 승인</b>이 있어야 자료를 볼 수 있습니다. 승인 후 다시 로그인해 주세요.</div>
+      <div class="mbtns"><button class="btn prime" type="button" id="lgOut">확인</button></div>
+    </div>
+  </div>
+</div>
 
 <div class="overlay hidden" id="pwOverlay">
   <div class="modal">
@@ -1433,7 +1566,9 @@ const Store = (() => {
           const db = await loadFirebase();
           if(key === "submissions"){
             // 제출 기록은 1건씩 별도 문서로 저장한다 (문서당 1MB 한도 회피)
-            const snap = await db.collection("records").get();
+            // 협력사 담당자는 자기 회사 것만 가져온다 (서버 규칙도 같은 기준으로 막는다)
+            const col = db.collection("records");
+            const snap = await (isSub() ? col.where("company","==",myCompany()) : col).get();
             const arr = [];
             snap.forEach(d => { try{ arr.push(JSON.parse(d.data().json)); }catch(e){} });
             arr.sort((a,b) => String(a.submittedAt).localeCompare(String(b.submittedAt)));
@@ -1488,7 +1623,7 @@ const Store = (() => {
               }
               await db.collection("records").doc(docId(rec)).set({ json, updatedAt: Date.now() });
             }
-            // 목록에서 빠진 건은 서버에서도 삭제
+            // 목록에서 빠진 건은 서버에서도 삭제 (원청만 가능)
             const snap = await db.collection("records").get();
             const dels = [];
             snap.forEach(d => { if(!keep[d.id]) dels.push(d.id); });
@@ -1611,7 +1746,8 @@ const Store = (() => {
       if(!fbEnabled()) return { on:false, reason:"미설정" };
       try{
         const db = await loadFirebase();
-        const snap = await db.collection("records").get();
+        const col = db.collection("records");
+        const snap = await (isSub() ? col.where("company","==",myCompany()) : col).get();
         return { on:true, count: snap.size };
       }
       catch(e){ return { on:false, error: (e && e.message) || String(e), code: (e && (e.code||e.name)) || "" }; }
@@ -1640,6 +1776,7 @@ for(let i=0;i<FLOW.length;i++) progEl.appendChild(document.createElement("i"));
 function paint(){
   $("main").style.display = "";
   document.body.classList.remove("admmode");
+  if(step > 0 && step < 9) saveDraft();
   const fi = flowIdx(step);
   $$("#prog i").forEach((el,i)=>{ el.className = i===fi ? "on" : (i<fi ? "done" : ""); });
   $("#hStep").textContent = (fi+1)+" / "+FLOW.length;
@@ -1848,7 +1985,19 @@ function makePad(id){
   const api = {
     fit, get inked(){ return st.inked; },
     clear(){ cx.clearRect(0,0,cv.width,cv.height); st.inked=false; wrap.classList.remove("inked"); },
-    data(){ return st.inked ? trim(cv) : ""; }
+    data(){ return st.inked ? trim(cv) : ""; },
+    restore(src){                       // 임시저장에서 서명을 되살린다
+      if(!src) return;
+      const im = new Image();
+      im.onload = () => {
+        fit();
+        const w = wrap.clientWidth, h = Math.round(w / (+wrap.dataset.ratio || 3));
+        const r = Math.min(w/im.width, h/im.height, 1);
+        cx.drawImage(im, 4, (h-im.height*r)/2, im.width*r, im.height*r);
+        st.inked = true; wrap.classList.add("inked");
+      };
+      im.src = src;
+    }
   };
   PADS[id] = api;
   return api;
@@ -1929,6 +2078,78 @@ function validate(){
 }
 
 function qty(k){ return +document.querySelector('[data-num="'+k+'"] input').value || 0; }
+/* ══════════════════════════════════════════════════════════════
+   작성 중 임시저장 · 이어쓰기
+   ──────────────────────────────────────────────────────────────
+   9단계짜리 서류를 폰으로 쓰다 보면 전화가 오거나 화면이 꺼지거나
+   실수로 뒤로 가기를 누르는 일이 반드시 생긴다. 예전에는 그러면
+   서명까지 포함해 처음부터 다시 써야 했다.
+   이제 단계를 넘길 때마다 이 기기에 살짝 저장해 두고, 다시 열면
+   "이어서 쓰기"를 물어본다. 저장이 끝나면 임시본은 지운다. ══════ */
+function hasLocalStorage(){
+  try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); return true; }catch(e){ return false; }
+}
+const DRAFT_KEY = "hd4_draft";
+const DRAFT_FIELDS = ["company","name","birth","phone","guardian","address","trade","tradeEtc",
+  "carY","carM","eduOrg","eduDate","prevSite","prevWork","etcName"];
+
+function collectDraft(){
+  const f = {};
+  DRAFT_FIELDS.forEach(id => { const el = document.getElementById(id); if(el) f[id] = el.value; });
+  const sigs = {};
+  Object.keys(PADS).forEach(k => { try{ if(PADS[k].inked) sigs[k] = PADS[k].data(); }catch(e){} });
+  return { v:2, at:Date.now(), step, lang:LANG, f,
+           pick:Object.assign({},pick), multi:JSON.parse(JSON.stringify(multi)),
+           photo:Object.assign({},PHOTO), sigs };
+}
+let draftTimer = null;
+function saveDraft(){
+  if(!hasLocalStorage()) return;
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => {
+    try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(collectDraft())); }
+    catch(e){ /* 저장공간이 부족하면 임시저장만 조용히 포기한다 */ }
+  }, 250);
+}
+function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
+function readDraft(){
+  try{
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if(!d || !d.f) return null;
+    // 3일이 지난 임시본은 오래된 것으로 보고 버린다
+    if(Date.now() - (d.at||0) > 3*24*3600*1000){ clearDraft(); return null; }
+    return d;
+  }catch(e){ return null; }
+}
+function applyDraft(d){
+  LANG = d.lang || LANG; applyLang();
+  Object.keys(d.f||{}).forEach(id => {
+    const el = document.getElementById(id);
+    if(el && d.f[id] != null && d.f[id] !== ""){ el.value = d.f[id]; el.dispatchEvent(new Event("change",{bubbles:true})); }
+  });
+  Object.keys(d.pick||{}).forEach(k => { pick[k] = d.pick[k]; });
+  Object.keys(d.multi||{}).forEach(k => { multi[k] = d.multi[k]; });
+  Object.keys(d.photo||{}).forEach(k => { PHOTO[k] = d.photo[k]; });
+  // 화면의 선택 버튼·사진 미리보기를 저장된 값에 맞춘다
+  $$("[data-pick]").forEach(w => {
+    const v = pick[w.dataset.pick];
+    w.querySelectorAll(".opt").forEach(o => o.setAttribute("aria-pressed", String(o.dataset.v === v)));
+  });
+  $$("[data-multi]").forEach(w => {
+    const arr = multi[w.dataset.multi] || [];
+    w.querySelectorAll(".opt").forEach(o => o.setAttribute("aria-pressed", String(arr.includes(o.dataset.v))));
+  });
+  [["idPhoto","id"],["eduPhoto","edu"],["bpPhoto","bp"]].forEach(([prefix,key]) => {
+    const t = document.getElementById(prefix+"Thumb"), im = document.getElementById(prefix+"Img");
+    if(t && im && PHOTO[key]){ im.src = PHOTO[key]; t.classList.remove("hidden"); }
+  });
+  step = FLOW.includes(d.step) ? d.step : 0;
+  paint();
+  setTimeout(() => {
+    Object.keys(d.sigs||{}).forEach(k => { if(PADS[k]) PADS[k].restore(d.sigs[k]); });
+  }, 120);
+}
+
 function buildRecord(){
   const now = new Date();
   const today = now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
@@ -2036,6 +2257,11 @@ $("#btnNext").addEventListener("click", async () => {
         + "-" + String(seq).padStart(3,"0");
     }
     submissions.push(current);
+    try{
+      localStorage.setItem(MINE_KEY, JSON.stringify({
+        code: current.code, name: current.name, date: current.dateKey }));
+    }catch(e){}
+    clearDraft();
     // 새로 쓴 1건만 올린다 (전원 재업로드를 하면 인원이 많을 때 몇 분씩 걸린다)
     const res = await Store.saveRecord(current, submissions);
     btn.disabled = false; btn.textContent = oldTxt;
@@ -2242,7 +2468,7 @@ function activeSheetTemplate(){
   // 사용자가 직접 올린 커스텀 양식이 적용된 경우엔 그것을 그대로 쓴다
   if(!ACTIVE_TEMPLATE.isDefault) return ACTIVE_TEMPLATE;
   // 기본 양식이면 취약근로자 여부에 따라 전용 파일을 고른다
-  return (current && current.highRisk) ? RISK_TEMPLATE : DEFAULT_TEMPLATE;
+  return isRisk(current) ? RISK_TEMPLATE : DEFAULT_TEMPLATE;
 }
 function fillActiveSheet(r){ sheetKind === "photoboard" ? fillPhotoBoard(r) : fillSheet(r); }
 
@@ -2304,32 +2530,82 @@ function switchSheetKind(kind){
   renderSheetDOM();
   fillActiveSheet(current);
   $("#sheetTitleText").textContent = (current ? current.name+" · " : "") + (kind==="photoboard" ? "사진대지" : "신규채용자준수사항");
-  $("#sheetRiskChk").closest(".riskToggle").classList.toggle("hidden", kind==="photoboard");
+  $("#sheetRisk").classList.toggle("hidden", kind==="photoboard");
   fitSheetView();
 }
 $("#tabDocForm").addEventListener("click", () => switchSheetKind("form"));
 $("#tabDocPhoto").addEventListener("click", () => switchSheetKind("photoboard"));
-$("#sheetRiskChk").addEventListener("change", async (e) => {
-  if(!current) return;
-  current.highRisk = e.target.checked;
-  const rec = submissions.find(x => docId(x) === docId(current));
-  if(rec) rec.highRisk = e.target.checked;
-  const res = await Store.saveRecord(rec || current, submissions);
+/* ── 취약 근로자 판정 패널 ────────────────────────────────────
+   자동 판정 결과와 근거를 보여 주고, 안전관리자·보건관리자가 확인 후
+   해지(또는 직접 지정)할 수 있게 한다. 해지 내역은 기록으로 남는다. */
+function renderRiskPanel(r){
+  const el = $("#sheetRisk");
+  if(!r || sheetKind === "photoboard"){ el.classList.add("hidden"); return; }
+  el.classList.remove("hidden");
+
+  const why = riskReasons(r);
+  const on  = isRisk(r);
+  const ov  = r.riskOverride;
+
+  el.innerHTML = '<div class="photoPanelTitle">취약 근로자 판정</div>'
+    + '<div class="riskBox' + (on ? " isRisk" : "") + '">'
+    + '<div class="riskState"><b>' + (on ? "취약 근로자" : "해당 없음") + '</b>'
+    +   '<span class="riskSrc">' + (ov ? "담당자 판단" : (why.length ? "자동 판정" : "기준 해당 없음")) + '</span></div>'
+    + (why.length
+        ? '<ul class="riskWhyList">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>'
+        : '<div class="riskNone">자동 판정 기준(고령 ' + SENIOR_AGE + '세 이상 · 고혈압 · 지병 · 복용약 · 재해이력 · 건강진단 이상)에 해당하지 않습니다.</div>')
+    + (ov
+        ? '<div class="riskOv"><b>' + (ov.to ? "직접 지정" : "취약 해지") + '</b> · ' + esc(ov.by || "")
+          + (ov.at ? ' · ' + esc(String(ov.at).slice(0,10)) : "")
+          + (ov.reason ? '<span>사유: ' + esc(ov.reason) + '</span>' : "")
+          + '</div>'
+        : "")
+    + '<div class="riskBtns">'
+    +   (on ? '<button class="btn small riskOff" type="button" id="riskRelease">취약 해지</button>'
+            : '<button class="btn small padd" type="button" id="riskSet">취약으로 지정</button>')
+    +   (ov ? '<button class="btn small" type="button" id="riskAuto">자동 판정으로</button>' : "")
+    + '</div></div>';
+
+  const ask = async (to) => {
+    const by = prompt(to
+      ? "지정한 담당자 이름과 직책을 적어 주세요.\n(예: 김철수 안전관리자)"
+      : "확인한 담당자 이름과 직책을 적어 주세요.\n(예: 김철수 보건관리자)", "");
+    if(by === null) return;
+    if(!by.trim()){ alert("담당자를 적어 주셔야 합니다."); return; }
+    const reason = prompt(to
+      ? "지정 사유를 적어 주세요."
+      : "해지 사유를 적어 주세요.\n(예: 산업의학과 소견서 확인, 작업 제한 조치 완료)", "");
+    if(reason === null) return;
+    if(!to && !reason.trim()){ alert("해지 사유는 반드시 남겨야 합니다."); return; }
+    await setRisk(r, { to, by: by.trim(), reason: reason.trim(), at: new Date().toISOString() });
+  };
+
+  const rel = $("#riskRelease"); if(rel) rel.addEventListener("click", () => ask(false));
+  const set = $("#riskSet");     if(set) set.addEventListener("click", () => ask(true));
+  const aut = $("#riskAuto");    if(aut) aut.addEventListener("click", async () => {
+    if(!confirm("담당자 판단을 지우고 자동 판정으로 되돌릴까요?")) return;
+    await setRisk(r, null);
+  });
+}
+
+async function setRisk(r, override){
+  const rec = submissions.find(x => docId(x) === docId(r)) || r;
+  const backup = { ov: rec.riskOverride, hr: rec.highRisk };
+  if(override) rec.riskOverride = override; else delete rec.riskOverride;
+  rec.highRisk = isRisk(rec);            // 인쇄·내보내기용 값도 같이 맞춘다
+  r.riskOverride = rec.riskOverride; r.highRisk = rec.highRisk;
+
+  const res = await Store.saveRecord(rec, submissions);
   if(!res || !res.ok){
-    // 되돌린다
-    current.highRisk = !e.target.checked;
-    if(rec) rec.highRisk = current.highRisk;
-    e.target.checked = current.highRisk;
+    rec.riskOverride = backup.ov; rec.highRisk = backup.hr;
+    r.riskOverride = backup.ov;   r.highRisk = backup.hr;
     alert("저장하지 못했습니다.\n\n" + ((res && res.message) || "알 수 없는 오류"));
-    return;
+  } else {
+    showToast(isRisk(rec) ? "취약 근로자로 표시했습니다" : "취약 해지 처리했습니다");
   }
-  if(sheetKind === "form"){
-    // 취약근로자 여부에 따라 원본 양식 파일 자체가 바뀌므로 전체를 다시 그린다
-    renderSheetDOM();
-    fillActiveSheet(current);
-    fitSheetView();
-  }
-});
+  renderRiskPanel(r);
+  if(sheetKind === "form"){ renderSheetDOM(); fillActiveSheet(r); fitSheetView(); }
+}
 
 function openSheetFor(r, title){
   current = r;
@@ -2342,14 +2618,15 @@ function openSheetFor(r, title){
   document.querySelector(".admPage").style.display = "none";
   $("#tabDocForm").setAttribute("aria-pressed","true"); $("#tabDocPhoto").setAttribute("aria-pressed","false");
   $("#docTabs").classList.remove("hidden");
-  $("#sheetRiskChk").closest(".riskToggle").classList.remove("hidden");
-  $("#sheetRiskChk").checked = !!r.highRisk;
   $$(".step").forEach(s => s.classList.remove("on"));
   $("#adm").classList.remove("on");
   $("#sheetWrap").classList.add("on");   // 채우기 전에 먼저 보이게 해야 글자 크기 자동조정이 동작한다
   renderSheetDOM();
   fillActiveSheet(r);
-  $("#sheetTitleText").textContent = title || (r.name+" 양식");
+  const age = ageOf(r);
+  $("#sheetTitleText").textContent = (title || (r.name+" 양식"))
+    + (age != null ? "  ·  " + age + "세" + (age>=SENIOR_AGE ? " (고령)" : "") : "");
+  renderRiskPanel(r);
   $("#btnPrev").classList.add("hidden"); $("#btnNext").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden"); $("#btnPrint").classList.remove("hidden");
   $("#btnPdf").classList.remove("hidden");
@@ -2367,10 +2644,128 @@ const PHOTO_SLOTS = [
 /* ── 근로자 찾기 ────────────────────────────────────────────────
    근로자가 며칠 전에 미리 작성해 오므로, 날짜별 목록으로는 못 찾는다.
    이름 검색 + 업체별 목록 두 가지를 한 화면에서 쓴다. */
-let findQ = "", findCo = "";
+let findQ = "", findCo = "", findOnly = "";
 
 function bpDone(r){ return !!(r && r.bp && r.bp.sys1 && r.bp.dia1); }
 
+/* 생년월일 6자리(예: 590312)에서 만 나이를 계산한다.
+   고령근로자(65세 이상)는 안전관리상 따로 챙겨야 하는데,
+   예전에는 원청 담당자가 서류를 한 장씩 열어 눈으로 세야 했다. */
+function ageOf(r){
+  const b = String((r && r.birth) || "").replace(/[^0-9]/g,"");
+  if(b.length < 6) return null;
+  const now = new Date(), cy = now.getFullYear() % 100;
+  const yy = +b.slice(0,2), mm = +b.slice(2,4), dd = +b.slice(4,6);
+  if(!mm || !dd) return null;
+  const year = yy > cy ? 1900 + yy : 2000 + yy;
+  let age = now.getFullYear() - year;
+  if(now.getMonth()+1 < mm || (now.getMonth()+1 === mm && now.getDate() < dd)) age--;
+  return (age >= 0 && age < 120) ? age : null;
+}
+function isSenior(r){ const a = ageOf(r); return a != null && a >= 65; }
+
+/* ══════════════════════════════════════════════════════════════
+   취약 근로자 자동 판정
+   ──────────────────────────────────────────────────────────────
+   아래 기준에 걸리면 자동으로 취약 근로자가 된다.
+   다만 최종 판단은 사람이 한다 — 안전관리자·보건관리자가 확인한 뒤
+   해지할 수 있고, 해지하면 누가 언제 왜 풀었는지가 기록으로 남는다.
+   한 번 사람이 정한 값은 자동 판정이 다시 뒤집지 않는다.
+
+   기준을 바꾸려면 SENIOR_AGE 값과 riskReasons() 안을 고치면 된다. ══ */
+const SENIOR_AGE = 65;              // 고령 근로자 기준 나이
+
+function riskReasons(r){
+  const out = [];
+  if(!r) return out;
+  const a = ageOf(r);
+  if(a != null && a >= SENIOR_AGE) out.push("고령 " + a + "세");
+
+  const lv = r.bp && r.bp.level;
+  if(lv === "고혈압" || lv === "위기") out.push("혈압 " + lv);
+  else if(lv === "고혈압전단계") out.push("혈압 고혈압전단계");
+
+  if(Array.isArray(r.diseases) && r.diseases.length
+     && !(r.diseases.length === 1 && /없|무/.test(r.diseases[0])))
+    out.push("지병 " + r.diseases.join("·"));
+  if(r.drug && !/없음|없|^무$/.test(String(r.drug).trim())) out.push("복용약 " + r.drug);
+
+  if(r.injury && /있/.test(r.injury.has || "")) out.push("산업재해 이력");
+  if(r.accident && /있/.test(r.accident.has || "")) out.push("사고 이력");
+
+  const fit = r.fitGeneral || "";
+  if(/질환|유질환|요망|이상/.test(fit)) out.push("건강진단 " + fit);
+  const vas = r.vascular || "";
+  if(/주의|요주의|진단요망|이상/.test(vas)) out.push("혈관건강도 " + vas);
+  return out;
+}
+
+/* 지금 이 사람이 취약 근로자인가.
+   사람이 정한 값(riskOverride)이 있으면 그게 최우선이다. */
+function isRisk(r){
+  if(!r) return false;
+  if(r.riskOverride && typeof r.riskOverride.to === "boolean") return r.riskOverride.to;
+  if(r.highRisk === true) return true;              // 예전 방식으로 체크해 둔 기록
+  return riskReasons(r).length > 0;                 // 자동 판정
+}
+function riskIsAuto(r){ return !(r && r.riskOverride); }
+function missingItems(r){
+  const m = [];
+  if(!bpDone(r)) m.push("혈압");
+  if(!r.idPhoto) m.push("신분증");
+  if(!r.eduCertPhoto) m.push("이수증");
+  return m;
+}
+
+/* ── 협력사 목록 관리 (원청사) ─────────────────────────────────
+   근로자가 업체명을 자유롭게 타이핑하면 같은 회사가 여러 이름으로 쌓여
+   업체별 집계·필터가 어긋난다. 원청이 목록을 등록해 두면 근로자 화면에서
+   골라 넣게 되어 이름이 하나로 모인다. */
+let COMPANIES = [];
+async function loadCompaniesAdmin(){
+  try{ const l = await Store.load("companies", []); COMPANIES = Array.isArray(l) ? l : []; }
+  catch(e){ COMPANIES = []; }
+  renderCoChips();
+}
+function renderCoChips(){
+  const box = $("#coChips");
+  if(!box) return;
+  // 이미 제출된 기록에 있는데 목록에 없는 업체도 같이 보여 준다
+  const used = Array.from(new Set(submissions.map(r => r.company).filter(Boolean)));
+  const extra = used.filter(c => !COMPANIES.includes(c));
+  box.innerHTML = COMPANIES.map(c =>
+      '<span class="coChip">'+esc(c)+'<button type="button" data-co="'+esc(c)+'" title="삭제">×</button></span>').join("")
+    + (extra.length
+        ? '<div style="width:100%;margin-top:12px;font-size:.82rem;color:var(--steel)">'
+          + '제출 기록에는 있으나 목록에 없는 업체: '
+          + extra.map(c => '<button class="linkbtn" type="button" data-add="'+esc(c)+'">'+esc(c)+' 추가</button>').join(", ")
+          + '</div>'
+        : "")
+    + (!COMPANIES.length && !extra.length
+        ? '<div class="findEmpty" style="width:100%">등록된 협력사가 없습니다. 위에 입력해 추가하세요.</div>' : "");
+
+  box.querySelectorAll("[data-co]").forEach(b => b.addEventListener("click", async () => {
+    if(!confirm(b.dataset.co + " 을(를) 목록에서 뺄까요?\n(이미 제출된 서류는 그대로 남습니다)")) return;
+    COMPANIES = COMPANIES.filter(c => c !== b.dataset.co);
+    await Store.save("companies", COMPANIES); renderCoChips();
+  }));
+  box.querySelectorAll("[data-add]").forEach(b => b.addEventListener("click", async () => {
+    COMPANIES = COMPANIES.concat([b.dataset.add]).sort();
+    await Store.save("companies", COMPANIES); renderCoChips();
+  }));
+}
+$("#coAdd").addEventListener("click", async () => {
+  const v = $("#coNew").value.trim();
+  if(!v) return;
+  if(COMPANIES.includes(v)){ alert("이미 등록된 협력사입니다."); return; }
+  COMPANIES = COMPANIES.concat([v]).sort();
+  const res = await Store.save("companies", COMPANIES);
+  if(!res || !res.ok){ alert("저장하지 못했습니다."); COMPANIES = COMPANIES.filter(c => c !== v); }
+  $("#coNew").value = ""; renderCoChips();
+});
+$("#coNew").addEventListener("keydown", e => { if(e.key === "Enter") $("#coAdd").click(); });
+
+const miss = missingItems;
 function renderFind(){
   const coSel = $("#findCo");
   const cos = Array.from(new Set(submissions.map(r => r.company).filter(Boolean))).sort();
@@ -2382,9 +2777,30 @@ function renderFind(){
   coSel.value = findCo;
   $("#findName").value = findQ;
 
+  // 현황 요약 (업체 필터가 걸려 있으면 그 업체 기준)
+  const base = findCo ? submissions.filter(r => r.company === findCo) : submissions;
+  const nNoBp   = base.filter(r => !bpDone(r)).length;
+  const nMiss   = base.filter(r => missingItems(r).length).length;
+  const nRisk   = base.filter(r => isRisk(r)).length;
+  const stat = (key,num,label,warn) =>
+    '<button class="stat'+(warn?" warnStat":"")+'" type="button" data-only="'+key+'" aria-pressed="'
+    + (findOnly===key) + '"><b>'+num+'</b><u>'+label+'</u></button>';
+  $("#statRow").innerHTML =
+      stat("", base.length, "전체", false)
+    + stat("bp", nNoBp, "혈압 미측정", nNoBp>0)
+    + stat("miss", nMiss, "서류 미비", nMiss>0)
+    + stat("risk", nRisk, "취약 검토", nRisk>0);
+  $$("#statRow .stat").forEach(b => b.addEventListener("click", () => {
+    findOnly = (findOnly === b.dataset.only) ? "" : b.dataset.only;
+    renderFind();
+  }));
+
   const q = findQ.trim().toLowerCase();
   let list = submissions.slice();
   if(findCo) list = list.filter(r => r.company === findCo);
+  if(findOnly === "bp")   list = list.filter(r => !bpDone(r));
+  if(findOnly === "miss") list = list.filter(r => missingItems(r).length);
+  if(findOnly === "risk") list = list.filter(r => isRisk(r));
   if(q) list = list.filter(r => String(r.name||"").toLowerCase().includes(q)
                              || String(r.code||"").toLowerCase().includes(q));
   // 최근 작성한 사람이 위로
@@ -2404,11 +2820,17 @@ function renderFind(){
 
   box.innerHTML = list.slice(0, 300).map(r =>
     '<button class="hit" type="button" data-code="'+esc(docId(r))+'">'
-    + '<span><span class="nm">'+esc(r.name)+'</span>'
-    +   '<span class="sub">'+esc(r.company)+' · '+esc(r.trade||"")+' · '+recDate(r)+' 작성 · '+esc(r.code)+'</span></span>'
+    + '<span class="hitMain"><span class="nm">'+esc(r.name)
+    +   (ageOf(r)!=null ? ' <em class="age'+(isSenior(r)?" senior":"")+'">'+ageOf(r)+'세</em>' : '')
+    +   '</span>'
+    +   '<span class="sub">'+esc(r.company)+' · '+esc(r.trade||"")+' · '+recDate(r)+' 작성</span>'
+    +   (miss(r).length ? '<span class="miss">미비: '+esc(miss(r).join(", "))+'</span>'
+                        : '<span class="okline">준비 완료</span>')
+    + '</span>'
     + '<span class="flags">'
-    +   (r.highRisk ? '<span class="fl risky">취약</span>' : '')
-    +   (bpDone(r) ? '<span class="fl done">혈압 '+esc(r.bp.sys1)+'/'+esc(r.bp.dia1)+'</span>'
+    +   (isRisk(r) ? '<span class="fl risky">취약'+(riskIsAuto(r)?" 자동":"")+'</span>'
+                   : (r.riskOverride ? '<span class="fl warn">해지됨</span>' : ''))
+    +   (bpDone(r) ? '<span class="fl done">'+esc(r.bp.sys1)+'/'+esc(r.bp.dia1)+'</span>'
                    : '<span class="fl need">혈압 미측정</span>')
     + '</span></button>').join("")
     + (list.length > 300 ? '<div class="findEmpty">…외 '+(list.length-300)+'명. 이름으로 검색해 주세요.</div>' : '');
@@ -2421,7 +2843,7 @@ function renderFind(){
 
 $("#findName").addEventListener("input", e => { findQ = e.target.value; renderFind(); });
 $("#findCo").addEventListener("change", e => { findCo = e.target.value; renderFind(); });
-$("#findClear").addEventListener("click", () => { findQ = ""; findCo = ""; renderFind(); $("#findName").focus(); });
+$("#findClear").addEventListener("click", () => { findQ = ""; findCo = ""; findOnly = ""; renderFind(); $("#findName").focus(); });
 
 /* ── 현장 혈압 입력 ────────────────────────────────────────────
    근로자는 집에서 작성해 오고, 혈압은 현장에서 담당자가 재서 여기에 넣는다.
@@ -2672,11 +3094,229 @@ $("#btnPrint").addEventListener("click", () => window.print());
 $("#btnPdf").addEventListener("click", () => exportSheetToPdf(current));
 
 
+/* ══════════════════════════════════════════════════════════════
+   로그인 · 권한
+   ──────────────────────────────────────────────────────────────
+   근로자는 로그인하지 않는다 (링크를 열어 자기 것만 쓰고 저장).
+   자료를 "보는" 사람만 로그인한다.
+     · 원청(gc)  — 전체 열람·수정·삭제, 계정 승인
+     · 협력사(sub) — 자기 회사 근로자만 열람
+   앱에서 걸러내는 것만으로는 코드를 열어보면 뚫리므로,
+   Firestore 규칙이 서버에서 같은 기준으로 막아 준다.
+   그래서 문서에 company 를 겉으로 한 번 더 적어 둔다(규칙이 읽어야 함). ══ */
+let AUTH = { on:false, user:null, profile:null };   // profile = {role, company, name, approved}
+let __fbAuth = null;
+
+function authEnabled(){ return fbEnabled(); }
+async function loadAuth(){
+  if(__fbAuth) return __fbAuth;
+  await loadFirebase();
+  if(!window.firebase.auth){
+    await new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js";
+      s.onload = res;
+      s.onerror = () => rej(new Error("로그인 프로그램을 내려받지 못했습니다."));
+      document.head.appendChild(s);
+    });
+  }
+  __fbAuth = firebase.auth();
+  return __fbAuth;
+}
+function isGC(){ return !!(AUTH.profile && AUTH.profile.role === "gc" && AUTH.profile.approved); }
+function isSub(){ return !!(AUTH.profile && AUTH.profile.role === "sub" && AUTH.profile.approved); }
+function myCompany(){ return (AUTH.profile && AUTH.profile.company) || ""; }
+function canSeeAll(){ return isGC() || !authReady(); }
+/* 로그인 체계가 실제로 쓰이는 상태인가 (Firebase + 로그인한 사람) */
+function authReady(){ return AUTH.on && !!AUTH.profile; }
+
+async function fetchProfile(uid){
+  const db = await loadFirebase();
+  const d = await db.collection("users").doc(uid).get();
+  return d.exists ? d.data() : null;
+}
+
+async function doLogin(email, pw){
+  const auth = await loadAuth();
+  const cred = await auth.signInWithEmailAndPassword(email, pw);
+  AUTH.user = cred.user;
+  AUTH.profile = await fetchProfile(cred.user.uid);
+  AUTH.on = true;
+  return AUTH.profile;
+}
+async function doSignup(email, pw, company, name){
+  const auth = await loadAuth();
+  const cred = await auth.createUserWithEmailAndPassword(email, pw);
+  const db = await loadFirebase();
+  const prof = { role:"sub", company, name, email, approved:false, at:Date.now() };
+  await db.collection("users").doc(cred.user.uid).set(prof);
+  AUTH.user = cred.user; AUTH.profile = prof; AUTH.on = true;
+  return prof;
+}
+async function doLogout(){
+  try{ const auth = await loadAuth(); await auth.signOut(); }catch(e){}
+  AUTH = { on:false, user:null, profile:null };
+  if(LIVE.unsub){ try{ LIVE.unsub(); }catch(e){} LIVE.unsub = null; LIVE.on = false; }
+  submissions = []; submissionsLoaded = false; adminUnlocked = false;
+}
+
+/* ── 로그인 화면 ─────────────────────────────── */
+let signupMode = false;
+function openLogin(){
+  signupMode = false; syncLoginMode();
+  $("#lgErr").classList.remove("on");
+  $("#loginForm").classList.remove("hidden");
+  $("#loginWait").classList.add("hidden");
+  $("#loginOverlay").classList.remove("hidden");
+  loadCompanyOptions();
+  setTimeout(() => $("#lgEmail").focus(), 60);
+}
+function syncLoginMode(){
+  $("#loginTitle").textContent = signupMode ? "협력사 담당자 가입" : "관리자 로그인";
+  $("#lgGo").textContent = signupMode ? "가입 신청" : "로그인";
+  $("#signupExtra").classList.toggle("hidden", !signupMode);
+  $("#lgSwap").textContent = signupMode ? "이미 계정이 있습니다 · 로그인" : "협력사 담당자 계정 만들기";
+  $("#lgPw").setAttribute("autocomplete", signupMode ? "new-password" : "current-password");
+}
+async function loadCompanyOptions(){
+  try{
+    const list = await Store.load("companies", []);
+    $("#lgCo").innerHTML = '<option value="">협력사를 고르세요</option>'
+      + (Array.isArray(list) ? list : []).map(c => '<option value="'+esc(c)+'">'+esc(c)+'</option>').join("");
+  }catch(e){}
+}
+function lgFail(msg){ const e = $("#lgErr"); e.textContent = msg; e.classList.add("on"); }
+
+$("#lgSwap").addEventListener("click", () => { signupMode = !signupMode; syncLoginMode(); $("#lgErr").classList.remove("on"); });
+$("#lgCancel").addEventListener("click", () => $("#loginOverlay").classList.add("hidden"));
+$("#lgOut").addEventListener("click", async () => { await doLogout(); $("#loginOverlay").classList.add("hidden"); });
+
+$("#lgGo").addEventListener("click", async () => {
+  const email = $("#lgEmail").value.trim(), pw = $("#lgPw").value;
+  if(!email || !pw){ lgFail("이메일과 비밀번호를 넣어 주세요."); return; }
+  const btn = $("#lgGo"); btn.disabled = true; const t = btn.textContent; btn.textContent = "처리 중…";
+  try{
+    let prof;
+    if(signupMode){
+      const co = $("#lgCo").value, nm = $("#lgName").value.trim();
+      if(!co){ lgFail("소속 협력사를 골라 주세요."); throw 0; }
+      if(!nm){ lgFail("담당자 성함을 넣어 주세요."); throw 0; }
+      if(pw.length < 6){ lgFail("비밀번호는 6자 이상이어야 합니다."); throw 0; }
+      prof = await doSignup(email, pw, co, nm);
+    } else {
+      prof = await doLogin(email, pw);
+    }
+    if(!prof){ lgFail("계정 정보를 찾을 수 없습니다. 원청 안전보건팀에 문의해 주세요."); throw 0; }
+    if(!prof.approved){
+      $("#loginForm").classList.add("hidden");
+      $("#loginWait").classList.remove("hidden");
+      throw 0;
+    }
+    $("#loginOverlay").classList.add("hidden");
+    adminUnlocked = true;
+    await openAdm("find");
+  }catch(e){
+    if(e){
+      const m = String((e && e.message) || e);
+      if(/user-not-found|wrong-password|invalid-credential|invalid-login/i.test(m)) lgFail("이메일 또는 비밀번호가 맞지 않습니다.");
+      else if(/email-already-in-use/i.test(m)) lgFail("이미 가입된 이메일입니다. 로그인해 주세요.");
+      else if(/weak-password/i.test(m)) lgFail("비밀번호는 6자 이상이어야 합니다.");
+      else if(/invalid-email/i.test(m)) lgFail("이메일 형식이 올바르지 않습니다.");
+      else if(/operation-not-allowed|configuration-not-found/i.test(m))
+        lgFail("Firebase 콘솔에서 '이메일/비밀번호' 로그인을 먼저 켜 주세요.");
+      else lgFail(m.slice(0,120));
+    }
+  }
+  btn.disabled = false; btn.textContent = t;
+});
+
+/* ── 계정 관리 (원청 전용) ─────────────────────────────────── */
+async function renderAccounts(){
+  const box = $("#acctList");
+  if(!isGC()){
+    box.innerHTML = '<div class="findEmpty">원청 안전보건팀만 볼 수 있는 화면입니다.</div>';
+    return;
+  }
+  box.innerHTML = '<div class="findEmpty">불러오는 중…</div>';
+  let users = [];
+  try{
+    const db = await loadFirebase();
+    const snap = await db.collection("users").get();
+    snap.forEach(d => users.push(Object.assign({ uid:d.id }, d.data())));
+  }catch(e){
+    box.innerHTML = '<div class="findEmpty">계정 목록을 불러오지 못했습니다.<br>'+esc((e&&e.message)||"")+'</div>';
+    return;
+  }
+  users.sort((a,b) => (a.approved === b.approved) ? String(a.company||"").localeCompare(String(b.company||"")) : (a.approved ? 1 : -1));
+  if(!users.length){ box.innerHTML = '<div class="findEmpty">등록된 계정이 없습니다.</div>'; return; }
+
+  box.innerHTML = users.map(u =>
+    '<div class="acct'+(u.approved ? "" : " pending")+'" data-uid="'+esc(u.uid)+'">'
+    + '<span class="ai"><b>'+esc(u.name || u.email || u.uid)+'</b>'
+    +   '<span>'+esc(u.email||"")+' · '
+    +   (u.role === "gc" ? "원청 (전체 열람)" : esc(u.company||"소속 미지정"))
+    +   (u.approved ? "" : " · <b>승인 대기</b>")+'</span></span>'
+    + (u.approved
+        ? '<button class="btn small" type="button" data-act="revoke">차단</button>'
+        : '<button class="btn small padd" type="button" data-act="approve">승인</button>')
+    + (u.role === "gc" ? "" : '<button class="btn small" type="button" data-act="gc">원청으로</button>')
+    + '</div>').join("");
+
+  box.querySelectorAll(".acct").forEach(row => {
+    row.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", async () => {
+      const uid = row.dataset.uid, act = b.dataset.act;
+      const u = users.find(x => x.uid === uid);
+      if(act === "revoke" && !confirm((u.name||u.email)+" 의 접근을 차단할까요?")) return;
+      if(act === "gc" && !confirm((u.name||u.email)+" 을(를) 원청 권한으로 올릴까요?\n전체 근로자 자료를 볼 수 있게 됩니다.")) return;
+      b.disabled = true;
+      try{
+        const db = await loadFirebase();
+        const patch = act === "approve" ? { approved:true }
+                    : act === "revoke"  ? { approved:false }
+                    : { role:"gc", approved:true };
+        await db.collection("users").doc(uid).set(patch, { merge:true });
+        showToast("반영했습니다");
+      }catch(e){ alert("변경하지 못했습니다: " + ((e&&e.message)||e)); }
+      renderAccounts();
+    }));
+  });
+}
+
+/* 로그인한 사람에 맞게 화면을 좁힌다 (서버 규칙과 별개로 화면도 정리) */
+function applyRoleToUI(){
+  const w = $("#whoami");
+  if(authReady()){
+    const p = AUTH.profile;
+    w.innerHTML = '<span class="role '+(p.role==="gc"?"gc":"sub")+'">'
+      + (p.role==="gc" ? "원청" : esc(p.company)) + '</span>'
+      + '<span>'+esc(p.name || p.email || "")+'</span>'
+      + '<button class="linkbtn" type="button" id="btnLogout">로그아웃</button>';
+    w.classList.remove("hidden");
+    const lo = $("#btnLogout");
+    if(lo) lo.addEventListener("click", async () => { await doLogout(); paint(); });
+  } else w.classList.add("hidden");
+
+  const gc = !authReady() || isGC();
+  $("#tabAcct").classList.toggle("hidden", !gc);
+  $("#tabTpl").classList.toggle("hidden", !gc);
+  // 협력사는 자기 회사만 보므로 업체 고르기가 의미 없다
+  const coRow = $("#findCo") && $("#findCo").closest(".filterRow");
+  if(coRow) coRow.classList.toggle("hidden", isSub());
+  // 삭제·내보내기는 원청만
+  ["#delSelected","#wipe","#expCsv","#expJson"].forEach(sel => {
+    const el = $(sel); if(el) el.classList.toggle("hidden", !gc);
+  });
+  const lead = document.querySelector(".admPage > .lead h2");
+  if(lead) lead.textContent = isSub() ? myCompany() : "관리자";
+}
+
 let adminUnlocked = false, lastAdmTab = "today";
 const ADM_PW = "0309";
 $("#admEnter").addEventListener("click", openAdminGate);
 function openAdminGate(){
   if(adminUnlocked){ openAdm("find"); return; }
+  // Firebase 가 설정돼 있으면 로그인 화면으로 (권한 분리는 로그인이 있어야 가능)
+  if(authEnabled()){ openLogin(); return; }
   $("#pwInput").value = ""; $("#pwErr").classList.remove("on");
   $("#pwOverlay").classList.remove("hidden");
   setTimeout(()=>$("#pwInput").focus(), 50);
@@ -2694,6 +3334,7 @@ function tryPw(){
 async function openAdm(tab){
   lastAdmTab = tab || "today";
   await ensureSubmissionsLoaded();   // 여기서 처음으로 목록을 받아 온다
+  applyRoleToUI();
   document.body.classList.add("admmode");
   $("main").style.display = "none";
   document.querySelector(".admPage").style.display = "block";
@@ -2777,8 +3418,9 @@ async function diagnoseConnection(){
   if(db){
     lines.push("", "⑤ 자료 읽기");
     try{
-      const snap = await db.collection("records").get();
-      ok("성공 — 서버에 " + snap.size + "건 있습니다");
+      const col = db.collection("records");
+      const snap = await (isSub() ? col.where("company","==",myCompany()) : col).get();
+      ok("성공 — " + (isSub() ? myCompany()+" 소속 " : "서버에 ") + snap.size + "건 읽었습니다");
     }catch(e){
       no("실패 (" + (fbErrCode(e) || "오류") + ")");
       const x = explainFbError(e);
@@ -2934,16 +3576,19 @@ function ymd(iso){ const d = new Date(iso); return d.getFullYear()+"-"+String(d.
 function recDate(r){ return (r && r.dateKey) ? r.dateKey : ymd(r.submittedAt); }
 function setAdmTab(tab){
   lastAdmTab = tab;
-  ["find","today","risk","tpl"].forEach(t => {
+  ["find","today","risk","acct","tpl"].forEach(t => {
     $("#tab"+t[0].toUpperCase()+t.slice(1)).setAttribute("aria-pressed", String(t===tab));
     $("#adm"+t[0].toUpperCase()+t.slice(1)).classList.toggle("hidden", t!==tab);
   });
   if(tab==="find") renderFind();
+  if(tab==="acct") renderAccounts();
+  if(tab==="tpl") loadCompaniesAdmin();
   if(tab==="today") renderToday();
   if(tab==="risk") renderRisk();
   if(tab==="tpl") renderTpl();
 }
 $("#tabFind").addEventListener("click", () => setAdmTab("find"));
+$("#tabAcct").addEventListener("click", () => setAdmTab("acct"));
 $("#tabToday").addEventListener("click", () => setAdmTab("today"));
 $("#tabRisk").addEventListener("click", () => setAdmTab("risk"));
 $("#tabTpl").addEventListener("click", () => setAdmTab("tpl"));
@@ -2968,8 +3613,8 @@ function riskTag(r){
 }
 function rowHTML(r){
   return '<div class="tr">'
-    +'<input type="checkbox" class="chk" data-code="'+esc(docId(r))+'" '+(r.highRisk?"checked":"")+' title="취약 근로자">'
-    +'<div class="who" data-code="'+esc(docId(r))+'"><b>'+esc(r.name)+(r.highRisk?' <span class="tag risk">취약근로자</span>':'')+'</b>'
+    +'<input type="checkbox" class="chk" data-code="'+esc(docId(r))+'" '+(isRisk(r)?"checked":"")+' title="취약 근로자">'
+    +'<div class="who" data-code="'+esc(docId(r))+'"><b>'+esc(r.name)+(isRisk(r)?' <span class="tag risk">취약근로자</span>':'')+'</b>'
     +'<span>'+esc(r.trade)+' · '+esc(r.code)+' · '+recDate(r)+'</span></div>'
     +'<span class="tag '+riskTag(r)+'">'+esc((r.bp.sys2||r.bp.sys1||"—")+"/"+(r.bp.dia2||r.bp.dia1||"—"))+'</span></div>';
 }
@@ -2977,10 +3622,17 @@ function bindRows(container, list){
   container.querySelectorAll(".chk").forEach(cb => cb.addEventListener("change", async () => {
     const rec = submissions.find(x => docId(x) === cb.dataset.code);
     if(rec){
-      rec.highRisk = cb.checked;
+      // 목록에서 직접 끄고 켜는 것도 담당자 판단이므로 근거를 남긴다
+      const by = prompt((cb.checked ? "지정한" : "확인한") + " 담당자 이름과 직책을 적어 주세요.\n(예: 김철수 안전관리자)", "");
+      if(by === null || !by.trim()){ cb.checked = !cb.checked; return; }
+      const reason = prompt((cb.checked ? "지정" : "해지") + " 사유를 적어 주세요.", "") || "";
+      if(!cb.checked && !reason.trim()){ alert("해지 사유는 반드시 남겨야 합니다."); cb.checked = true; return; }
+      const backup = rec.riskOverride;
+      rec.riskOverride = { to: cb.checked, by: by.trim(), reason: reason.trim(), at: new Date().toISOString() };
+      rec.highRisk = isRisk(rec);
       const res = await Store.saveRecord(rec, submissions);
       if(!res || !res.ok){
-        rec.highRisk = !cb.checked;
+        rec.riskOverride = backup; rec.highRisk = isRisk(rec);
         alert("저장하지 못했습니다.\n\n" + ((res && res.message) || "알 수 없는 오류"));
       }
       setAdmTab(lastAdmTab);
@@ -3071,7 +3723,7 @@ function renderTodayTable(){
     '<tr>'
     +'<td>'+esc(r.company||"미지정")+'</td>'
     +'<td class="who" data-code="'+esc(docId(r))+'">'+esc(r.name)+'</td>'
-    +'<td class="'+(r.highRisk?"riskYes":"riskNo")+'">'+(r.highRisk?"유":"무")+'</td>'
+    +'<td class="'+(isRisk(r)?"riskYes":"riskNo")+'">'+(isRisk(r)?"유":"무")+'</td>'
     +'<td><button class="copyBtn" type="button" data-code="'+esc(docId(r))+'" data-kind="form">V</button></td>'
     +'<td><button class="copyBtn" type="button" data-code="'+esc(docId(r))+'" data-kind="photoboard">V</button></td>'
     +'<td><input type="checkbox" class="rowChk" data-code="'+esc(docId(r))+'" '+(selectedCodes.has(docId(r))?"checked":"")+'></td>'
@@ -3116,7 +3768,7 @@ function updateDeleteSelectedBtn(){
 }
 function renderToday(){ renderTodayTable(); }
 function renderRisk(){
-  const list = submissions.filter(r => r.highRisk).sort((a,b)=> b.submittedAt.localeCompare(a.submittedAt));
+  const list = submissions.filter(r => isRisk(r)).sort((a,b)=> b.submittedAt.localeCompare(a.submittedAt));
   renderGroups($("#riskGroups"), list, "취약 근로자로 지정된 근로자가 없습니다.");
 }
 
@@ -3139,7 +3791,7 @@ $("#expCsv").addEventListener("click", () => {
   const lines = list.map(r => cols.map(c=>q(r[c[1]])).concat([
     q((r.diseases||[]).join(" ")), q((r.symptoms||[]).join(" ")),
     q((r.bp.sys2||r.bp.sys1)+"/"+(r.bp.dia2||r.bp.dia1)), q(r.bp.level),
-    q(r.ppe.helmet), q(r.ppe.shoes), q(r.ppe.belt), q(r.ppe.etcName), q(r.highRisk?"Y":""), q(flags(r).join(" / "))
+    q(r.ppe.helmet), q(r.ppe.shoes), q(r.ppe.belt), q(r.ppe.etcName), q(isRisk(r)?"Y":""), q(flags(r).join(" / "))
   ]).join(","));
   dl("신규채용자명부_"+admDate.replace(/-/g,"")+".csv", head.join(",")+"\n"+lines.join("\n"), "text/csv;charset=utf-8");
 });
@@ -3353,12 +4005,90 @@ async function ensureSubmissionsLoaded(){
   return submissionsLoaded;
 }
 
+/* 시작 화면 안내: 쓰다 만 것 / 이미 제출한 것 */
+const MINE_KEY = "hd4_mine";
+function showStartNotices(){
+  const d = readDraft();
+  const box = $("#resumeBox");
+  if(d && d.step > 0){
+    const nm = (d.f && d.f.name) || "";
+    const when = new Date(d.at);
+    $("#resumeInfo").textContent = (nm ? nm + "님 · " : "")
+      + (flowIdx(d.step)+1) + "/" + FLOW.length + "단계까지 쓰셨습니다 · "
+      + (when.getMonth()+1) + "월 " + when.getDate() + "일 "
+      + String(when.getHours()).padStart(2,"0") + ":" + String(when.getMinutes()).padStart(2,"0");
+    box.classList.remove("hidden");
+  } else box.classList.add("hidden");
+
+  let mine = null;
+  try{ mine = JSON.parse(localStorage.getItem(MINE_KEY) || "null"); }catch(e){}
+  const ab = $("#alreadyBox");
+  if(mine && mine.code){
+    $("#alreadyInfo").textContent = mine.name + "님 · 관리번호 " + mine.code + " · "
+      + mine.date + " 제출 완료. 현장에 오시면 담당자가 확인합니다.";
+    ab.classList.remove("hidden");
+  } else ab.classList.add("hidden");
+}
+/* 단계를 넘길 때만 저장하면, 지금 화면에 방금 친 내용은 빠진다.
+   입력·선택이 일어날 때마다 (0.25초 묶어서) 저장한다. */
+document.querySelector("main").addEventListener("input", () => { if(step>0 && step<9) saveDraft(); });
+document.querySelector("main").addEventListener("click", e => {
+  if(e.target.closest(".opt,.photoBtn,[data-clear]") && step>0 && step<9) setTimeout(saveDraft, 60);
+});
+document.querySelector("main").addEventListener("pointerup", e => {
+  if(e.target.tagName === "CANVAS" && step>0 && step<9) setTimeout(saveDraft, 60);
+});
+
+$("#resumeGo").addEventListener("click", () => { const d = readDraft(); if(d) applyDraft(d); });
+$("#resumeNew").addEventListener("click", () => {
+  if(!confirm("쓰다 만 내용을 지우고 처음부터 시작할까요?")) return;
+  clearDraft(); location.reload();
+});
+$("#alreadyNew").addEventListener("click", () => {
+  try{ localStorage.removeItem(MINE_KEY); }catch(e){}
+  clearDraft(); location.reload();
+});
+
+/* 전화번호는 치는 대로 하이픈을 넣어 준다 (업체마다 형식이 제각각이면 찾기가 어렵다) */
+function hyphenPhone(v){
+  const n = String(v||"").replace(/[^0-9]/g,"").slice(0,11);
+  if(n.length < 4) return n;
+  if(n.startsWith("02")) {
+    if(n.length <= 5) return n.slice(0,2)+"-"+n.slice(2);
+    if(n.length <= 9) return n.slice(0,2)+"-"+n.slice(2,5)+"-"+n.slice(5);
+    return n.slice(0,2)+"-"+n.slice(2,6)+"-"+n.slice(6,10);
+  }
+  if(n.length <= 7) return n.slice(0,3)+"-"+n.slice(3);
+  if(n.length <= 10) return n.slice(0,3)+"-"+n.slice(3,6)+"-"+n.slice(6);
+  return n.slice(0,3)+"-"+n.slice(3,7)+"-"+n.slice(7);
+}
+["phone","guardian"].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) el.addEventListener("input", () => {
+    const atEnd = el.selectionStart === el.value.length;
+    el.value = hyphenPhone(el.value);
+    if(atEnd) el.selectionStart = el.selectionEnd = el.value.length;
+  });
+});
+
+/* 원청사가 등록해 둔 협력사 목록을 내려받아 고를 수 있게 한다 */
+async function loadCompanyList(){
+  try{
+    const list = await Store.load("companies", null);
+    if(Array.isArray(list) && list.length){
+      $("#coList").innerHTML = list.map(c => '<option value="'+esc(c)+'"></option>').join("");
+    }
+  }catch(e){}
+}
+
 (async () => {
   // 시작할 때는 양식 설정만 읽는다. 제출 기록은 건드리지 않는다.
   const savedTpl = await Store.load("template", null);
   if(savedTpl && savedTpl.colgroup){ ACTIVE_TEMPLATE = savedTpl; FM = savedTpl.fieldMap || DEFAULT_FIELD_MAP; }
   applyLang();
   paint();
+  showStartNotices();
+  loadCompanyList();
 })();
 </script>
 </body>
