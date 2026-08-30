@@ -1,88 +1,96 @@
-Firebase 콘솔 → Firestore Database → 규칙(Rules) → 전체 지우고 붙여넣기 → 게시
+════════════════════════════════════════════════════════════
+Firebase 설정 — 순서대로 3단계
+════════════════════════════════════════════════════════════
 
+【1단계】 이메일 로그인 켜기
+  Firebase 콘솔 → Authentication → 시작하기
+  → Sign-in method → 이메일/비밀번호 → 사용 설정 → 저장
+
+【2단계】 아래 규칙 붙여넣기
+  Firestore Database → 규칙(Rules) → 전체 지우고 붙여넣기 → 게시
+
+【3단계】 원청 계정 만들기  ★ 앱에서 합니다. 콘솔 작업 없음
+  배포된 주소 접속 → 우측 위 [관리자]
+  → 맨 아래 "현장을 처음 여시나요 · 원청 관리자 계정 만들기"
+  → 이메일 · 비밀번호(6자 이상) · 담당자 성함 입력 → 만들기
+
+  이 버튼은 딱 한 번만 통합니다. 한 명이 만들고 나면
+  다음 사람에게는 "이미 원청 계정이 있습니다"라고 뜹니다.
+
+────────────────────────────────────────────────────────────
+규칙 (2단계에 붙여넣을 내용)
 ────────────────────────────────────────────────────────────
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 로그인한 사람의 계정 정보
-    function me() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
     function signedIn() { return request.auth != null; }
-    function known()    { return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
-    function ok()       { return known() && me().approved == true; }
-    function isGC()     { return ok() && me().role == 'gc'; }
-    function myCo()     { return ok() ? me().company : '__none__'; }
+    function me()   { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function known(){ return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function ok()   { return known() && me().approved == true; }
+    function isGC() { return ok() && me().role == 'gc'; }
+    function myCo() { return ok() ? me().company : '__none__'; }
 
-    // 근로자 제출 기록
+    // ── 근로자 제출 기록 ──
     match /records/{id} {
-      // 근로자는 로그인 없이 새로 쓰기만 가능
-      allow create: if okRecord();
-
-      // 원청은 전체, 협력사는 자기 회사 것만
-      allow read: if isGC() || (ok() && resource.data.company == myCo());
-
-      // 혈압 입력 · 사진 첨부 · 취약 판정은 원청과 해당 협력사만
-      allow update: if okRecord() &&
-                       (isGC() || (ok() && resource.data.company == myCo()));
-
-      // 삭제는 원청만
-      allow delete: if isGC();
-
       function okRecord() {
         return request.resource.data.keys().hasOnly(['json','updatedAt','company','dateKey'])
             && request.resource.data.json is string
             && request.resource.data.json.size() < 1000000
             && request.resource.data.company is string;
       }
+      allow create: if okRecord();                                   // 근로자는 로그인 없이 쓰기만
+      allow read:   if isGC() || (ok() && resource.data.company == myCo());
+      allow update: if okRecord() && (isGC() || (ok() && resource.data.company == myCo()));
+      allow delete: if isGC();
     }
 
-    // 계정
-    match /users/{uid} {
-      allow read:   if isGC() || (signedIn() && request.auth.uid == uid);
-      // 가입 신청은 본인만, 그리고 반드시 승인 대기(approved=false) 상태로만
-      allow create: if signedIn() && request.auth.uid == uid
-                    && request.resource.data.role == 'sub'
-                    && request.resource.data.approved == false;
-      // 승인·권한 변경은 원청만
+    // ── 원청 자리 (딱 한 번만 만들어짐) ──
+    match /meta/bootstrap {
+      allow read:   if true;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
       allow update, delete: if isGC();
     }
 
-    // 양식 설정 · 협력사 목록 · 순번 카운터
-    // (근로자도 읽어야 하므로 읽기는 열어 둔다. 개인정보는 들어가지 않는다)
+    // ── 계정 ──
+    match /users/{uid} {
+      allow read: if isGC() || (signedIn() && request.auth.uid == uid);
+
+      // 협력사는 승인 대기 상태로만 가입 가능
+      // 원청은 bootstrap 자리를 잡은 사람만 가능
+      allow create: if signedIn() && request.auth.uid == uid && (
+           (request.resource.data.role == 'sub' && request.resource.data.approved == false)
+        || (request.resource.data.role == 'gc'
+            && get(/databases/$(database)/documents/meta/bootstrap).data.uid == request.auth.uid)
+      );
+      allow update, delete: if isGC();
+    }
+
+    // ── 양식 설정 · 협력사 목록 · 순번 카운터 ──
+    // 근로자 화면도 읽어야 하므로 읽기는 열어 둔다. 개인정보는 들어가지 않는다.
     match /kv/{id} {
-      allow read: if true;
+      allow read:  if true;
       allow write: if isGC() || id.matches('seq-.*') || id == '__diag';
     }
   }
 }
 
 ────────────────────────────────────────────────────────────
-붙여넣기 전에 반드시 할 일
+그 다음에 할 일
+────────────────────────────────────────────────────────────
 
-1. Authentication → 시작하기 → 이메일/비밀번호 → 사용 설정
+▸ 협력사 등록
+  원청으로 로그인 → [설정] 탭 → 협력사명 입력 → 추가
+  등록해 두면 협력사 담당자가 가입할 때 목록에서 고릅니다.
+  (등록 전이라도 직접 타이핑해서 가입할 수 있습니다)
 
-2. Authentication → 사용자 → 사용자 추가
-   원청 계정 하나를 만듭니다 (예: safety@ipark.com)
-   만든 뒤 그 사용자의 UID를 복사합니다
+▸ 협력사 담당자 가입
+  같은 주소 접속 → [관리자] → "협력사 담당자 계정 만들기"
+  → 이메일 · 비밀번호 · 소속 협력사 · 성함
+  → 원청이 [계정 관리] 탭에서 승인하면 자기 회사 근로자만 보입니다
 
-3. Firestore Database → 데이터 → 컬렉션 시작 → users
-   문서 ID = 위에서 복사한 UID
-   필드:
-       role      (문자열)  gc
-       company   (문자열)  (비워 둠)
-       name      (문자열)  원청 안전보건팀
-       email     (문자열)  safety@ipark.com
-       approved  (부울)    true
-
-   ※ 이 첫 계정만 손으로 만듭니다.
-      이후 협력사 담당자는 앱에서 직접 가입 신청하고,
-      원청이 "계정 관리" 탭에서 승인하면 됩니다.
-
-4. 기존 자료 정비
-   전에 저장된 기록에는 company 항목이 문서 겉면에 없어서
-   협력사 계정에는 보이지 않습니다.
-   원청으로 로그인한 뒤 각 근로자를 한 번씩 열어 저장(혈압 입력 등)하면
-   자동으로 채워집니다. 건수가 많으면 말씀해 주세요 — 일괄 정비 버튼을 넣겠습니다.
+▸ 기존 자료 정비
+  전에 저장된 기록에는 company 항목이 문서 겉면에 없어
+  협력사 계정에 보이지 않습니다. 원청으로 열어 한 번씩 저장하면
+  채워집니다. 건수가 많으면 일괄 정비 버튼을 넣어 드리겠습니다.

@@ -252,6 +252,36 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
   width:26px;height:26px;font-size:1rem;line-height:1;cursor:pointer}
 .coChip button:hover{background:var(--signal-8);color:var(--signal)}
 .statRow{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.resultHead{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;min-height:22px}
+.resultHead .findCount{margin-left:0}
+
+/* ── 컴퓨터: 찾기 화면을 좌(조작) / 우(결과)로 나눈다 ──
+   가운데 한 줄로 쌓아 두면 넓은 화면에서 위아래로만 길어져
+   결과를 보려면 계속 스크롤해야 한다. */
+@media (min-width:1120px){
+  .admPage > .lead > h2,
+  .admPage > .lead > p:not(.badgeRow){display:none}
+  .admPage > .lead{margin-bottom:14px}
+  #admFind > .note{font-size:.84rem;padding:10px 14px}
+  #admFind{display:grid;grid-template-columns:296px minmax(0,1fr);
+    column-gap:26px;align-items:start}
+  #admFind > .note{grid-column:1 / -1;margin-bottom:18px}
+  .findRail{position:sticky;top:18px}
+  .findRail .findBar{flex-direction:column;gap:8px;margin-bottom:12px}
+  .findRail .findBar input{width:100%}
+  .findRail .findBar .btn{width:100%;min-width:0}
+  .findRail .filterRow{flex-direction:column;align-items:stretch;gap:6px;margin-bottom:14px}
+  .findRail .filterRow select{flex:none;width:100%}
+  .findRail .statRow{flex-direction:column;gap:6px;margin-bottom:0}
+  .findRail .stat{flex:none;display:flex;align-items:baseline;gap:10px;
+    text-align:left;padding:12px 14px;min-height:0}
+  .findRail .stat b{font-size:1.25rem;min-width:34px}
+  .findRail .stat u{margin-top:0;font-size:.82rem}
+  .findResults{min-width:0}
+  .hit{padding:15px 18px}
+  #findList{max-height:calc(100vh - 320px);overflow:auto;padding-right:4px}
+}
 /* ── 휴대폰에서 "근로자 찾기"가 첫 화면에 나오도록 위쪽을 줄인다.
    현장 담당자는 폰으로 이 화면을 열자마자 이름을 봐야 한다. ── */
 @media (max-width:759px){
@@ -280,7 +310,9 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .stat u{display:block;font-size:.74rem;text-decoration:none;color:var(--steel);margin-top:3px}
 .stat.warnStat b{color:var(--signal)}
 .stat[aria-pressed=true].warnStat b{color:#fff}
-.hitMain{flex:1;min-width:0}
+.hitMain{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.hit .nm{display:block;line-height:1.25}
+.hit .sub{display:block}
 .hit .age{font-style:normal;font-size:.78rem;color:var(--steel);font-weight:700;margin-left:4px}
 .hit .age.senior{color:var(--signal)}
 .hit .miss{display:block;font-size:.76rem;color:var(--signal);font-weight:700;margin-top:4px}
@@ -350,10 +382,44 @@ table.admTable thead th #chkAll{margin-top:4px}
 .overlay{position:fixed;inset:0;background:rgba(15,17,20,.6);z-index:80;display:flex;align-items:center;justify-content:center;padding:20px}
 .overlay.hidden{display:none}
 .modal{background:#fff;border-radius:14px;padding:24px;max-width:340px;width:100%;text-align:center}
-.modal.login{max-width:400px;text-align:left}
-.modal.login .mlab{display:block;font-size:.8rem;font-weight:700;color:var(--steel);margin:12px 0 5px}
-.modal.login input,.modal.login select{width:100%;min-height:50px}
-.modal.login .mbtns{margin-top:16px}
+/* ── 로그인 화면 ────────────────────────────────────────────
+   현장 서류 시스템의 첫 화면. 왼쪽에 현장 정보를 붙여
+   "이게 무슨 화면이고 나는 로그인해야 하는 사람인가"를 먼저 알린다.
+   좁은 화면에서는 왼쪽 판이 접히고 폼만 남는다. */
+.loginPane{background:#fff;border-radius:18px;width:100%;max-width:420px;overflow:hidden;
+  display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(10,14,20,.28)}
+.loginBrand{display:none}
+.loginMain{padding:26px 24px;text-align:left}
+.loginMain h3{font-size:1.3rem;font-weight:800;margin:0 0 6px;letter-spacing:-.02em}
+.loginMain > p{font-size:.86rem;color:var(--steel);line-height:1.55;margin:0 0 4px}
+.mlab{display:block;font-size:.78rem;font-weight:700;color:var(--steel);margin:16px 0 6px}
+.loginMain input{width:100%;min-height:52px}
+.mhint{font-size:.76rem;color:var(--mute);margin:6px 0 0;line-height:1.45}
+.loginMain .mbtns{margin-top:20px;display:flex;gap:8px}
+.loginMain .mbtns .btn{flex:1;min-height:52px}
+.lgLinks{display:flex;flex-direction:column;gap:8px;margin-top:16px;align-items:flex-start}
+.lgGcRow{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.linkbtn.quiet{color:var(--mute);font-size:.78rem}
+.linkbtn.quiet:hover{color:var(--ink)}
+.waitBox{background:var(--go-8);border-radius:12px;padding:18px}
+.waitBox b{display:block;font-size:1rem;margin-bottom:6px}
+.waitBox p{font-size:.86rem;color:var(--steel);line-height:1.6;margin:0}
+
+@media (min-width:900px){
+  .loginPane{flex-direction:row;max-width:840px;min-height:520px}
+  .loginBrand{display:flex;flex-direction:column;justify-content:space-between;
+    flex:0 0 44%;background:var(--ink);color:#fff;padding:34px 30px}
+  .lbTop{display:flex;flex-direction:column;gap:6px}
+  .lbMark{font-weight:900;letter-spacing:.14em;font-size:.82rem}
+  .lbSite{font-size:.82rem;color:#8E97A4}
+  .lbMid h2{font-size:2.15rem;line-height:1.2;font-weight:800;letter-spacing:-.03em;margin:0 0 14px}
+  .lbMid p{font-size:.9rem;line-height:1.7;color:#B9C0CA;margin:0}
+  .lbFoot{font-size:.8rem;line-height:1.6;color:#8E97A4;
+    border-top:1px solid rgba(255,255,255,.14);padding-top:16px}
+  .lbFoot b{display:block;color:#fff;margin-bottom:3px}
+  .loginMain{flex:1;padding:40px 38px;display:flex;flex-direction:column;justify-content:center}
+  .loginMain h3{font-size:1.5rem}
+}
 .whoami{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;color:var(--steel);margin-top:8px}
 .whoami .role{font-weight:800;border-radius:999px;padding:3px 10px;font-size:.74rem}
 .role.gc{background:var(--ink);color:#fff}
@@ -460,6 +526,8 @@ table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
    ══════════════════════════════════════════════════════════ */
 .brandrow,.hbar,.prog{max-width:var(--shell);margin-left:auto;margin-right:auto}
 body.admmode{--shell:var(--shell-wide)}
+body.admmode .prog{visibility:hidden;height:4px;padding-bottom:0}
+body.admmode .hbar em{display:none}
 
 /* ── 태블릿 (세로) ───────────────────────────── */
 @media (min-width:760px){
@@ -994,7 +1062,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 
 <div class="admPage">
 <section class="adm" id="adm">
-  <div class="lead"><h2>관리자</h2><p style="color:var(--steel);font-size:.9rem">오늘 작성된 서류 확인, 취약 근로자 관리, 양식 변경을 할 수 있습니다.</p>
+  <div class="lead"><h2>관리자</h2><p style="color:var(--steel);font-size:.9rem">근로자가 미리 작성한 서류를 확인하고, 현장에서 혈압을 측정해 기록합니다.</p>
     <p style="margin-top:8px" class="badgeRow"><span class="tag" id="fbBadge" style="background:#EFF1F4;color:var(--steel)">확인 중…</span>
       <button type="button" class="btn small" id="btnDiag">연결 진단</button></p>
     <p class="whoami hidden" id="whoami"></p></div>
@@ -1008,17 +1076,21 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 
   <div id="admFind" class="hidden">
     <p class="note">근로자가 <b>미리 작성해 온 서류</b>를 찾는 화면입니다. 날짜와 상관없이 전부 검색합니다.</p>
-    <div class="findBar">
-      <input type="search" id="findName" placeholder="이름을 입력하세요 (예: 홍길동)" autocomplete="off">
-      <button type="button" class="btn small" id="findClear">지우기</button>
+    <div class="findRail">
+      <div class="findBar">
+        <input type="search" id="findName" placeholder="이름 검색 (예: 홍길동)" autocomplete="off">
+        <button type="button" class="btn small" id="findClear">지우기</button>
+      </div>
+      <div class="filterRow">
+        <label for="findCo">업체</label>
+        <select id="findCo"><option value="">전체</option></select>
+      </div>
+      <div class="statRow" id="statRow"></div>
     </div>
-    <div class="filterRow">
-      <label for="findCo">업체</label>
-      <select id="findCo"><option value="">전체</option></select>
-      <span class="findCount" id="findCount"></span>
+    <div class="findResults">
+      <div class="resultHead"><span class="findCount" id="findCount"></span></div>
+      <div id="findList"></div>
     </div>
-    <div class="statRow" id="statRow"></div>
-    <div id="findList"></div>
   </div>
 
   <div id="admToday">
@@ -1106,19 +1178,41 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 </footer>
 
 <div class="overlay hidden" id="loginOverlay">
-  <div class="modal login">
-    <h3 id="loginTitle">관리자 로그인</h3>
+  <div class="loginPane">
+    <aside class="loginBrand">
+      <div class="lbTop">
+        <span class="lbMark">IPARK</span>
+        <span class="lbSite">학동 4구역 현장</span>
+      </div>
+      <div class="lbMid">
+        <h2>신규채용자<br>준수사항</h2>
+        <p>근로자가 미리 작성한 서류를 확인하고,<br>현장에서 혈압을 측정해 기록합니다.</p>
+      </div>
+      <div class="lbFoot">
+        <b>근로자는 로그인하지 않습니다.</b>
+        받으신 링크로 바로 작성하시면 됩니다.
+      </div>
+    </aside>
+
+    <div class="loginMain">
+    <h3 id="loginTitle">로그인</h3>
     <p id="loginSub">원청 안전보건팀 · 협력사 담당자용입니다. 근로자는 로그인이 필요 없습니다.</p>
 
     <div id="loginForm">
-      <label class="mlab">이메일</label>
+      <label class="mlab" for="lgEmail">이메일</label>
       <input type="email" id="lgEmail" placeholder="name@company.com" autocomplete="username">
-      <label class="mlab">비밀번호</label>
+      <label class="mlab" for="lgPw">비밀번호</label>
       <input type="password" id="lgPw" placeholder="6자 이상" autocomplete="current-password">
+      <div id="gcExtra" class="hidden">
+        <label class="mlab" for="lgGcName">담당자 성함</label>
+        <input type="text" id="lgGcName" placeholder="예) 김철수 안전관리자">
+      </div>
       <div id="signupExtra" class="hidden">
-        <label class="mlab">소속 협력사</label>
-        <select id="lgCo"><option value="">협력사를 고르세요</option></select>
-        <label class="mlab">담당자 성함</label>
+        <label class="mlab" for="lgCo">소속 협력사</label>
+        <input type="text" id="lgCo" list="lgCoList" placeholder="회사명을 입력하거나 목록에서 고르세요" autocomplete="organization">
+        <datalist id="lgCoList"></datalist>
+        <p class="mhint" id="lgCoHint"></p>
+        <label class="mlab" for="lgName">담당자 성함</label>
         <input type="text" id="lgName" placeholder="예) 김철수">
       </div>
       <div class="merr" id="lgErr"></div>
@@ -1126,13 +1220,23 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
         <button class="btn ghost" type="button" id="lgCancel">취소</button>
         <button class="btn prime" type="button" id="lgGo">로그인</button>
       </div>
-      <button class="linkbtn" type="button" id="lgSwap" style="margin-top:12px">협력사 담당자 계정 만들기</button>
+      <div class="lgLinks">
+        <button class="linkbtn" type="button" id="lgSwap">협력사 담당자 계정 만들기</button>
+        <button class="linkbtn" type="button" id="lgReset">비밀번호를 잊었습니다</button>
+      </div>
+      <div class="lgGcRow">
+        <button class="linkbtn quiet" type="button" id="lgGcLink">현장을 처음 여시나요 · 원청 관리자 계정 만들기</button>
+      </div>
     </div>
 
     <div id="loginWait" class="hidden">
-      <div class="note info" style="margin:0 0 14px">가입 신청이 접수되었습니다.<br>
-        <b>원청 안전보건팀의 승인</b>이 있어야 자료를 볼 수 있습니다. 승인 후 다시 로그인해 주세요.</div>
+      <div class="waitBox">
+        <b>가입 신청을 받았습니다</b>
+        <p>원청 안전보건팀이 승인하면 소속 근로자 서류를 볼 수 있습니다.
+           승인되면 같은 계정으로 다시 로그인해 주세요.</p>
+      </div>
       <div class="mbtns"><button class="btn prime" type="button" id="lgOut">확인</button></div>
+    </div>
     </div>
   </div>
 </div>
@@ -3144,6 +3248,33 @@ async function doLogin(email, pw){
   AUTH.on = true;
   return AUTH.profile;
 }
+/* 아직 원청 계정이 하나도 없는가.
+   meta/bootstrap 문서가 "원청 자리는 이미 찼다"는 표시다.
+   이 문서는 딱 한 번만 만들어질 수 있게 규칙이 지킨다. */
+async function gcSeatOpen(){
+  try{
+    const db = await loadFirebase();
+    const d = await db.collection("meta").doc("bootstrap").get();
+    return !d.exists;
+  }catch(e){ return false; }
+}
+async function doSignupGC(email, pw, name){
+  const auth = await loadAuth();
+  const db = await loadFirebase();
+  let cred;
+  try{ cred = await auth.createUserWithEmailAndPassword(email, pw); }
+  catch(e){
+    if(/email-already-in-use/i.test((e&&e.code)||"")) cred = await auth.signInWithEmailAndPassword(email, pw);
+    else throw e;
+  }
+  // 먼저 자리를 잡는다. 두 사람이 동시에 눌러도 한 명만 성공한다.
+  await db.collection("meta").doc("bootstrap").set({ uid: cred.user.uid, at: Date.now() });
+  const prof = { role:"gc", company:"", name, email, approved:true, at:Date.now() };
+  await db.collection("users").doc(cred.user.uid).set(prof);
+  AUTH.user = cred.user; AUTH.profile = prof; AUTH.on = true;
+  return prof;
+}
+
 async function doSignup(email, pw, company, name){
   const auth = await loadAuth();
   const cred = await auth.createUserWithEmailAndPassword(email, pw);
@@ -3162,8 +3293,9 @@ async function doLogout(){
 
 /* ── 로그인 화면 ─────────────────────────────── */
 let signupMode = false;
+let gcMode = false;
 function openLogin(){
-  signupMode = false; syncLoginMode();
+  signupMode = false; gcMode = false; syncLoginMode();
   $("#lgErr").classList.remove("on");
   $("#loginForm").classList.remove("hidden");
   $("#loginWait").classList.add("hidden");
@@ -3172,22 +3304,47 @@ function openLogin(){
   setTimeout(() => $("#lgEmail").focus(), 60);
 }
 function syncLoginMode(){
-  $("#loginTitle").textContent = signupMode ? "협력사 담당자 가입" : "관리자 로그인";
-  $("#lgGo").textContent = signupMode ? "가입 신청" : "로그인";
+  $("#loginTitle").textContent = gcMode ? "원청 관리자 계정 만들기"
+                               : signupMode ? "협력사 담당자 가입" : "로그인";
+  $("#loginSub").textContent = gcMode
+      ? "현장 안전보건팀 계정입니다. 최초 1회만 만들 수 있습니다."
+      : signupMode ? "가입 후 원청 안전보건팀이 승인하면 소속 근로자 서류를 볼 수 있습니다."
+      : "원청 안전보건팀 · 협력사 담당자용입니다. 근로자는 로그인이 필요 없습니다.";
+  $("#lgGo").textContent = gcMode ? "원청 계정 만들기" : signupMode ? "가입 신청" : "로그인";
   $("#signupExtra").classList.toggle("hidden", !signupMode);
-  $("#lgSwap").textContent = signupMode ? "이미 계정이 있습니다 · 로그인" : "협력사 담당자 계정 만들기";
-  $("#lgPw").setAttribute("autocomplete", signupMode ? "new-password" : "current-password");
+  $("#gcExtra").classList.toggle("hidden", !gcMode);
+  $("#lgSwap").textContent = (signupMode || gcMode) ? "이미 계정이 있습니다 · 로그인" : "협력사 담당자 계정 만들기";
+  $("#lgPw").setAttribute("autocomplete", (signupMode||gcMode) ? "new-password" : "current-password");
+  $("#lgReset").classList.toggle("hidden", signupMode || gcMode);
 }
 async function loadCompanyOptions(){
-  try{
-    const list = await Store.load("companies", []);
-    $("#lgCo").innerHTML = '<option value="">협력사를 고르세요</option>'
-      + (Array.isArray(list) ? list : []).map(c => '<option value="'+esc(c)+'">'+esc(c)+'</option>').join("");
-  }catch(e){}
+  let list = [];
+  try{ const l = await Store.load("companies", []); if(Array.isArray(l)) list = l; }catch(e){}
+  $("#lgCoList").innerHTML = list.map(c => '<option value="'+esc(c)+'"></option>').join("");
+  // 원청이 아직 협력사를 등록하지 않았을 수 있다. 그때도 가입이 막히면 안 된다.
+  $("#lgCoHint").textContent = list.length
+    ? "목록에 없으면 직접 적으셔도 됩니다."
+    : "등록된 협력사 목록이 아직 없습니다. 계약서에 적힌 회사명 그대로 적어 주세요.";
 }
 function lgFail(msg){ const e = $("#lgErr"); e.textContent = msg; e.classList.add("on"); }
 
-$("#lgSwap").addEventListener("click", () => { signupMode = !signupMode; syncLoginMode(); $("#lgErr").classList.remove("on"); });
+$("#lgSwap").addEventListener("click", () => {
+  if(gcMode){ gcMode = false; signupMode = false; }
+  else signupMode = !signupMode;
+  syncLoginMode(); $("#lgErr").classList.remove("on");
+});
+$("#lgGcLink").addEventListener("click", () => { gcMode = true; signupMode = false; syncLoginMode(); $("#lgErr").classList.remove("on"); });
+
+/* 비밀번호를 잊었을 때 */
+$("#lgReset").addEventListener("click", async () => {
+  const email = $("#lgEmail").value.trim();
+  if(!email){ lgFail("먼저 이메일을 넣어 주세요. 그 주소로 재설정 링크를 보냅니다."); return; }
+  try{
+    const auth = await loadAuth();
+    await auth.sendPasswordResetEmail(email);
+    alert(email + " 로 비밀번호 재설정 메일을 보냈습니다.\n메일함(스팸함 포함)을 확인해 주세요.");
+  }catch(e){ lgFail("메일을 보내지 못했습니다: " + ((e&&e.message)||e)); }
+});
 $("#lgCancel").addEventListener("click", () => $("#loginOverlay").classList.add("hidden"));
 $("#lgOut").addEventListener("click", async () => { await doLogout(); $("#loginOverlay").classList.add("hidden"); });
 
@@ -3197,7 +3354,15 @@ $("#lgGo").addEventListener("click", async () => {
   const btn = $("#lgGo"); btn.disabled = true; const t = btn.textContent; btn.textContent = "처리 중…";
   try{
     let prof;
-    if(signupMode){
+    if(gcMode){
+      const nm = $("#lgGcName").value.trim();
+      if(!nm){ lgFail("담당자 성함을 넣어 주세요."); throw 0; }
+      if(pw.length < 6){ lgFail("비밀번호는 6자 이상이어야 합니다."); throw 0; }
+      if(!(await gcSeatOpen())){
+        lgFail("이미 원청 계정이 있습니다. 로그인하거나 기존 담당자에게 문의해 주세요."); throw 0;
+      }
+      prof = await doSignupGC(email, pw, nm);
+    } else if(signupMode){
       const co = $("#lgCo").value, nm = $("#lgName").value.trim();
       if(!co){ lgFail("소속 협력사를 골라 주세요."); throw 0; }
       if(!nm){ lgFail("담당자 성함을 넣어 주세요."); throw 0; }
@@ -3331,6 +3496,7 @@ function tryPw(){
     $("#pwErr").classList.add("on");
   }
 }
+const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", acct:"계정 관리", tpl:"설정" };
 async function openAdm(tab){
   lastAdmTab = tab || "today";
   await ensureSubmissionsLoaded();   // 여기서 처음으로 목록을 받아 온다
@@ -3580,6 +3746,7 @@ function setAdmTab(tab){
     $("#tab"+t[0].toUpperCase()+t.slice(1)).setAttribute("aria-pressed", String(t===tab));
     $("#adm"+t[0].toUpperCase()+t.slice(1)).classList.toggle("hidden", t!==tab);
   });
+  $("#hTitle").textContent = ADM_TITLE[tab] || "관리자";
   if(tab==="find") renderFind();
   if(tab==="acct") renderAccounts();
   if(tab==="tpl") loadCompaniesAdmin();
