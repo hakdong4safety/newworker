@@ -73,7 +73,9 @@ input::placeholder,textarea::placeholder{color:#B2B9C2;font-weight:400}
 .unit{display:flex;align-items:center;gap:8px}
 .unit b{font-size:.94rem;font-weight:600;color:var(--steel);flex:none}
 
-.opts{display:flex;flex-wrap:wrap;gap:8px}
+/* 버튼 폭이 글자 수에 따라 제각각이면 어디를 눌러야 할지 헷갈린다.
+   칸을 균등하게 나눠 같은 크기로 보이게 한다. */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px}
 .opts.grid2{display:grid;grid-template-columns:1fr 1fr}
 .opts.grid3{display:grid;grid-template-columns:repeat(3,1fr)}
 .opts.grid4{display:grid;grid-template-columns:repeat(4,1fr)}
@@ -115,12 +117,18 @@ input::placeholder,textarea::placeholder{color:#B2B9C2;font-weight:400}
 .pad .base{position:absolute;left:22px;right:22px;bottom:26%;border-bottom:1.5px solid #A9AFB8;pointer-events:none}
 .pad .ph{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;
   font-size:.9rem;color:#B7BEC7;pointer-events:none;font-weight:500}
+/* 서명판은 손가락으로 이름을 쓰는 곳이라 너무 납작하면 못 쓴다 */
+.pad{min-height:172px}
+.pad.mini{min-height:152px}
 .pad.inked .ph,.pad.inked .base{display:none}
 .padbar{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:10px}
 .padbar .tip{font-size:.8rem;color:var(--mute)}
 .linkbtn{background:none;border:none;font-size:.86rem;font-weight:600;color:var(--steel);
   text-decoration:underline;text-underline-offset:3px;padding:10px 4px;cursor:pointer}
-.pad.mini canvas{height:96px !important}
+/* 예전에는 96px 로 못 박혀 있어 손가락으로 이름을 쓸 수 없었다.
+   이제 data-ratio 대로 잡되, 아래 최소 높이는 지킨다. */
+.pad.mini canvas{min-height:150px}
+.pad canvas{min-height:170px}
 
 .photoRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .photoBtn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 18px;
@@ -239,12 +247,16 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .datebar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .datebar button{min-height:44px;min-width:44px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-size:1.1rem;cursor:pointer}
 .datebar input{flex:1 1 150px;min-height:44px}
-.datebar #btnReload{font-size:.82rem;min-width:130px;font-weight:700}
+.badgeRow #btnReload{font-weight:700}
 .badgeRow{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;max-width:100%}
 /* 연결 안내 문구가 길어져도 줄바꿈해서 화면을 밀지 않게 한다 */
 .badgeRow #fbBadge{white-space:normal;max-width:100%;line-height:1.5;text-align:left;
   word-break:keep-all;overflow-wrap:anywhere}
 .badgeRow .btn{flex:0 0 auto;min-height:36px;min-width:96px;font-size:.8rem;padding:0 12px}
+.daysRow{display:flex;gap:6px;margin-bottom:10px}
+.daysRow button{flex:1;min-height:42px;border:1.5px solid var(--line);background:#fff;
+  border-radius:9px;font-size:.84rem;font-weight:700;cursor:pointer;color:var(--steel)}
+.daysRow button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
 .findBar{display:flex;gap:8px;margin-bottom:12px}
 .findBar input{flex:1;min-width:0;min-height:50px;font-size:1.02rem}
 .findBar .btn{flex:0 0 auto;min-width:88px}
@@ -568,17 +580,25 @@ body.admmode .hbar em{display:none}
 
 /* ── 데스크톱 : 작성 화면을 2단으로 ──────────── */
 @media (min-width:1120px){
-  :root{--shell:1060px;--shell-wide:1200px}
+  :root{--shell:800px;--shell-wide:1200px}
+  /* 보호구 4종을 2단으로 — 한 줄로 두면 서명판이 화면폭만큼 길어져 오히려 쓰기 나쁘다 */
+  #ppeCard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 26px;align-items:start}
+  /* 좌우 서명판 높이를 맞춰 나란히 보이게 한다 */
+  #ppeCard .pperow{min-height:58px;align-items:center}
+  #ppeCard .ppe{border-bottom:0;padding-bottom:0}
+  #ppeCard .ppe + .ppe{border-top:0;padding-top:0}
   main{padding-bottom:120px}
-  .step.on{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-    column-gap:22px;align-items:start}
-  .step.on > .lead,
-  .step.on > .note,
-  .step.on > .langbar,
-  .step.on > .xlrow,
-  .step.on > .donewrap,
-  .step.on > .wide,
-  .step.on > button{grid-column:1 / -1}
+  /* 작성 화면은 넓은 화면에서도 한 줄로 둔다.
+     2단으로 나누면 눈이 좌우로 오가야 하고 항목을 건너뛰기 쉽다.
+     대신 글자와 버튼을 키워 읽기 편하게 한다. */
+  .step.on{display:block}
+  main{font-size:1.06rem}
+  .card{padding:24px 26px;margin-bottom:18px}
+  .f label{font-size:1rem;margin-bottom:8px}
+  .lead h2{font-size:2.1rem}
+  .opt{min-height:64px;font-size:1.05rem}
+  .opts{gap:10px;grid-template-columns:repeat(auto-fit,minmax(152px,1fr))}
+  input,select,textarea{font-size:1.06rem}
   .langbar button{flex:0 1 auto;min-width:170px}
   .fin{justify-content:flex-end}
   .fin .btn{flex:0 0 auto;min-width:150px}
@@ -587,10 +607,10 @@ body.admmode .hbar em{display:none}
 }
 /* 큰글씨 모드에서는 글자가 커서 2단이 오히려 좁아지므로 1단을 유지한다 */
 html.xl .step.on{display:block}
-html.xl{--shell:820px}
+html.xl{--shell:840px}
 
 @media (min-width:1500px){
-  :root{--shell:1120px;--shell-wide:1360px}
+  :root{--shell:820px;--shell-wide:1360px}
 }
 
 /* ── 양식 미리보기 : 좁은 화면에서는 작업칸(혈압·사진)을 양식 위로 ──
@@ -1004,7 +1024,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div class="err" data-i18n="err.consent">3개 항목 모두 선택해 주세요.</div></div>
   <div class="card"><h3 data-i18n="card.signPledge">위 서약인 서명</h3>
     <p style="margin:-6px 0 12px;font-size:.86rem;color:var(--steel)" data-i18n="sign.pledgeHelp">이 서명은 위 서약서에만 사용됩니다. 보호구 수령 서명은 다음 화면에서 따로 받습니다.</p>
-    <div class="pad" id="padSignWrap" data-ratio="2.8">
+    <div class="pad" id="padSignWrap" data-ratio="2.2">
       <canvas id="padSign"></canvas><div class="base"></div><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
     <div class="padbar"><span class="tip" data-i18n="sign.tip">손가락 · 터치펜 · 마우스 모두 됩니다</span>
       <button class="linkbtn" type="button" data-clear="padSign" data-i18n="sign.clear">지우고 다시 쓰기</button></div>
@@ -1019,21 +1039,21 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
       <div class="pperow"><div class="nm" data-i18n="ppe.helmet">안전모<small data-i18n="ppe.helmetSub">턱끈 포함</small></div>
         <div class="step-num" data-num="ppeHelmet"><button type="button" data-d="-1">−</button><input type="number" inputmode="numeric" value="1" min="0" max="9"><button type="button" data-d="1">+</button></div></div>
       <div class="ppesign" id="sHelmetWrap"><span class="tag" data-i18n="ppe.signReq">수령 서명 *</span>
-        <div class="pad mini" id="sHelmetPadWrap" data-ratio="4.6"><canvas id="sHelmetPad"></canvas><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
+        <div class="pad mini" id="sHelmetPadWrap" data-ratio="2.6"><canvas id="sHelmetPad"></canvas><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
         <div class="padbar"><span></span><button class="linkbtn" type="button" data-clear="sHelmetPad" data-i18n="sign.clear">지우고 다시 쓰기</button></div>
         <div class="err" data-i18n="err.sign">서명해 주세요.</div></div></div>
     <div class="ppe" data-ppe="Shoes">
       <div class="pperow"><div class="nm" data-i18n="ppe.shoes">안전화<small data-i18n="ppe.shoesSub">발등·발목 보호</small></div>
         <div class="step-num" data-num="ppeShoes"><button type="button" data-d="-1">−</button><input type="number" inputmode="numeric" value="1" min="0" max="9"><button type="button" data-d="1">+</button></div></div>
       <div class="ppesign" id="sShoesWrap"><span class="tag" data-i18n="ppe.signReq">수령 서명 *</span>
-        <div class="pad mini" id="sShoesPadWrap" data-ratio="4.6"><canvas id="sShoesPad"></canvas><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
+        <div class="pad mini" id="sShoesPadWrap" data-ratio="2.6"><canvas id="sShoesPad"></canvas><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
         <div class="padbar"><span></span><button class="linkbtn" type="button" data-clear="sShoesPad" data-i18n="sign.clear">지우고 다시 쓰기</button></div>
         <div class="err" data-i18n="err.sign">서명해 주세요.</div></div></div>
     <div class="ppe" data-ppe="Belt">
       <div class="pperow"><div class="nm" data-i18n="ppe.belt">안전벨트<small data-i18n="ppe.beltSub">안전대·죔줄</small></div>
         <div class="step-num" data-num="ppeBelt"><button type="button" data-d="-1">−</button><input type="number" inputmode="numeric" value="1" min="0" max="9"><button type="button" data-d="1">+</button></div></div>
       <div class="ppesign" id="sBeltWrap"><span class="tag" data-i18n="ppe.signReq">수령 서명 *</span>
-        <div class="pad mini" id="sBeltPadWrap" data-ratio="4.6"><canvas id="sBeltPad"></canvas><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
+        <div class="pad mini" id="sBeltPadWrap" data-ratio="2.6"><canvas id="sBeltPad"></canvas><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
         <div class="padbar"><span></span><button class="linkbtn" type="button" data-clear="sBeltPad" data-i18n="sign.clear">지우고 다시 쓰기</button></div>
         <div class="err" data-i18n="err.sign">서명해 주세요.</div></div></div>
     <div class="ppe" data-ppe="Etc">
@@ -1041,7 +1061,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
         <div class="step-num" data-num="ppeEtc"><button type="button" data-d="-1">−</button><input type="number" inputmode="numeric" value="0" min="0" max="9"><button type="button" data-d="1">+</button></div></div>
       <div class="f when" id="wEtc" style="margin:12px 0 0"><label data-i18n="field.etcName">기타 품목명</label><input type="text" id="etcName" placeholder="예) 각반, 보안경"></div>
       <div class="ppesign hidden" id="sEtcWrap"><span class="tag" data-i18n="ppe.signReq">수령 서명 *</span>
-        <div class="pad mini" id="sEtcPadWrap" data-ratio="4.6"><canvas id="sEtcPad"></canvas><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
+        <div class="pad mini" id="sEtcPadWrap" data-ratio="2.6"><canvas id="sEtcPad"></canvas><div class="ph" data-i18n="sign.here">여기에 서명</div></div>
         <div class="padbar"><span></span><button class="linkbtn" type="button" data-clear="sEtcPad" data-i18n="sign.clear">지우고 다시 쓰기</button></div>
         <div class="err" data-i18n="err.sign">서명해 주세요.</div></div></div>
   </div>
@@ -1071,6 +1091,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 <section class="adm" id="adm">
   <div class="lead"><h2>관리자</h2><p style="color:var(--steel);font-size:.9rem">근로자가 미리 작성한 서류를 확인하고, 현장에서 혈압을 측정해 기록합니다.</p>
     <p style="margin-top:8px" class="badgeRow"><span class="tag" id="fbBadge" style="background:#EFF1F4;color:var(--steel)">확인 중…</span>
+      <button type="button" class="btn small" id="btnReload">↻ 다시 불러오기</button>
       <button type="button" class="btn small" id="btnDiag">연결 진단</button></p>
     <p class="whoami hidden" id="whoami"></p></div>
   <div class="admtabs">
@@ -1084,6 +1105,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div id="admFind" class="hidden">
     <p class="note">근로자가 <b>미리 작성해 온 서류</b>를 찾는 화면입니다. 날짜와 상관없이 전부 검색합니다.</p>
     <div class="findRail">
+      <div class="daysRow" id="daysRow">
+        <button type="button" data-days="0" aria-pressed="true">전체</button>
+        <button type="button" data-days="7">최근 7일</button>
+        <button type="button" data-days="1">오늘 작성</button>
+      </div>
       <div class="findBar">
         <input type="search" id="findName" placeholder="이름 검색 (예: 홍길동)" autocomplete="off">
         <button type="button" class="btn small" id="findClear">지우기</button>
@@ -1093,6 +1119,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
         <select id="findCo"><option value="">전체</option></select>
       </div>
       <div class="statRow" id="statRow"></div>
+      <button class="btn small" type="button" id="btnCopyLink2" style="width:100%;margin-top:12px;min-height:44px">근로자 안내문 복사</button>
     </div>
     <div class="findResults">
       <div class="resultHead"><span class="findCount" id="findCount"></span>
@@ -1107,7 +1134,6 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
       <input type="date" id="dPick">
       <button type="button" id="dNext">›</button>
       <button type="button" id="dToday" class="btn small">오늘</button>
-      <button type="button" id="btnReload" class="btn small">↻ 다시 불러오기</button>
     </div>
     <div id="companyGroups"><div class="empty">이 날짜에 제출된 서류가 없습니다.</div></div>
     <div class="admbar">
@@ -1130,6 +1156,22 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   </div>
 
   <div id="admTpl" class="hidden">
+    <div class="card">
+      <h3>기존 자료 정비</h3>
+      <p class="note info" style="margin:0 0 12px">권한 구분을 넣기 <b>전에</b> 저장된 기록에는
+        문서 겉면에 소속 정보가 없어서 <b>협력사 계정에 보이지 않습니다.</b>
+        아래 버튼 한 번이면 전부 채워집니다. 서류 내용은 바뀌지 않습니다.</p>
+      <button class="btn padd" type="button" id="btnRepair" style="min-height:52px">소속 정보 채우기 (일괄 정비)</button>
+      <div class="note" id="repairResult" style="margin-top:10px;display:none"></div>
+    </div>
+
+    <div class="card">
+      <h3>근로자에게 보낼 안내문</h3>
+      <p class="note info" style="margin:0 0 12px">이 문구를 복사해 문자·카카오톡으로 보내면
+        근로자가 링크를 눌러 바로 작성할 수 있습니다.</p>
+      <button class="btn" type="button" id="btnCopyLink" style="min-height:52px">안내문 복사</button>
+    </div>
+
     <div class="card">
       <h3>협력사 목록</h3>
       <p class="note info" style="margin:0 0 12px">여기에 등록해 두면 근로자 작성 화면에서
@@ -1181,6 +1223,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button class="btn prime" type="button" id="btnNext" data-i18n="btn.next">다음</button>
     <button class="btn ghost hidden" type="button" id="btnAdmClose">닫기</button>
     <button class="btn danger hidden" type="button" id="btnPrint">🖨 출력</button>
+    <button class="btn ghost hidden sheetDel" type="button" id="btnDelOne">삭제</button>
     <button class="btn ghost hidden" type="button" id="btnPdf">📄 PDF 저장</button>
   </div>
 </footer>
@@ -1733,7 +1776,10 @@ const Store = (() => {
               if(json.length > 950000){
                 throw new Error("한 건의 자료가 너무 큽니다("+Math.round(json.length/1024)+"KB). 사진을 줄여 주세요.");
               }
-              await db.collection("records").doc(docId(rec)).set({ json, updatedAt: Date.now() });
+              await db.collection("records").doc(docId(rec)).set({
+            json, updatedAt: Date.now(),
+            company: String(rec.company || ""),   // 규칙이 소속을 읽어야 협력사별로 막을 수 있다
+            dateKey: String(rec.dateKey || "") });
             }
             // 목록에서 빠진 건은 서버에서도 삭제 (원청만 가능)
             const snap = await db.collection("records").get();
@@ -1804,7 +1850,10 @@ const Store = (() => {
           if(json.length > 950000){
             throw new Error("한 건의 자료가 너무 큽니다("+Math.round(json.length/1024)+"KB). 사진을 줄여 주세요.");
           }
-          await db.collection("records").doc(docId(rec)).set({ json, updatedAt: Date.now() });
+          await db.collection("records").doc(docId(rec)).set({
+            json, updatedAt: Date.now(),
+            company: String(rec.company || ""),   // 규칙이 소속을 읽어야 협력사별로 막을 수 있다
+            dateKey: String(rec.dateKey || "") });
           savedRemote = true;
         }catch(e){
           firstErr = { where:"Firebase", message:(e && e.message) || String(e) };
@@ -1829,6 +1878,13 @@ const Store = (() => {
               ? "저장공간이 가득 찼습니다. 사진을 줄이거나 지운 뒤 다시 시도해 주세요."
               : ((e && e.message) || String(e)) };
         }
+      }
+      // 서버(Firebase)를 쓰기로 해 놓은 현장에서 이 기기에만 저장된 것은 저장된 게 아니다.
+      // 사무실에서 영영 볼 수 없으므로, 성공으로 처리하면 근로자가 헛걸음한다.
+      if(fbEnabled() && !savedRemote){
+        this.lastError = firstErr;
+        return { ok:false, where:(firstErr && firstErr.where) || "Firebase",
+                 message:(firstErr && firstErr.message) || "서버에 저장하지 못했습니다." };
       }
       if(savedRemote || savedLocal) return { ok:true, remote:savedRemote, local:savedLocal, warn:firstErr };
       this.lastError = firstErr;
@@ -2741,6 +2797,7 @@ function openSheetFor(r, title){
   renderRiskPanel(r);
   $("#btnPrev").classList.add("hidden"); $("#btnNext").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden"); $("#btnPrint").classList.remove("hidden");
+  $("#btnDelOne").classList.toggle("hidden", authReady() && !isGC());
   $("#btnPdf").classList.remove("hidden");
   renderSheetBp(r);
   renderSheetPhotos(r);
@@ -2756,9 +2813,21 @@ const PHOTO_SLOTS = [
 /* ── 근로자 찾기 ────────────────────────────────────────────────
    근로자가 며칠 전에 미리 작성해 오므로, 날짜별 목록으로는 못 찾는다.
    이름 검색 + 업체별 목록 두 가지를 한 화면에서 쓴다. */
-let findQ = "", findCo = "", findOnly = "";
+let findQ = "", findCo = "", findOnly = "", findDays = 0;   // 0=전체, 7, 1
 
 function bpDone(r){ return !!(r && r.bp && r.bp.sys1 && r.bp.dia1); }
+
+/* 같은 사람이 두 번 제출한 것 같은 경우 (이름+생년월일이 같음).
+   저장이 됐는지 몰라서 다시 쓰는 일이 실제로 생긴다. 원청이 확인 후
+   하나를 지울 수 있게 표시만 해 준다. */
+function dupKey(r){
+  return String(r.name||"").replace(/\s+/g,"") + "|" + String(r.birth||"").replace(/[^0-9]/g,"");
+}
+function buildDupMap(list){
+  const m = {};
+  list.forEach(r => { const k = dupKey(r); m[k] = (m[k]||0)+1; });
+  return m;
+}
 
 /* 생년월일 6자리(예: 590312)에서 만 나이를 계산한다.
    고령근로자(65세 이상)는 안전관리상 따로 챙겨야 하는데,
@@ -2877,6 +2946,71 @@ $("#coAdd").addEventListener("click", async () => {
 });
 $("#coNew").addEventListener("keydown", e => { if(e.key === "Enter") $("#coAdd").click(); });
 
+/* ── 기존 자료 일괄 정비 ─────────────────────────────────────
+   예전 기록은 문서 겉면에 company 가 없어 협력사에게 안 보이고,
+   협력사가 혈압·사진을 저장하려 해도 규칙이 거부한다.
+   서류 내용(json)은 그대로 두고 겉면 항목만 채운다. */
+async function repairCompanyFields(){
+  if(!confirm("문서 겉면에 소속 정보가 없는 기록을 찾아 채웁니다.\n서류 내용은 바뀌지 않습니다. 진행할까요?")) return;
+  const out = $("#repairResult");
+  out.style.display = "block"; out.textContent = "확인하는 중…";
+  setBusy(true, "기존 자료를 확인하는 중입니다…");
+  try{
+    const db = await loadFirebase();
+    const snap = await db.collection("records").get();
+    const todo = [];
+    snap.forEach(d => {
+      const v = d.data() || {};
+      if(v.company) return;                       // 이미 최신 형식
+      try{
+        const r = JSON.parse(v.json);
+        todo.push({ id:d.id, json:v.json,
+          company: String(r.company || ""),
+          dateKey: String(r.dateKey || (r.submittedAt ? ymd(r.submittedAt) : "")) });
+      }catch(e){}
+    });
+    if(!todo.length){
+      setBusy(false);
+      out.textContent = "정비할 자료가 없습니다. 전부 최신 형식입니다.";
+      return;
+    }
+    let done = 0, fail = 0;
+    for(const t of todo){
+      // 진행률은 글자만 바꾼다 (setBusy 를 다시 부르면 닫힘 횟수가 안 맞아 화면이 잠긴다)
+      $("#busyText").textContent = "정비 중… (" + (done+fail+1) + "/" + todo.length + ")";
+      try{
+        await db.collection("records").doc(t.id).set({
+          json: t.json, updatedAt: Date.now(), company: t.company, dateKey: t.dateKey });
+        done++;
+      }catch(e){ fail++; console.warn("정비 실패:", t.id, e); }
+    }
+    setBusy(false);
+    out.textContent = "끝났습니다 — " + done + "건 정비"
+      + (fail ? " · " + fail + "건 실패 (연결 진단을 확인해 주세요)" : "")
+      + ". 이제 협력사 계정에서도 보입니다.";
+    await reloadSubmissions();
+  }catch(e){
+    setBusy(false);
+    out.textContent = "정비하지 못했습니다: " + ((e && e.message) || e);
+  }
+}
+$("#btnRepair").addEventListener("click", repairCompanyFields);
+
+/* ── 근로자 안내문 복사 ── */
+async function copyWorkerLink(){
+  const url = location.origin + location.pathname;
+  const msg = "[학동 4구역 신규채용 서류]\n"
+    + "현장 투입 전에 아래 링크에서 미리 작성해 주세요. 약 5분 걸립니다.\n"
+    + "· 신분증, 기초안전보건교육 이수증을 준비해 주세요\n"
+    + "· 혈압은 현장에 오시면 측정합니다\n"
+    + "· 쓰다 말아도 이어서 쓸 수 있습니다\n\n"
+    + url;
+  try{ await navigator.clipboard.writeText(msg); showToast("안내문을 복사했습니다. 붙여넣기 하세요."); }
+  catch(e){ prompt("아래 내용을 길게 눌러 복사하세요", msg); }
+}
+$("#btnCopyLink").addEventListener("click", copyWorkerLink);
+$("#btnCopyLink2").addEventListener("click", copyWorkerLink);
+
 const miss = missingItems;
 function renderFind(){
   const coSel = $("#findCo");
@@ -2889,8 +3023,18 @@ function renderFind(){
   coSel.value = findCo;
   $("#findName").value = findQ;
 
+  // 기간으로 먼저 줄인다. 몇 주 지나면 "혈압 미측정 12명" 같은 숫자에
+  // 이미 투입이 끝난 옛 사람이 섞여 아무 의미가 없어진다.
+  let pool = submissions;
+  if(findDays > 0){
+    const cut = new Date(Date.now() - findDays*24*3600*1000);
+    const cutKey = cut.getFullYear()+"-"+String(cut.getMonth()+1).padStart(2,"0")+"-"+String(cut.getDate()).padStart(2,"0");
+    pool = pool.filter(r => recDate(r) >= cutKey);
+  }
+  const dup = buildDupMap(pool);
+
   // 현황 요약 (업체 필터가 걸려 있으면 그 업체 기준)
-  const base = findCo ? submissions.filter(r => r.company === findCo) : submissions;
+  const base = findCo ? pool.filter(r => r.company === findCo) : pool;
   const nNoBp   = base.filter(r => !bpDone(r)).length;
   const nMiss   = base.filter(r => missingItems(r).length).length;
   const nRisk   = base.filter(r => isRisk(r)).length;
@@ -2908,7 +3052,7 @@ function renderFind(){
   }));
 
   const q = findQ.trim().toLowerCase();
-  let list = submissions.slice();
+  let list = pool.slice();
   if(findCo) list = list.filter(r => r.company === findCo);
   if(findOnly === "bp")   list = list.filter(r => !bpDone(r));
   if(findOnly === "miss") list = list.filter(r => missingItems(r).length);
@@ -2940,6 +3084,7 @@ function renderFind(){
                         : '<span class="okline">준비 완료</span>')
     + '</span>'
     + '<span class="flags">'
+    +   (dup[dupKey(r)] > 1 ? '<span class="fl warn">중복 의심</span>' : '')
     +   (isRisk(r) ? '<span class="fl risky">취약'+(riskIsAuto(r)?" 자동":"")+'</span>'
                    : (r.riskOverride ? '<span class="fl warn">해지됨</span>' : ''))
     +   (bpDone(r) ? '<span class="fl done">'+esc(r.bp.sys1)+'/'+esc(r.bp.dia1)+'</span>'
@@ -2954,6 +3099,11 @@ function renderFind(){
 }
 
 $("#findName").addEventListener("input", e => { findQ = e.target.value; renderFind(); });
+$$("#daysRow button").forEach(b => b.addEventListener("click", () => {
+  findDays = +b.dataset.days;
+  $$("#daysRow button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  renderFind();
+}));
 $("#findCo").addEventListener("change", e => { findCo = e.target.value; renderFind(); });
 $("#findClear").addEventListener("click", () => { findQ = ""; findCo = ""; findOnly = ""; renderFind(); $("#findName").focus(); });
 
@@ -3204,6 +3354,20 @@ async function exportSheetToPdf(r){
 $("#sheetClose").addEventListener("click", () => { $("#sheetWrap").classList.remove("on"); openAdm(lastAdmTab); });
 $("#btnPrint").addEventListener("click", () => window.print());
 $("#btnPdf").addEventListener("click", () => exportSheetToPdf(current));
+$("#btnDelOne").addEventListener("click", async () => {
+  if(!current) return;
+  if(authEnabled() && !isGC()){ alert("삭제는 원청만 할 수 있습니다."); return; }
+  if(!confirm(current.name + " (" + current.code + ") 기록을 삭제합니다.\n중복 제출 정리 용도입니다. 되돌릴 수 없습니다.")) return;
+  const gone = current;
+  const rest = submissions.filter(x => docId(x) !== docId(gone));
+  setBusy(true, "삭제하는 중입니다…");
+  const res = await Store.deleteRecords([docId(gone)], rest);
+  setBusy(false);
+  if(!res || !res.ok){ alert("삭제하지 못했습니다.\n\n" + ((res && res.message) || "")); return; }
+  submissions = rest;
+  showToast("삭제했습니다");
+  $("#btnAdmClose").click();
+});
 
 
 /* ══════════════════════════════════════════════════════════════
@@ -3786,7 +3950,10 @@ let LIVE = { on:false, unsub:null, error:null };
 function startLiveSync(){
   if(!fbEnabled() || LIVE.unsub) return;
   loadFirebase().then(db => {
-    const col = db.collection("records");
+    const base = db.collection("records");
+    // 협력사 담당자는 자기 회사만 구독한다.
+    // 범위를 안 걸면 서버 규칙이 거부해 실시간 갱신 자체가 죽는다.
+    const col = isSub() ? base.where("company", "==", myCompany()) : base;
     if(typeof col.onSnapshot !== "function") return;   // 옛 SDK 대비
     LIVE.unsub = col.onSnapshot(
       snap => {
@@ -4077,6 +4244,11 @@ const stamp = () => { const d=new Date(); return ""+d.getFullYear()+String(d.get
 function exportScope(){
   if(lastAdmTab === "find"){
     let l = submissions.slice();
+    if(findDays > 0){
+      const cut = new Date(Date.now() - findDays*24*3600*1000);
+      const ck = cut.getFullYear()+"-"+String(cut.getMonth()+1).padStart(2,"0")+"-"+String(cut.getDate()).padStart(2,"0");
+      l = l.filter(r => recDate(r) >= ck);
+    }
     if(findCo) l = l.filter(r => r.company === findCo);
     if(findOnly === "bp")   l = l.filter(r => !bpDone(r));
     if(findOnly === "miss") l = l.filter(r => missingItems(r).length);
