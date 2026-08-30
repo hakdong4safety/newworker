@@ -240,7 +240,10 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .datebar button{min-height:44px;min-width:44px;border-radius:9px;border:1.5px solid var(--line);background:#fff;font-size:1.1rem;cursor:pointer}
 .datebar input{flex:1 1 150px;min-height:44px}
 .datebar #btnReload{font-size:.82rem;min-width:130px;font-weight:700}
-.badgeRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.badgeRow{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;max-width:100%}
+/* 연결 안내 문구가 길어져도 줄바꿈해서 화면을 밀지 않게 한다 */
+.badgeRow #fbBadge{white-space:normal;max-width:100%;line-height:1.5;text-align:left;
+  word-break:keep-all;overflow-wrap:anywhere}
 .badgeRow .btn{flex:0 0 auto;min-height:36px;min-width:96px;font-size:.8rem;padding:0 12px}
 .findBar{display:flex;gap:8px;margin-bottom:12px}
 .findBar input{flex:1;min-width:0;min-height:50px;font-size:1.02rem}
@@ -255,6 +258,7 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .resultHead{display:flex;align-items:center;justify-content:space-between;
   margin-bottom:10px;min-height:22px}
 .resultHead .findCount{margin-left:0}
+.resultHead .btn{flex:0 0 auto;min-height:36px;font-size:.78rem;min-width:112px}
 
 /* ── 컴퓨터: 찾기 화면을 좌(조작) / 우(결과)로 나눈다 ──
    가운데 한 줄로 쌓아 두면 넓은 화면에서 위아래로만 길어져
@@ -394,6 +398,9 @@ table.admTable thead th #chkAll{margin-top:4px}
 .loginMain > p{font-size:.86rem;color:var(--steel);line-height:1.55;margin:0 0 4px}
 .mlab{display:block;font-size:.78rem;font-weight:700;color:var(--steel);margin:16px 0 6px}
 .loginMain input{width:100%;min-height:52px}
+#lgErr{display:none;font-size:.82rem;line-height:1.6;color:#960014;background:var(--signal-8);
+  border-radius:10px;padding:12px 14px;margin-top:14px;text-align:left;word-break:keep-all}
+#lgErr.on{display:block}
 .mhint{font-size:.76rem;color:var(--mute);margin:6px 0 0;line-height:1.45}
 .loginMain .mbtns{margin-top:20px;display:flex;gap:8px}
 .loginMain .mbtns .btn{flex:1;min-height:52px}
@@ -450,7 +457,7 @@ table.admTable thead th #chkAll{margin-top:4px}
 .resume{background:var(--amber-8);border:1.5px solid #F0C97A}
 .done-note{background:var(--go-8);border:1.5px solid #9BD9BA}
 .resume b,.done-note b{display:block;font-size:1.05rem;margin-bottom:4px}
-.resume span,.done-note span{display:block;font-size:.88rem;color:var(--steel);margin-bottom:12px;line-height:1.5}
+.resume span,.done-note span{display:block;font-size:.88rem;color:var(--steel);margin-bottom:12px;line-height:1.5;white-space:pre-line}
 .resumeBtns{display:flex;gap:8px}
 .resumeBtns .btn{flex:1;min-height:50px}
 .done-note .btn{width:100%;min-height:50px;background:#fff}
@@ -689,17 +696,17 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div class="lead"><h2 data-i18n="start.title">안전교육 전<br>작성해 주세요</h2>
     <p data-i18n="start.sub">약 5분 걸립니다. 다 쓰면 저장 버튼을 누르세요.</p></div>
   <div class="resume hidden" id="resumeBox">
-    <b>쓰다 만 내용이 있습니다</b>
+    <b data-i18n="resume.title">쓰다 만 내용이 있습니다</b>
     <span id="resumeInfo"></span>
     <div class="resumeBtns">
-      <button class="btn prime" type="button" id="resumeGo">이어서 쓰기</button>
-      <button class="btn" type="button" id="resumeNew">처음부터</button>
+      <button class="btn prime" type="button" id="resumeGo" data-i18n="resume.go">이어서 쓰기</button>
+      <button class="btn" type="button" id="resumeNew" data-i18n="resume.new">처음부터</button>
     </div>
   </div>
   <div class="done-note hidden" id="alreadyBox">
-    <b>이미 제출하셨습니다</b>
+    <b data-i18n="already.title">이미 제출하셨습니다</b>
     <span id="alreadyInfo"></span>
-    <button class="btn" type="button" id="alreadyNew">다른 사람 것 작성하기</button>
+    <button class="btn" type="button" id="alreadyNew" data-i18n="already.new">다른 사람 것 작성하기</button>
   </div>
   <div class="card"><h3 data-i18n="start.prepTitle">준비물</h3>
     <div style="font-size:.97rem;line-height:2">
@@ -1088,7 +1095,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
       <div class="statRow" id="statRow"></div>
     </div>
     <div class="findResults">
-      <div class="resultHead"><span class="findCount" id="findCount"></span></div>
+      <div class="resultHead"><span class="findCount" id="findCount"></span>
+        <button class="btn small" type="button" id="expCsvFind">CSV 내보내기</button></div>
       <div id="findList"></div>
     </div>
   </div>
@@ -1343,7 +1351,7 @@ function loadFirebase(){
 const I18N = {
 ko:{ "bigtext":"글씨 크게 보기",
 "start.title":"안전교육 전<br>작성해 주세요","start.sub":"약 5분 걸립니다. 다 쓰면 저장 버튼을 누르세요.",
-"start.prepTitle":"준비물","start.prep1":"· 신분증 (생년월일·국적 확인)","start.prep2":"· 기초안전보건교육 이수증","start.prep3":"· 혈압 측정 결과",
+"resume.title":"쓰다 만 내용이 있습니다","resume.go":"이어서 쓰기","resume.new":"처음부터","resume.at":"{n}단계까지 쓰셨습니다","already.title":"이미 제출하셨습니다","already.new":"다른 사람 것 작성하기","already.at":"제출 완료 · 현장에서 담당자가 확인합니다","start.prepTitle":"준비물","start.prep1":"· 신분증 (생년월일·국적 확인)","start.prep2":"· 기초안전보건교육 이수증","start.prep3":"· 혈압 측정 결과",
 "start.note":"작성한 내용은 <b>현장 안전보건팀만</b> 열람하며, 준공 후 3년간 보관 후 파기합니다.",
 "field.company":'협력회사 <span class="req">*</span>',"err.company":"협력회사명을 입력해 주세요.",
 "field.name":'성명 <span class="req">*</span>',"err.name":"성명을 입력해 주세요.",
@@ -1413,7 +1421,7 @@ ko:{ "bigtext":"글씨 크게 보기",
 
 vi:{ "bigtext":"Phóng to chữ",
 "start.title":"Điền trước khi<br>huấn luyện an toàn","start.sub":"Mất khoảng 5 phút. Điền xong hãy nhấn Lưu.",
-"start.prepTitle":"Cần chuẩn bị","start.prep1":"· Giấy tờ tùy thân (ngày sinh, quốc tịch)","start.prep2":"· Chứng chỉ đào tạo an toàn cơ bản","start.prep3":"· Kết quả đo huyết áp",
+"resume.title":"Bạn có phần chưa viết xong","resume.go":"Viết tiếp","resume.new":"Bắt đầu lại","resume.at":"Đã viết đến bước {n}","already.title":"Bạn đã nộp rồi","already.new":"Viết cho người khác","already.at":"Đã nộp · Cán bộ sẽ kiểm tra tại công trường","start.prepTitle":"Cần chuẩn bị","start.prep1":"· Giấy tờ tùy thân (ngày sinh, quốc tịch)","start.prep2":"· Chứng chỉ đào tạo an toàn cơ bản","start.prep3":"· Kết quả đo huyết áp",
 "start.note":"Nội dung chỉ <b>Đội an toàn công trường</b> được xem, lưu 3 năm sau khi hoàn công rồi hủy.",
 "field.company":'Công ty đối tác <span class="req">*</span>',"err.company":"Vui lòng nhập tên công ty.",
 "field.name":'Họ và tên <span class="req">*</span>',"err.name":"Vui lòng nhập họ tên.",
@@ -1483,7 +1491,7 @@ vi:{ "bigtext":"Phóng to chữ",
 
 zh:{ "bigtext":"放大字体",
 "start.title":"请在安全教育前<br>填写此表","start.sub":"大约需要5分钟。填完后请点击保存。",
-"start.prepTitle":"准备事项","start.prep1":"· 身份证件（确认出生日期、国籍）","start.prep2":"· 基础安全保健教育结业证","start.prep3":"· 血压测量结果",
+"resume.title":"有未填完的内容","resume.go":"继续填写","resume.new":"重新开始","resume.at":"已填写到第 {n} 步","already.title":"您已提交","already.new":"为他人填写","already.at":"已提交 · 现场负责人会确认","start.prepTitle":"准备事项","start.prep1":"· 身份证件（确认出生日期、国籍）","start.prep2":"· 基础安全保健教育结业证","start.prep3":"· 血压测量结果",
 "start.note":"填写内容仅供<b>现场安全保健组</b>查阅，竣工后保存3年后销毁。",
 "field.company":'合作公司 <span class="req">*</span>',"err.company":"请输入合作公司名称。",
 "field.name":'姓名 <span class="req">*</span>',"err.name":"请输入姓名。",
@@ -1553,7 +1561,7 @@ zh:{ "bigtext":"放大字体",
 
 th:{ "bigtext":"ขยายตัวอักษร",
 "start.title":"กรุณากรอกก่อน<br>อบรมความปลอดภัย","start.sub":"ใช้เวลาประมาณ 5 นาที เมื่อกรอกเสร็จให้กดบันทึก",
-"start.prepTitle":"สิ่งที่ต้องเตรียม","start.prep1":"· บัตรประจำตัว (วันเกิด/สัญชาติ)","start.prep2":"· ใบรับรองอบรมความปลอดภัยขั้นพื้นฐาน","start.prep3":"· ผลตรวจวัดความดันโลหิต",
+"resume.title":"มีข้อมูลที่กรอกค้างไว้","resume.go":"กรอกต่อ","resume.new":"เริ่มใหม่","resume.at":"กรอกถึงขั้นตอนที่ {n}","already.title":"คุณส่งแล้ว","already.new":"กรอกให้คนอื่น","already.at":"ส่งแล้ว · เจ้าหน้าที่จะตรวจสอบที่หน่วยงาน","start.prepTitle":"สิ่งที่ต้องเตรียม","start.prep1":"· บัตรประจำตัว (วันเกิด/สัญชาติ)","start.prep2":"· ใบรับรองอบรมความปลอดภัยขั้นพื้นฐาน","start.prep3":"· ผลตรวจวัดความดันโลหิต",
 "start.note":"ข้อมูลที่กรอกจะเปิดให้เฉพาะ<b>ทีมความปลอดภัยของไซต์งาน</b>ดู จะเก็บไว้ 3 ปีหลังงานเสร็จแล้วทำลาย",
 "field.company":'บริษัทคู่ค้า <span class="req">*</span>',"err.company":"กรุณากรอกชื่อบริษัท",
 "field.name":'ชื่อ-นามสกุล <span class="req">*</span>',"err.name":"กรุณากรอกชื่อ-นามสกุล",
@@ -3251,12 +3259,15 @@ async function doLogin(email, pw){
 /* 아직 원청 계정이 하나도 없는가.
    meta/bootstrap 문서가 "원청 자리는 이미 찼다"는 표시다.
    이 문서는 딱 한 번만 만들어질 수 있게 규칙이 지킨다. */
-async function gcSeatOpen(){
+/* 원청 자리 상태를 셋으로 구분한다.
+   "못 읽었다"를 "이미 찼다"로 뭉뚱그리면, 규칙을 아직 안 넣은 사람에게
+   엉뚱하게 "이미 계정이 있습니다"라고 답하게 된다. */
+async function gcSeatStatus(){
   try{
     const db = await loadFirebase();
     const d = await db.collection("meta").doc("bootstrap").get();
-    return !d.exists;
-  }catch(e){ return false; }
+    return d.exists ? { state:"taken", uid:(d.data()||{}).uid || "" } : { state:"open" };
+  }catch(e){ return { state:"unknown", error:e }; }
 }
 async function doSignupGC(email, pw, name){
   const auth = await loadAuth();
@@ -3272,6 +3283,40 @@ async function doSignupGC(email, pw, name){
   const prof = { role:"gc", company:"", name, email, approved:true, at:Date.now() };
   await db.collection("users").doc(cred.user.uid).set(prof);
   AUTH.user = cred.user; AUTH.profile = prof; AUTH.on = true;
+  return prof;
+}
+
+/* 원청 자리가 이미 잡혀 있을 때.
+   그 자리 주인이 지금 로그인하려는 사람과 같으면 남은 절차를 마저 끝낸다
+   (계정만 만들어지고 프로필 저장에서 끊긴 경우가 있다). */
+async function repairGC(email, pw, name, seatUid){
+  const auth = await loadAuth();
+  let user = null;
+  try{
+    const cred = await auth.signInWithEmailAndPassword(email, pw);
+    user = cred.user;
+  }catch(e){
+    const c = String((e && e.code) || "");
+    if(/user-not-found/i.test(c)){
+      lgFail("이미 다른 분이 원청 계정을 만들었습니다. 그 담당자에게 문의해 주세요.");
+    } else if(/wrong-password|invalid-credential|invalid-login/i.test(c)){
+      lgFail("원청 계정은 이미 있습니다. 비밀번호가 맞지 않습니다 — 아래 '비밀번호를 잊었습니다'를 눌러 주세요.");
+    } else {
+      lgFail(((e && e.message) || String(e)).slice(0,120));
+    }
+    return null;
+  }
+  if(seatUid && user.uid !== seatUid){
+    lgFail("원청 계정은 이미 다른 분이 만들었습니다. 그 담당자에게 문의해 주세요.");
+    return null;
+  }
+  const db = await loadFirebase();
+  let prof = await fetchProfile(user.uid);
+  if(!prof){
+    prof = { role:"gc", company:"", name, email, approved:true, at:Date.now() };
+    await db.collection("users").doc(user.uid).set(prof);
+  }
+  AUTH.user = user; AUTH.profile = prof; AUTH.on = true;
   return prof;
 }
 
@@ -3328,6 +3373,38 @@ async function loadCompanyOptions(){
 }
 function lgFail(msg){ const e = $("#lgErr"); e.textContent = msg; e.classList.add("on"); }
 
+/* 로그인이 막히는 이유는 여러 가지인데 영어 코드만 보여 주면 현장에서는 손 쓸 수 없다.
+   무엇을 어디서 고쳐야 하는지까지 적고, 코드도 함께 남겨 문의할 때 쓰게 한다. */
+function explainAuthError(e){
+  const code = String((e && e.code) || "");
+  const msg  = String((e && e.message) || e);
+  const both = code + " " + msg;
+  const tail = code ? "  (" + code + ")" : "";
+
+  if(/permission-denied|insufficient permissions|PERMISSION_DENIED/i.test(both))
+    return "로그인은 됐지만 계정 정보를 읽지 못했습니다. Firestore 규칙이 아직 적용되지 않은 상태입니다. "
+         + "Firebase 콘솔 → Firestore Database → 규칙 에 firestore_규칙.txt 내용을 붙여넣고 게시해 주세요." + tail;
+  if(/unauthorized-domain/i.test(both))
+    return "이 주소가 Firebase에 등록되어 있지 않습니다. Authentication → 설정 → 승인된 도메인 에 "
+         + "'" + location.hostname + "' 을(를) 추가해 주세요." + tail;
+  if(/operation-not-allowed|configuration-not-found/i.test(both))
+    return "Firebase 콘솔에서 '이메일/비밀번호' 로그인을 아직 켜지 않았습니다. "
+         + "Authentication → 시작하기 → 로그인 방법 → 이메일/비밀번호 를 켜 주세요." + tail;
+  if(/network-request-failed|Failed to fetch/i.test(both))
+    return "서버에 닿지 못했습니다. 인터넷 연결을 확인하시고, 현장 와이파이가 막고 있다면 "
+         + "휴대폰 데이터로 바꿔 시도해 보세요." + tail;
+  if(/too-many-requests/i.test(both))
+    return "실패가 여러 번 반복되어 잠시 막혔습니다. 5분 뒤 다시 시도하시거나 "
+         + "'비밀번호를 잊었습니다'로 재설정해 주세요." + tail;
+  if(/user-not-found|wrong-password|invalid-credential|invalid-login|INVALID_LOGIN/i.test(both))
+    return "이메일 또는 비밀번호가 맞지 않습니다. 처음이시라면 아래에서 계정을 먼저 만들어 주세요." + tail;
+  if(/email-already-in-use/i.test(both)) return "이미 가입된 이메일입니다. 위에서 로그인해 주세요." + tail;
+  if(/weak-password/i.test(both)) return "비밀번호는 6자 이상이어야 합니다." + tail;
+  if(/invalid-email/i.test(both))  return "이메일 형식이 올바르지 않습니다." + tail;
+  if(/user-disabled/i.test(both))  return "사용이 중지된 계정입니다. 원청 안전보건팀에 문의해 주세요." + tail;
+  return msg.slice(0,110) + tail;
+}
+
 $("#lgSwap").addEventListener("click", () => {
   if(gcMode){ gcMode = false; signupMode = false; }
   else signupMode = !signupMode;
@@ -3342,8 +3419,24 @@ $("#lgReset").addEventListener("click", async () => {
   try{
     const auth = await loadAuth();
     await auth.sendPasswordResetEmail(email);
-    alert(email + " 로 비밀번호 재설정 메일을 보냈습니다.\n메일함(스팸함 포함)을 확인해 주세요.");
-  }catch(e){ lgFail("메일을 보내지 못했습니다: " + ((e&&e.message)||e)); }
+    // Firebase 는 보안상 "그런 계정 없음"을 알려 주지 않는다.
+    // 그래서 "보냈습니다"라고만 하면, 계정이 없는 사람은 오지 않는 메일을 계속 기다리게 된다.
+    alert("재설정 메일 요청을 보냈습니다.\n\n"
+      + "▸ " + email + " 로 가입된 계정이 있으면 메일이 갑니다.\n"
+      + "▸ 가입된 계정이 없으면 아무 메일도 가지 않습니다.\n"
+      + "   (Firebase 는 보안상 둘을 구분해 알려 주지 않습니다)\n\n"
+      + "5분 안에 오지 않으면:\n"
+      + "1) 스팸함을 확인하세요. 보내는 사람은 noreply@ 로 시작합니다.\n"
+      + "2) 네이버·다음·한메일은 차단하는 경우가 많습니다. 지메일로 다시 시도해 보세요.\n"
+      + "3) 그래도 없으면 아직 계정이 만들어지지 않은 것입니다.\n"
+      + "   원청이시면 아래 '원청 관리자 계정 만들기'로 새로 만드시고,\n"
+      + "   협력사면 '협력사 담당자 계정 만들기'로 가입하세요.");
+  }catch(e){
+    const m = String((e&&e.message)||e);
+    if(/invalid-email/i.test(m)) lgFail("이메일 형식이 올바르지 않습니다.");
+    else if(/too-many-requests/i.test(m)) lgFail("요청이 많습니다. 잠시 뒤 다시 시도해 주세요.");
+    else lgFail("메일을 보내지 못했습니다: " + m.slice(0,120));
+  }
 });
 $("#lgCancel").addEventListener("click", () => $("#loginOverlay").classList.add("hidden"));
 $("#lgOut").addEventListener("click", async () => { await doLogout(); $("#loginOverlay").classList.add("hidden"); });
@@ -3358,10 +3451,23 @@ $("#lgGo").addEventListener("click", async () => {
       const nm = $("#lgGcName").value.trim();
       if(!nm){ lgFail("담당자 성함을 넣어 주세요."); throw 0; }
       if(pw.length < 6){ lgFail("비밀번호는 6자 이상이어야 합니다."); throw 0; }
-      if(!(await gcSeatOpen())){
-        lgFail("이미 원청 계정이 있습니다. 로그인하거나 기존 담당자에게 문의해 주세요."); throw 0;
+
+      const seat = await gcSeatStatus();
+      if(seat.state === "unknown"){
+        // 자리가 찼는지 아닌지를 확인조차 못 한 상태. 진짜 이유를 알려 준다.
+        const x = explainFbError(seat.error);
+        lgFail("서버를 읽지 못해 확인할 수 없습니다 — " + x.why
+          + " 화면 위 '연결 진단'을 눌러 자세히 보세요.");
+        console.warn("bootstrap 읽기 실패:", seat.error);
+        throw 0;
       }
-      prof = await doSignupGC(email, pw, nm);
+      if(seat.state === "taken"){
+        // 지난번에 계정만 만들어지고 중간에 끊겼을 수 있다 → 같은 사람이면 이어서 마무리
+        prof = await repairGC(email, pw, nm, seat.uid);
+        if(!prof) throw 0;
+      } else {
+        prof = await doSignupGC(email, pw, nm);
+      }
     } else if(signupMode){
       const co = $("#lgCo").value, nm = $("#lgName").value.trim();
       if(!co){ lgFail("소속 협력사를 골라 주세요."); throw 0; }
@@ -3371,7 +3477,21 @@ $("#lgGo").addEventListener("click", async () => {
     } else {
       prof = await doLogin(email, pw);
     }
-    if(!prof){ lgFail("계정 정보를 찾을 수 없습니다. 원청 안전보건팀에 문의해 주세요."); throw 0; }
+    if(!prof){
+      // 계정은 만들어졌는데 프로필 저장에서 끊긴 경우 → 원청 자리 주인이면 되살린다
+      const seat = await gcSeatStatus();
+      if(seat.state === "taken" && AUTH.user && seat.uid === AUTH.user.uid){
+        prof = { role:"gc", company:"", name:(AUTH.user.email||"원청"), email:AUTH.user.email||"", approved:true, at:Date.now() };
+        const db = await loadFirebase();
+        await db.collection("users").doc(AUTH.user.uid).set(prof);
+        AUTH.profile = prof;
+      } else {
+        lgFail("로그인은 됐지만 이 계정에 권한이 등록되어 있지 않습니다. "
+             + "협력사시면 '협력사 담당자 계정 만들기'로 가입 신청해 주세요. "
+             + "원청이시면 맨 아래 '원청 관리자 계정 만들기'를 눌러 주세요.");
+        throw 0;
+      }
+    }
     if(!prof.approved){
       $("#loginForm").classList.add("hidden");
       $("#loginWait").classList.remove("hidden");
@@ -3381,16 +3501,7 @@ $("#lgGo").addEventListener("click", async () => {
     adminUnlocked = true;
     await openAdm("find");
   }catch(e){
-    if(e){
-      const m = String((e && e.message) || e);
-      if(/user-not-found|wrong-password|invalid-credential|invalid-login/i.test(m)) lgFail("이메일 또는 비밀번호가 맞지 않습니다.");
-      else if(/email-already-in-use/i.test(m)) lgFail("이미 가입된 이메일입니다. 로그인해 주세요.");
-      else if(/weak-password/i.test(m)) lgFail("비밀번호는 6자 이상이어야 합니다.");
-      else if(/invalid-email/i.test(m)) lgFail("이메일 형식이 올바르지 않습니다.");
-      else if(/operation-not-allowed|configuration-not-found/i.test(m))
-        lgFail("Firebase 콘솔에서 '이메일/비밀번호' 로그인을 먼저 켜 주세요.");
-      else lgFail(m.slice(0,120));
-    }
+    if(e) lgFail(explainAuthError(e));
   }
   btn.disabled = false; btn.textContent = t;
 });
@@ -3468,7 +3579,7 @@ function applyRoleToUI(){
   const coRow = $("#findCo") && $("#findCo").closest(".filterRow");
   if(coRow) coRow.classList.toggle("hidden", isSub());
   // 삭제·내보내기는 원청만
-  ["#delSelected","#wipe","#expCsv","#expJson"].forEach(sel => {
+  ["#delSelected","#wipe","#expCsv","#expJson","#expCsvFind"].forEach(sel => {
     const el = $(sel); if(el) el.classList.toggle("hidden", !gc);
   });
   const lead = document.querySelector(".admPage > .lead h2");
@@ -3594,7 +3705,20 @@ async function diagnoseConnection(){
       stop = stop || e;
     }
 
-    lines.push("", "⑥ 자료 쓰기");
+    lines.push("", "⑥ 원청 계정 자리");
+    try{
+      const d = await db.collection("meta").doc("bootstrap").get();
+      if(d.exists) ok("이미 만들어져 있습니다 (그 계정으로 로그인하세요)");
+      else ok("아직 비어 있습니다 — 지금 만들 수 있습니다");
+    }catch(e){
+      no("확인 실패 (" + (fbErrCode(e) || "오류") + ")");
+      const x = explainFbError(e);
+      lines.push("   원인: " + x.why, "   조치: " + x.fix.replace(/\n/g,"\n   "));
+      lines.push("   ※ 이 상태에서는 '이미 원청 계정이 있습니다'로 잘못 보일 수 있습니다.");
+      stop = stop || e;
+    }
+
+    lines.push("", "⑦ 자료 쓰기");
     try{
       const ref = db.collection("kv").doc("__diag");
       await ref.set({ at: Date.now() });
@@ -3941,13 +4065,34 @@ function renderRisk(){
 
 function dl(name, text, type){
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\ufeff"+text],{type:type}));
+  // 엑셀이 한글 CSV 를 깨뜨리지 않게 BOM 을 붙인다. JSON 에 붙이면 오히려 깨진다.
+  const body = /csv/i.test(type) ? "\ufeff"+text : text;
+  a.href = URL.createObjectURL(new Blob([body],{type:type}));
   a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
 }
 const stamp = () => { const d=new Date(); return ""+d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0"); };
-$("#expCsv").addEventListener("click", () => {
-  const list = submissions.filter(r => recDate(r) === admDate);
-  if(!list.length) return alert("내보낼 자료가 없습니다.");
+/* 지금 보고 있는 화면 기준으로 내보낸다.
+   근로자가 며칠 전에 미리 작성해 오므로, 늘 "오늘 날짜"만 뽑으면
+   찾기 화면에서 걸러 놓고 내보내기를 눌러도 빈 파일이 나온다. */
+function exportScope(){
+  if(lastAdmTab === "find"){
+    let l = submissions.slice();
+    if(findCo) l = l.filter(r => r.company === findCo);
+    if(findOnly === "bp")   l = l.filter(r => !bpDone(r));
+    if(findOnly === "miss") l = l.filter(r => missingItems(r).length);
+    if(findOnly === "risk") l = l.filter(r => isRisk(r));
+    const q = findQ.trim().toLowerCase();
+    if(q) l = l.filter(r => String(r.name||"").toLowerCase().includes(q));
+    return { list:l, label:(findCo || "전체")+(findOnly?"_"+findOnly:"") };
+  }
+  if(lastAdmTab === "risk") return { list: submissions.filter(r => isRisk(r)), label:"취약근로자" };
+  return { list: submissions.filter(r => recDate(r) === admDate), label: admDate.replace(/-/g,"") };
+}
+
+function doExportCsv(){
+  const sc = exportScope();
+  const list = sc.list;
+  if(!list.length) return alert("내보낼 자료가 없습니다.\n\n지금 화면에 보이는 근로자가 없습니다. 날짜나 검색 조건을 확인해 주세요.");
   const cols = [["관리번호","code"],["성명","name"],["협력회사","company"],["공종","trade"],["생년월일","birth"],
     ["성별","gender"],["국적","nation"],["체류자격","visa"],["혈액형","blood"],["연락처","phone"],["비상연락처","guardian"],
     ["주소","address"],["경력년","careerY"],["경력월","careerM"],["기초안전교육","basicEdu"],["교육업체","eduOrg"],
@@ -3960,8 +4105,10 @@ $("#expCsv").addEventListener("click", () => {
     q((r.bp.sys2||r.bp.sys1)+"/"+(r.bp.dia2||r.bp.dia1)), q(r.bp.level),
     q(r.ppe.helmet), q(r.ppe.shoes), q(r.ppe.belt), q(r.ppe.etcName), q(isRisk(r)?"Y":""), q(flags(r).join(" / "))
   ]).join(","));
-  dl("신규채용자명부_"+admDate.replace(/-/g,"")+".csv", head.join(",")+"\n"+lines.join("\n"), "text/csv;charset=utf-8");
-});
+  dl("신규채용자명부_"+sc.label+".csv", head.join(",")+"\n"+lines.join("\n"), "text/csv;charset=utf-8");
+}
+$("#expCsv").addEventListener("click", doExportCsv);
+$("#expCsvFind").addEventListener("click", doExportCsv);
 $("#expJson").addEventListener("click", () => {
   if(!submissions.length) return alert("내보낼 자료가 없습니다.");
   dl("신규채용자_백업_"+stamp()+".json", JSON.stringify({site:"학동 4구역",exportedAt:new Date().toISOString(),records:submissions},null,1), "application/json");
@@ -4180,9 +4327,10 @@ function showStartNotices(){
   if(d && d.step > 0){
     const nm = (d.f && d.f.name) || "";
     const when = new Date(d.at);
-    $("#resumeInfo").textContent = (nm ? nm + "님 · " : "")
-      + (flowIdx(d.step)+1) + "/" + FLOW.length + "단계까지 쓰셨습니다 · "
-      + (when.getMonth()+1) + "월 " + when.getDate() + "일 "
+    const tt = (I18N[LANG] && I18N[LANG]["resume.at"]) || "{n}단계까지 쓰셨습니다";
+    $("#resumeInfo").textContent = (nm ? nm + " · " : "")
+      + tt.replace("{n}", (flowIdx(d.step)+1) + "/" + FLOW.length) + " · "
+      + (when.getMonth()+1) + "." + when.getDate() + " "
       + String(when.getHours()).padStart(2,"0") + ":" + String(when.getMinutes()).padStart(2,"0");
     box.classList.remove("hidden");
   } else box.classList.add("hidden");
@@ -4191,8 +4339,8 @@ function showStartNotices(){
   try{ mine = JSON.parse(localStorage.getItem(MINE_KEY) || "null"); }catch(e){}
   const ab = $("#alreadyBox");
   if(mine && mine.code){
-    $("#alreadyInfo").textContent = mine.name + "님 · 관리번호 " + mine.code + " · "
-      + mine.date + " 제출 완료. 현장에 오시면 담당자가 확인합니다.";
+    const at = (I18N[LANG] && I18N[LANG]["already.at"]) || "제출 완료 · 현장에서 담당자가 확인합니다";
+    $("#alreadyInfo").textContent = mine.name + " · " + mine.code + " · " + mine.date + "\n" + at;
     ab.classList.remove("hidden");
   } else ab.classList.add("hidden");
 }
