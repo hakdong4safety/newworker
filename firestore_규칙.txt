@@ -1,38 +1,25 @@
+아래 내용을 전부 복사해서
+
+  Firebase 콘솔 → Firestore Database → 규칙(Rules) 탭
+  → 기존 내용 전부 지우고 → 붙여넣기 → [게시] 버튼 클릭
+
+게시 버튼을 누르지 않으면 반영되지 않습니다.
+
 ════════════════════════════════════════════════════════════
-Firebase 설정 — 순서대로 3단계
-════════════════════════════════════════════════════════════
-
-【1단계】 이메일 로그인 켜기
-  Firebase 콘솔 → Authentication → 시작하기
-  → Sign-in method → 이메일/비밀번호 → 사용 설정 → 저장
-
-【2단계】 아래 규칙 붙여넣기
-  Firestore Database → 규칙(Rules) → 전체 지우고 붙여넣기 → 게시
-
-【3단계】 원청 계정 만들기  ★ 앱에서 합니다. 콘솔 작업 없음
-  배포된 주소 접속 → 우측 위 [관리자]
-  → 맨 아래 "현장을 처음 여시나요 · 원청 관리자 계정 만들기"
-  → 이메일 · 비밀번호(6자 이상) · 담당자 성함 입력 → 만들기
-
-  이 버튼은 딱 한 번만 통합니다. 한 명이 만들고 나면
-  다음 사람에게는 "이미 원청 계정이 있습니다"라고 뜹니다.
-
-────────────────────────────────────────────────────────────
-규칙 (2단계에 붙여넣을 내용)
-────────────────────────────────────────────────────────────
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-    function me()   { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-    function known(){ return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
-    function ok()   { return known() && me().approved == true; }
-    function isGC() { return ok() && me().role == 'gc'; }
-    function myCo() { return ok() ? me().company : '__none__'; }
+    function known()  { return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function me()     { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function ok()     { return known() && me().approved == true; }
+    function isGC()   { return ok() && me().role == 'gc'; }
+    function myCo()   { return ok() ? me().company : '__none__'; }
 
-    // ── 근로자 제출 기록 ──
+    // ── 근로자 제출 기록 (1명당 문서 1건) ──
     match /records/{id} {
       function okRecord() {
         return request.resource.data.keys().hasOnly(['json','updatedAt','company','dateKey'])
@@ -40,9 +27,10 @@ service cloud.firestore {
             && request.resource.data.json.size() < 1000000
             && request.resource.data.company is string;
       }
-      allow create: if okRecord();                                   // 근로자는 로그인 없이 쓰기만
+      allow create: if okRecord();                     // 근로자는 로그인 없이 제출만
       allow read:   if isGC() || (ok() && resource.data.company == myCo());
-      allow update: if okRecord() && (isGC() || (ok() && resource.data.company == myCo()));
+      allow update: if okRecord()
+                    && (isGC() || (ok() && resource.data.company == myCo()));
       allow delete: if isGC();
     }
 
@@ -56,12 +44,11 @@ service cloud.firestore {
     // ── 계정 ──
     match /users/{uid} {
       allow read: if isGC() || (signedIn() && request.auth.uid == uid);
-
-      // 협력사는 승인 대기 상태로만 가입 가능
-      // 원청은 bootstrap 자리를 잡은 사람만 가능
       allow create: if signedIn() && request.auth.uid == uid && (
-           (request.resource.data.role == 'sub' && request.resource.data.approved == false)
+           (request.resource.data.role == 'sub'
+            && request.resource.data.approved == false)
         || (request.resource.data.role == 'gc'
+            && exists(/databases/$(database)/documents/meta/bootstrap)
             && get(/databases/$(database)/documents/meta/bootstrap).data.uid == request.auth.uid)
       );
       allow update, delete: if isGC();
@@ -76,21 +63,43 @@ service cloud.firestore {
   }
 }
 
-────────────────────────────────────────────────────────────
-그 다음에 할 일
-────────────────────────────────────────────────────────────
+════════════════════════════════════════════════════════════
+지금 쓰고 계신 규칙과 무엇이 다른가
+════════════════════════════════════════════════════════════
 
-▸ 협력사 등록
-  원청으로 로그인 → [설정] 탭 → 협력사명 입력 → 추가
-  등록해 두면 협력사 담당자가 가입할 때 목록에서 고릅니다.
-  (등록 전이라도 직접 타이핑해서 가입할 수 있습니다)
+1) users 블록이 없었습니다
+   → 로그인은 되지만 계정 정보를 못 읽어 튕깁니다. (지금 증상)
 
-▸ 협력사 담당자 가입
-  같은 주소 접속 → [관리자] → "협력사 담당자 계정 만들기"
-  → 이메일 · 비밀번호 · 소속 협력사 · 성함
-  → 원청이 [계정 관리] 탭에서 승인하면 자기 회사 근로자만 보입니다
+2) meta 블록이 없었습니다
+   → 원청 계정을 만들 수 없고 "이미 원청 계정이 있습니다"로 잘못 뜹니다.
 
-▸ 기존 자료 정비
-  전에 저장된 기록에는 company 항목이 문서 겉면에 없어
-  협력사 계정에 보이지 않습니다. 원청으로 열어 한 번씩 저장하면
-  채워집니다. 건수가 많으면 일괄 정비 버튼을 넣어 드리겠습니다.
+3) hasOnly(['json','updatedAt']) 였습니다   ★ 가장 급함
+   → 새 코드는 company · dateKey 도 함께 저장합니다.
+      (규칙이 "누구 회사 사람인지"를 읽어야 협력사별로 막을 수 있습니다)
+   → 옛 규칙 그대로 두면 근로자가 서류를 아예 저장하지 못합니다.
+
+4) read: if true / delete: if true 였습니다
+   → 주소만 알면 누구나 전원의 신분증 사진과 건강정보를 읽고
+      지울 수 있는 상태였습니다. 이제 원청과 소속 협력사만 됩니다.
+
+════════════════════════════════════════════════════════════
+붙여넣은 뒤 순서
+════════════════════════════════════════════════════════════
+
+1. Authentication → 시작하기 → 로그인 방법 → 이메일/비밀번호 켜기
+2. Authentication → 설정 → 승인된 도메인 → 본인의 xxx.github.io 추가
+3. 앱 접속 → 강력 새로고침(Ctrl+F5) → [관리자]
+   → 맨 아래 "현장을 처음 여시나요 · 원청 관리자 계정 만들기"
+4. 로그인 후 [설정] 탭에서 협력사 등록
+5. 협력사 담당자가 가입 신청 → [계정 관리] 탭에서 승인
+
+════════════════════════════════════════════════════════════
+기존에 저장된 자료에 대해
+════════════════════════════════════════════════════════════
+
+규칙을 바꾸기 전에 저장된 기록에는 company 항목이 문서 겉면에 없습니다.
+그래서 협력사 계정에는 보이지 않고, 원청에게만 보입니다.
+
+원청으로 로그인해 그 근로자를 열고 혈압을 입력하거나 사진을 붙이면
+저장되면서 자동으로 채워집니다.
+건수가 많아 일일이 열기 어려우면 알려 주세요. 일괄 정비 버튼을 넣겠습니다.

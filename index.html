@@ -163,6 +163,22 @@ input::placeholder,textarea::placeholder{color:#B2B9C2;font-weight:400}
 @media (hover:hover) and (pointer:fine){ .sheetPhotos .pcam{display:none} }
 /* 파일 입력은 display:none 대신 화면 밖으로 밀어 둔다.
    일부 브라우저는 display:none 인 file input 을 프로그램에서 열지 못한다. */
+/* ── 취약 근로자 판정 패널 ── */
+.riskBox{background:#fff;border-radius:10px;padding:14px;border-left:5px solid var(--line)}
+.riskBox.isRisk{border-left-color:var(--signal)}
+.riskState{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.riskState b{font-size:1.05rem}
+.riskBox.isRisk .riskState b{color:var(--signal)}
+.riskSrc{font-size:.74rem;font-weight:700;color:var(--steel);background:#EFF1F4;border-radius:999px;padding:3px 9px}
+.riskWhyList{margin:0 0 10px;padding-left:18px;font-size:.85rem;line-height:1.7;color:var(--ink)}
+.riskNone{font-size:.8rem;color:var(--steel);line-height:1.5;margin-bottom:10px}
+.riskOv{font-size:.78rem;color:#8A5400;background:var(--amber-8);border-radius:8px;padding:9px 11px;margin-bottom:10px;line-height:1.5}
+.riskOv span{display:block;margin-top:3px;color:var(--steel)}
+.riskBtns{display:flex;gap:6px}
+.riskBtns .btn{flex:1;min-height:44px;font-size:.82rem}
+.riskBtns .riskOff{background:var(--signal);color:#fff;border-color:var(--signal)}
+.riskNote2{font-size:.8rem;color:var(--steel);background:#EFF1F4;border-radius:8px;padding:10px 12px;line-height:1.55}
+.riskNote2 b{color:var(--ink)}
 .bpBox{background:#fff;border-radius:10px;padding:14px}
 .bpRow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .bpRow b{flex:0 0 34px;font-size:.8rem;color:var(--steel)}
@@ -260,7 +276,13 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .findBar{display:flex;gap:8px;margin-bottom:12px}
 .findBar input{flex:1;min-width:0;min-height:50px;font-size:1.02rem}
 .findBar .btn{flex:0 0 auto;min-width:88px}
-#coChips{display:flex;flex-wrap:wrap;gap:8px}
+#coChips{display:flex;flex-direction:column;gap:8px}
+.coRow{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);
+  border-radius:12px;padding:12px 14px;flex-wrap:wrap}
+.coRow b{flex:1;min-width:120px;font-size:.98rem}
+.coCode{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800;letter-spacing:.06em;
+  background:var(--ink);color:#fff;border-radius:7px;padding:5px 11px;font-size:.86rem}
+.coRow .btn{min-height:38px;font-size:.78rem;flex:0 0 auto}
 .coChip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);
   border-radius:999px;padding:8px 8px 8px 14px;font-size:.88rem;font-weight:700}
 .coChip button{border:0;background:#EFF1F4;color:var(--steel);border-radius:50%;
@@ -270,6 +292,21 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .resultHead{display:flex;align-items:center;justify-content:space-between;
   margin-bottom:10px;min-height:22px}
 .resultHead .findCount{margin-left:0}
+.prBar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;
+  border:1.5px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:12px;
+  position:sticky;top:8px;z-index:5}
+.prAll{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;cursor:pointer}
+.prAll input{width:22px;height:22px}
+.prBar .btn{margin-left:auto;min-height:46px;min-width:140px}
+.prItem{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--line);
+  border-radius:12px;padding:13px 16px;margin-bottom:7px;cursor:pointer}
+.prItem:hover{border-color:var(--ink)}
+.prItem.sel{border-color:var(--ink);background:#F7F8FA}
+.prItem input{width:22px;height:22px;flex:0 0 auto}
+.prItem .pi{flex:1;min-width:0}
+.prItem .pi b{display:block;font-size:1rem}
+.prItem .pi span{display:block;font-size:.8rem;color:var(--steel);margin-top:2px}
+.prItem .tag.risk{flex:0 0 auto}
 .resultHead .btn{flex:0 0 auto;min-height:36px;font-size:.78rem;min-width:112px}
 
 /* ── 컴퓨터: 찾기 화면을 좌(조작) / 우(결과)로 나눈다 ──
@@ -486,6 +523,9 @@ table.admTable thead th #chkAll{margin-top:4px}
 /* 아래쪽 여백은 화면 하단에 고정된 footer(출력·PDF 버튼 줄)에 사진 첨부 버튼이
    가려지지 않도록 반드시 확보해 둔다. */
 #sheetWrap{display:none;background:#7A828C;padding:14px 0 calc(110px + env(safe-area-inset-bottom))}
+#printBatch{display:none}
+/* 인쇄 준비용: 화면 밖에 펼쳐 두고 글자 크기 계산만 시킨다 */
+#sheetWrap.measuring{display:block !important;position:fixed;left:-99990px;top:0;z-index:-1}
 #sheetWrap.on{display:block}
 #sheetScroll{overflow:auto;-webkit-overflow-scrolling:touch}
 #sheetPage{background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.28);margin:0 auto;transform-origin:top left;padding:0}
@@ -536,6 +576,17 @@ table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
     margin:0 auto !important;width:auto !important}
   table.sheet{margin:0 auto !important}
   table.sheet td.mk{background:#FFF2CC !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  /* ── 일괄 인쇄: 한 사람 = 한 장 ──
+     보관함(#printBatch)에 쌓인 양식들을 페이지 단위로 펼치고,
+     한 장짜리 화면(#sheetWrap)은 감춘다 */
+  body.batchPrinting #sheetWrap{display:none !important}
+  body.batchPrinting #printBatch{display:block !important}
+  body.batchPrinting .printOne{width:198mm;height:285mm;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    page-break-after:always;break-after:page}
+  body.batchPrinting .printOne:last-child{page-break-after:auto;break-after:auto}
+  body.batchPrinting .pClone{zoom:0.84;box-shadow:none !important;margin:0 auto !important}
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1098,6 +1149,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button type="button" id="tabFind" aria-pressed="true">근로자 찾기</button>
     <button type="button" id="tabToday" aria-pressed="false">날짜별 제출</button>
     <button type="button" id="tabRisk" aria-pressed="false">취약 근로자</button>
+    <button type="button" id="tabPrint" aria-pressed="false">일괄 인쇄</button>
     <button type="button" id="tabAcct" aria-pressed="false">계정 관리</button>
     <button type="button" id="tabTpl" aria-pressed="false">설정</button>
   </div>
@@ -1139,6 +1191,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div class="admbar">
       <button class="btn" type="button" id="expCsv">CSV 내보내기</button>
       <button class="btn" type="button" id="expJson">백업(JSON)</button>
+      <button class="btn" type="button" id="printSelected" disabled>선택 인쇄</button>
       <button class="btn" type="button" id="delSelected" disabled>선택 삭제</button>
       <button class="btn danger" type="button" id="wipe">전체 삭제</button>
     </div>
@@ -1147,6 +1200,29 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div id="admRisk" class="hidden">
     <div class="note warn">여기서 체크한 근로자는 날짜와 상관없이 계속 목록에 남습니다. 정기 상담·관리 대상 확인용입니다.</div>
     <div id="riskGroups"><div class="empty">취약 근로자로 지정된 근로자가 없습니다.</div></div>
+  </div>
+
+  <div id="admPrint" class="hidden">
+    <p class="note info">인쇄할 근로자를 고른 뒤 아래 <b>인쇄하기</b>를 누르세요.
+      한 사람당 A4 한 장씩 나옵니다. 취약 근로자는 전용 양식으로 자동 인쇄됩니다.</p>
+    <div class="findRail" style="margin-bottom:14px">
+      <div class="findBar">
+        <input type="search" id="prName" placeholder="이름 검색" autocomplete="off">
+        <button type="button" class="btn small" id="prClear">지우기</button>
+      </div>
+      <div class="filterRow">
+        <label for="prCo">업체</label>
+        <select id="prCo"><option value="">전체</option></select>
+        <label for="prDate" style="margin-left:8px">날짜</label>
+        <select id="prDate"><option value="">전체</option></select>
+      </div>
+    </div>
+    <div class="prBar">
+      <label class="prAll"><input type="checkbox" id="prAll"> 보이는 사람 전체 선택</label>
+      <span class="findCount" id="prCount"></span>
+      <button class="btn padd" type="button" id="prGo" disabled>인쇄하기</button>
+    </div>
+    <div id="prList"></div>
   </div>
 
   <div id="admAcct" class="hidden">
@@ -1228,6 +1304,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   </div>
 </footer>
 
+<!-- 일괄 인쇄용 보관함: 화면에는 숨겨져 있다가 인쇄할 때만 사람 수만큼 페이지로 펼쳐진다 -->
+<div id="printBatch" aria-hidden="true"></div>
+
 <div class="overlay hidden" id="loginOverlay">
   <div class="loginPane">
     <aside class="loginBrand">
@@ -1250,8 +1329,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <p id="loginSub">원청 안전보건팀 · 협력사 담당자용입니다. 근로자는 로그인이 필요 없습니다.</p>
 
     <div id="loginForm">
-      <label class="mlab" for="lgEmail">이메일</label>
-      <input type="email" id="lgEmail" placeholder="name@company.com" autocomplete="username">
+      <label class="mlab" for="lgEmail">아이디</label>
+      <input type="text" id="lgEmail" placeholder="예) hdcipark01" autocomplete="username" autocapitalize="off" spellcheck="false">
       <label class="mlab" for="lgPw">비밀번호</label>
       <input type="password" id="lgPw" placeholder="6자 이상" autocomplete="current-password">
       <div id="gcExtra" class="hidden">
@@ -1263,6 +1342,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
         <input type="text" id="lgCo" list="lgCoList" placeholder="회사명을 입력하거나 목록에서 고르세요" autocomplete="organization">
         <datalist id="lgCoList"></datalist>
         <p class="mhint" id="lgCoHint"></p>
+        <label class="mlab" for="lgCode">고유번호</label>
+        <input type="text" id="lgCode" placeholder="예) ABC-123" autocapitalize="characters" spellcheck="false">
+        <p class="mhint">원청 안전보건팀이 업체별로 발급한 번호입니다. 모르시면 담당자에게 문의해 주세요.</p>
         <label class="mlab" for="lgName">담당자 성함</label>
         <input type="text" id="lgName" placeholder="예) 김철수">
       </div>
@@ -2728,11 +2810,14 @@ function renderRiskPanel(r){
           + (ov.reason ? '<span>사유: ' + esc(ov.reason) + '</span>' : "")
           + '</div>'
         : "")
-    + '<div class="riskBtns">'
-    +   (on ? '<button class="btn small riskOff" type="button" id="riskRelease">취약 해지</button>'
-            : '<button class="btn small padd" type="button" id="riskSet">취약으로 지정</button>')
-    +   (ov ? '<button class="btn small" type="button" id="riskAuto">자동 판정으로</button>' : "")
-    + '</div></div>';
+    + (canJudgeRisk()
+        ? '<div class="riskBtns">'
+          +   (on ? '<button class="btn small riskOff" type="button" id="riskRelease">취약 해지</button>'
+                  : '<button class="btn small padd" type="button" id="riskSet">취약으로 지정</button>')
+          +   (ov ? '<button class="btn small" type="button" id="riskAuto">자동 판정으로</button>' : "")
+          + '</div>'
+        : '<div class="riskNote2">지정·해지는 <b>원청 안전보건관리자</b>만 할 수 있습니다. 판단이 다르면 원청에 알려 주세요.</div>')
+    + '</div>';
 
   const ask = async (to) => {
     const by = prompt(to
@@ -2890,6 +2975,10 @@ function isRisk(r){
   return riskReasons(r).length > 0;                 // 자동 판정
 }
 function riskIsAuto(r){ return !(r && r.riskOverride); }
+/* 취약 지정·해지는 원청 안전보건관리자만 한다.
+   협력사는 근거를 보고 원청에 알리는 역할까지만.
+   로그인 체계를 안 쓰는 현장(로컬 전용)에서는 관리자 잠금이 그 역할을 대신한다. */
+function canJudgeRisk(){ return !authReady() || isGC(); }
 function missingItems(r){
   const m = [];
   if(!bpDone(r)) m.push("혈압");
@@ -2903,8 +2992,30 @@ function missingItems(r){
    업체별 집계·필터가 어긋난다. 원청이 목록을 등록해 두면 근로자 화면에서
    골라 넣게 되어 이름이 하나로 모인다. */
 let COMPANIES = [];
+/* 협력사는 {name, code} 로 관리한다.
+   code = 가입할 때 입력해야 하는 고유번호. 원청이 업체에 따로 알려 준다.
+   예전에는 문자열 배열이었으므로 읽을 때 형태를 맞춰 준다. */
+function normCompanies(l){
+  if(!Array.isArray(l)) return [];
+  return l.map(x => (typeof x === "string") ? { name:x, code:"" }
+                  : { name:String(x.name||""), code:String(x.code||"") })
+          .filter(x => x.name);
+}
+function coNames(){ return COMPANIES.map(c => c.name); }
+function lookupCo(name){
+  const t = String(name||"").trim().toLowerCase();
+  return COMPANIES.find(c => c.name.trim().toLowerCase() === t) || null;
+}
+function newCoCode(){
+  // 헷갈리는 глиф(0/O, 1/I) 는 뺀다 — 전화로 불러 주기 쉽게
+  const A = "23456789ACDEFGHJKLMNPQRSTUVWXYZ";
+  let out = "";
+  for(let i=0;i<6;i++) out += A[Math.floor(Math.random()*A.length)];
+  return out.slice(0,3) + "-" + out.slice(3);
+}
+
 async function loadCompaniesAdmin(){
-  try{ const l = await Store.load("companies", []); COMPANIES = Array.isArray(l) ? l : []; }
+  try{ COMPANIES = normCompanies(await Store.load("companies", [])); }
   catch(e){ COMPANIES = []; }
   renderCoChips();
 }
@@ -2913,9 +3024,15 @@ function renderCoChips(){
   if(!box) return;
   // 이미 제출된 기록에 있는데 목록에 없는 업체도 같이 보여 준다
   const used = Array.from(new Set(submissions.map(r => r.company).filter(Boolean)));
-  const extra = used.filter(c => !COMPANIES.includes(c));
+  const extra = used.filter(c => !lookupCo(c));
   box.innerHTML = COMPANIES.map(c =>
-      '<span class="coChip">'+esc(c)+'<button type="button" data-co="'+esc(c)+'" title="삭제">×</button></span>').join("")
+      '<div class="coRow">'
+      + '<b>'+esc(c.name)+'</b>'
+      + '<code class="coCode">'+esc(c.code || "번호 없음")+'</code>'
+      + '<button class="btn small" type="button" data-copy="'+esc(c.name)+'">안내문 복사</button>'
+      + '<button class="btn small" type="button" data-regen="'+esc(c.name)+'">번호 재발급</button>'
+      + '<button class="btn small" type="button" data-co="'+esc(c.name)+'">삭제</button>'
+      + '</div>').join("")
     + (extra.length
         ? '<div style="width:100%;margin-top:12px;font-size:.82rem;color:var(--steel)">'
           + '제출 기록에는 있으나 목록에 없는 업체: '
@@ -2927,22 +3044,43 @@ function renderCoChips(){
 
   box.querySelectorAll("[data-co]").forEach(b => b.addEventListener("click", async () => {
     if(!confirm(b.dataset.co + " 을(를) 목록에서 뺄까요?\n(이미 제출된 서류는 그대로 남습니다)")) return;
-    COMPANIES = COMPANIES.filter(c => c !== b.dataset.co);
+    COMPANIES = COMPANIES.filter(c => c.name !== b.dataset.co);
     await Store.save("companies", COMPANIES); renderCoChips();
   }));
   box.querySelectorAll("[data-add]").forEach(b => b.addEventListener("click", async () => {
-    COMPANIES = COMPANIES.concat([b.dataset.add]).sort();
+    COMPANIES = COMPANIES.concat([{ name:b.dataset.add, code:newCoCode() }])
+      .sort((x,y)=>x.name.localeCompare(y.name));
     await Store.save("companies", COMPANIES); renderCoChips();
+  }));
+  box.querySelectorAll("[data-regen]").forEach(b => b.addEventListener("click", async () => {
+    const c = lookupCo(b.dataset.regen); if(!c) return;
+    if(!confirm(c.name + " 의 고유번호를 새로 발급할까요?\n예전 번호로는 가입할 수 없게 됩니다.")) return;
+    c.code = newCoCode();
+    await Store.save("companies", COMPANIES); renderCoChips();
+  }));
+  box.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => {
+    const c = lookupCo(b.dataset.copy); if(!c) return;
+    const msg = "[학동 4구역 · 협력사 담당자 계정 안내]\n"
+      + "아래 주소에서 [관리자] → '협력사 담당자 계정 만들기' 로 가입해 주세요.\n\n"
+      + "· 회사명: " + c.name + "\n"
+      + "· 고유번호: " + (c.code || "(원청에 문의)") + "\n\n"
+      + "가입 후 원청 승인이 되면 소속 근로자 서류를 보실 수 있습니다.\n"
+      + location.origin + location.pathname;
+    try{ await navigator.clipboard.writeText(msg); showToast(c.name + " 안내문을 복사했습니다"); }
+    catch(e){ prompt("아래 내용을 복사해 전달하세요", msg); }
   }));
 }
 $("#coAdd").addEventListener("click", async () => {
   const v = $("#coNew").value.trim();
   if(!v) return;
-  if(COMPANIES.includes(v)){ alert("이미 등록된 협력사입니다."); return; }
-  COMPANIES = COMPANIES.concat([v]).sort();
+  if(lookupCo(v)){ alert("이미 등록된 협력사입니다."); return; }
+  const item = { name:v, code:newCoCode() };
+  COMPANIES = COMPANIES.concat([item]).sort((x,y)=>x.name.localeCompare(y.name));
   const res = await Store.save("companies", COMPANIES);
-  if(!res || !res.ok){ alert("저장하지 못했습니다."); COMPANIES = COMPANIES.filter(c => c !== v); }
+  if(!res || !res.ok){ alert("저장하지 못했습니다."); COMPANIES = COMPANIES.filter(c => c.name !== v); }
   $("#coNew").value = ""; renderCoChips();
+  if(res && res.ok) alert(v + " 등록 완료\n\n고유번호: " + item.code
+    + "\n\n이 번호가 있어야 그 업체 담당자가 가입할 수 있습니다.\n목록의 [안내문 복사]로 전달하세요.");
 });
 $("#coNew").addEventListener("keydown", e => { if(e.key === "Enter") $("#coAdd").click(); });
 
@@ -3381,6 +3519,19 @@ $("#btnDelOne").addEventListener("click", async () => {
    Firestore 규칙이 서버에서 같은 기준으로 막아 준다.
    그래서 문서에 company 를 겉으로 한 번 더 적어 둔다(규칙이 읽어야 함). ══ */
 let AUTH = { on:false, user:null, profile:null };   // profile = {role, company, name, approved}
+
+/* Firebase 는 이메일 형식만 받는다. 현장에서는 hdcipark01 같은 아이디를 쓰므로
+   @ 가 없으면 내부에서만 도메인을 붙여 준다. 화면에는 아이디 그대로 보인다. */
+const ID_DOMAIN = "hdc-ipark-hd4.site";
+function toLoginEmail(v){
+  const t = String(v || "").trim();
+  if(!t) return "";
+  return t.includes("@") ? t : (t.toLowerCase() + "@" + ID_DOMAIN);
+}
+function fromLoginEmail(v){
+  const t = String(v || "");
+  return t.endsWith("@" + ID_DOMAIN) ? t.slice(0, -(ID_DOMAIN.length + 1)) : t;
+}
 let __fbAuth = null;
 
 function authEnabled(){ return fbEnabled(); }
@@ -3414,7 +3565,7 @@ async function fetchProfile(uid){
 
 async function doLogin(email, pw){
   const auth = await loadAuth();
-  const cred = await auth.signInWithEmailAndPassword(email, pw);
+  const cred = await auth.signInWithEmailAndPassword(toLoginEmail(email), pw);
   AUTH.user = cred.user;
   AUTH.profile = await fetchProfile(cred.user.uid);
   AUTH.on = true;
@@ -3437,9 +3588,9 @@ async function doSignupGC(email, pw, name){
   const auth = await loadAuth();
   const db = await loadFirebase();
   let cred;
-  try{ cred = await auth.createUserWithEmailAndPassword(email, pw); }
+  try{ cred = await auth.createUserWithEmailAndPassword(toLoginEmail(email), pw); }
   catch(e){
-    if(/email-already-in-use/i.test((e&&e.code)||"")) cred = await auth.signInWithEmailAndPassword(email, pw);
+    if(/email-already-in-use/i.test((e&&e.code)||"")) cred = await auth.signInWithEmailAndPassword(toLoginEmail(email), pw);
     else throw e;
   }
   // 먼저 자리를 잡는다. 두 사람이 동시에 눌러도 한 명만 성공한다.
@@ -3457,7 +3608,7 @@ async function repairGC(email, pw, name, seatUid){
   const auth = await loadAuth();
   let user = null;
   try{
-    const cred = await auth.signInWithEmailAndPassword(email, pw);
+    const cred = await auth.signInWithEmailAndPassword(toLoginEmail(email), pw);
     user = cred.user;
   }catch(e){
     const c = String((e && e.code) || "");
@@ -3486,7 +3637,7 @@ async function repairGC(email, pw, name, seatUid){
 
 async function doSignup(email, pw, company, name){
   const auth = await loadAuth();
-  const cred = await auth.createUserWithEmailAndPassword(email, pw);
+  const cred = await auth.createUserWithEmailAndPassword(toLoginEmail(email), pw);
   const db = await loadFirebase();
   const prof = { role:"sub", company, name, email, approved:false, at:Date.now() };
   await db.collection("users").doc(cred.user.uid).set(prof);
@@ -3501,7 +3652,7 @@ async function doLogout(){
 }
 
 /* ── 로그인 화면 ─────────────────────────────── */
-let signupMode = false;
+let signupMode = false, SIGNUP_COS = [];
 let gcMode = false;
 function openLogin(){
   signupMode = false; gcMode = false; syncLoginMode();
@@ -3528,12 +3679,12 @@ function syncLoginMode(){
 }
 async function loadCompanyOptions(){
   let list = [];
-  try{ const l = await Store.load("companies", []); if(Array.isArray(l)) list = l; }catch(e){}
-  $("#lgCoList").innerHTML = list.map(c => '<option value="'+esc(c)+'"></option>').join("");
-  // 원청이 아직 협력사를 등록하지 않았을 수 있다. 그때도 가입이 막히면 안 된다.
+  try{ list = normCompanies(await Store.load("companies", [])); }catch(e){}
+  SIGNUP_COS = list;
+  $("#lgCoList").innerHTML = list.map(c => '<option value="'+esc(c.name)+'"></option>').join("");
   $("#lgCoHint").textContent = list.length
-    ? "목록에 없으면 직접 적으셔도 됩니다."
-    : "등록된 협력사 목록이 아직 없습니다. 계약서에 적힌 회사명 그대로 적어 주세요.";
+    ? "원청에서 받으신 고유번호를 함께 넣어 주세요."
+    : "등록된 협력사가 아직 없습니다. 원청 안전보건팀에 업체 등록을 먼저 요청해 주세요.";
 }
 function lgFail(msg){ const e = $("#lgErr"); e.textContent = msg; e.classList.add("on"); }
 
@@ -3582,7 +3733,7 @@ $("#lgReset").addEventListener("click", async () => {
   if(!email){ lgFail("먼저 이메일을 넣어 주세요. 그 주소로 재설정 링크를 보냅니다."); return; }
   try{
     const auth = await loadAuth();
-    await auth.sendPasswordResetEmail(email);
+    await auth.sendPasswordResetEmail(toLoginEmail(email));
     // Firebase 는 보안상 "그런 계정 없음"을 알려 주지 않는다.
     // 그래서 "보냈습니다"라고만 하면, 계정이 없는 사람은 오지 않는 메일을 계속 기다리게 된다.
     alert("재설정 메일 요청을 보냈습니다.\n\n"
@@ -3633,11 +3784,24 @@ $("#lgGo").addEventListener("click", async () => {
         prof = await doSignupGC(email, pw, nm);
       }
     } else if(signupMode){
-      const co = $("#lgCo").value, nm = $("#lgName").value.trim();
-      if(!co){ lgFail("소속 협력사를 골라 주세요."); throw 0; }
+      const co = $("#lgCo").value.trim(), nm = $("#lgName").value.trim();
+      const code = $("#lgCode").value.trim().toUpperCase().replace(/\s/g,"");
+      if(!co){ lgFail("소속 협력사를 넣어 주세요."); throw 0; }
       if(!nm){ lgFail("담당자 성함을 넣어 주세요."); throw 0; }
       if(pw.length < 6){ lgFail("비밀번호는 6자 이상이어야 합니다."); throw 0; }
-      prof = await doSignup(email, pw, co, nm);
+
+      // 원청이 발급한 고유번호와 맞아야 가입할 수 있다
+      const hit = SIGNUP_COS.find(c => c.name.trim().toLowerCase() === co.toLowerCase());
+      if(!hit){
+        lgFail("등록되지 않은 협력사입니다. 회사명을 확인하시거나, 원청 안전보건팀에 업체 등록을 요청해 주세요."); throw 0;
+      }
+      if(!hit.code){
+        lgFail(hit.name + " 는 아직 고유번호가 발급되지 않았습니다. 원청 안전보건팀에 문의해 주세요."); throw 0;
+      }
+      if(code !== hit.code.toUpperCase().replace(/\s/g,"")){
+        lgFail("고유번호가 맞지 않습니다. 원청에서 받으신 번호를 다시 확인해 주세요."); throw 0;
+      }
+      prof = await doSignup(email, pw, hit.name, nm);
     } else {
       prof = await doLogin(email, pw);
     }
@@ -3771,7 +3935,7 @@ function tryPw(){
     $("#pwErr").classList.add("on");
   }
 }
-const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", acct:"계정 관리", tpl:"설정" };
+const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", print:"일괄 인쇄", acct:"계정 관리", tpl:"설정" };
 async function openAdm(tab){
   lastAdmTab = tab || "today";
   await ensureSubmissionsLoaded();   // 여기서 처음으로 목록을 받아 온다
@@ -4033,12 +4197,13 @@ function ymd(iso){ const d = new Date(iso); return d.getFullYear()+"-"+String(d.
 function recDate(r){ return (r && r.dateKey) ? r.dateKey : ymd(r.submittedAt); }
 function setAdmTab(tab){
   lastAdmTab = tab;
-  ["find","today","risk","acct","tpl"].forEach(t => {
+  ["find","today","risk","print","acct","tpl"].forEach(t => {
     $("#tab"+t[0].toUpperCase()+t.slice(1)).setAttribute("aria-pressed", String(t===tab));
     $("#adm"+t[0].toUpperCase()+t.slice(1)).classList.toggle("hidden", t!==tab);
   });
   $("#hTitle").textContent = ADM_TITLE[tab] || "관리자";
   if(tab==="find") renderFind();
+  if(tab==="print") renderPrintTab();
   if(tab==="acct") renderAccounts();
   if(tab==="tpl") loadCompaniesAdmin();
   if(tab==="today") renderToday();
@@ -4046,6 +4211,7 @@ function setAdmTab(tab){
   if(tab==="tpl") renderTpl();
 }
 $("#tabFind").addEventListener("click", () => setAdmTab("find"));
+$("#tabPrint").addEventListener("click", () => setAdmTab("print"));
 $("#tabAcct").addEventListener("click", () => setAdmTab("acct"));
 $("#tabToday").addEventListener("click", () => setAdmTab("today"));
 $("#tabRisk").addEventListener("click", () => setAdmTab("risk"));
@@ -4071,13 +4237,18 @@ function riskTag(r){
 }
 function rowHTML(r){
   return '<div class="tr">'
-    +'<input type="checkbox" class="chk" data-code="'+esc(docId(r))+'" '+(isRisk(r)?"checked":"")+' title="취약 근로자">'
+    +'<input type="checkbox" class="chk" data-code="'+esc(docId(r))+'" '+(isRisk(r)?"checked":"")+(canJudgeRisk()?'':' disabled')+' title="'+(canJudgeRisk()?'취약 근로자':'지정·해지는 원청 안전보건관리자만')+'">'
     +'<div class="who" data-code="'+esc(docId(r))+'"><b>'+esc(r.name)+(isRisk(r)?' <span class="tag risk">취약근로자</span>':'')+'</b>'
     +'<span>'+esc(r.trade)+' · '+esc(r.code)+' · '+recDate(r)+'</span></div>'
     +'<span class="tag '+riskTag(r)+'">'+esc((r.bp.sys2||r.bp.sys1||"—")+"/"+(r.bp.dia2||r.bp.dia1||"—"))+'</span></div>';
 }
 function bindRows(container, list){
   container.querySelectorAll(".chk").forEach(cb => cb.addEventListener("change", async () => {
+    if(!canJudgeRisk()){
+      cb.checked = !cb.checked;
+      alert("취약 지정·해지는 원청 안전보건관리자만 할 수 있습니다.");
+      return;
+    }
     const rec = submissions.find(x => docId(x) === cb.dataset.code);
     if(rec){
       // 목록에서 직접 끄고 켜는 것도 담당자 판단이므로 근거를 남긴다
@@ -4218,11 +4389,130 @@ function renderTodayTable(){
   }));
   updateDeleteSelectedBtn();
 }
+/* ── 선택 인쇄 (일괄) ─────────────────────────────────────────
+   날짜별 탭에서 체크한 사람들의 양식을 사람 수만큼 이어 붙여
+   인쇄 대화상자 한 번으로 전부 뽑는다.
+   · 취약 근로자는 자동으로 취약근로자용 양식이 쓰인다 (사람마다 판별)
+   · 글자 자동 축소는 실제 칸 크기를 재야 하므로, 양식을 화면 밖에
+     펼쳐 놓고(measuring) 채운 뒤 통째로 복제해 보관함에 쌓는다 */
+/* ── 일괄 인쇄 탭 ──────────────────────────────────────────── */
+let prSel = new Set(), prQ = "", prCoF = "", prDateF = "";
+function prVisible(){
+  let l = submissions.slice();
+  if(prCoF)   l = l.filter(r => r.company === prCoF);
+  if(prDateF) l = l.filter(r => recDate(r) === prDateF);
+  const q = prQ.trim().toLowerCase();
+  if(q) l = l.filter(r => String(r.name||"").toLowerCase().includes(q));
+  return l.sort((a,b) => String(a.company||"").localeCompare(String(b.company||""))
+                      || String(a.name||"").localeCompare(String(b.name||"")));
+}
+function renderPrintTab(){
+  const cos = Array.from(new Set(submissions.map(r => r.company).filter(Boolean))).sort();
+  $("#prCo").innerHTML = '<option value="">전체</option>'
+    + cos.map(c => '<option value="'+esc(c)+'"'+(c===prCoF?" selected":"")+'>'+esc(c)+'</option>').join("");
+  const ds = Array.from(new Set(submissions.map(r => recDate(r)).filter(Boolean))).sort().reverse();
+  $("#prDate").innerHTML = '<option value="">전체</option>'
+    + ds.map(d => '<option value="'+esc(d)+'"'+(d===prDateF?" selected":"")+'>'+esc(d)+'</option>').join("");
+
+  const list = prVisible();
+  const box = $("#prList");
+  box.innerHTML = list.length ? list.map(r =>
+      '<label class="prItem'+(prSel.has(docId(r))?" sel":"")+'">'
+      + '<input type="checkbox" data-id="'+esc(docId(r))+'"'+(prSel.has(docId(r))?" checked":"")+'>'
+      + '<span class="pi"><b>'+esc(r.name)+'</b>'
+      +   '<span>'+esc(r.company||"업체 미기재")+' \u00b7 '+esc(r.trade||"")+' \u00b7 '+esc(recDate(r))+'</span></span>'
+      + (isRisk(r) ? '<span class="tag risk">취약</span>' : '')
+      + '</label>').join("")
+    : '<div class="findEmpty">해당하는 근로자가 없습니다.</div>';
+
+  box.querySelectorAll("input[type=checkbox]").forEach(cb => cb.addEventListener("change", () => {
+    if(cb.checked) prSel.add(cb.dataset.id); else prSel.delete(cb.dataset.id);
+    cb.closest(".prItem").classList.toggle("sel", cb.checked);
+    updatePrBar();
+  }));
+  const ids = list.map(docId);
+  $("#prAll").checked = ids.length > 0 && ids.every(i => prSel.has(i));
+  updatePrBar();
+}
+function updatePrBar(){
+  const n = prSel.size, tot = prVisible().length;
+  $("#prCount").textContent = tot + "명 중 " + n + "명 선택";
+  const go = $("#prGo");
+  go.disabled = n === 0;
+  go.textContent = n > 0 ? "인쇄하기 ("+n+"장)" : "인쇄하기";
+}
+$("#prAll").addEventListener("change", e => {
+  const ids = prVisible().map(docId);
+  if(e.target.checked) ids.forEach(i => prSel.add(i)); else ids.forEach(i => prSel.delete(i));
+  renderPrintTab();
+});
+$("#prName").addEventListener("input", e => { prQ = e.target.value; renderPrintTab(); });
+$("#prClear").addEventListener("click", () => { prQ = ""; $("#prName").value = ""; renderPrintTab(); });
+$("#prCo").addEventListener("change", e => { prCoF = e.target.value; renderPrintTab(); });
+$("#prDate").addEventListener("change", e => { prDateF = e.target.value; renderPrintTab(); });
+$("#prGo").addEventListener("click", () => printList(submissions.filter(r => prSel.has(docId(r)))));
+
+async function printList(sel){
+  const list = (sel || []).slice()
+    .sort((a,b) => String(a.company||"").localeCompare(String(b.company||""))
+                || String(a.name||"").localeCompare(String(b.name||"")));
+  if(!list.length){ alert("인쇄할 사람을 먼저 골라 주세요."); return; }
+  if(list.length > 40 && !confirm(list.length + "명입니다. 준비에 시간이 걸릴 수 있습니다. 계속할까요?")) return;
+
+  const wrap = $("#sheetWrap"), batch = $("#printBatch"), page = $("#sheetPage");
+  const prev = { current, sheetKind, wasOn: wrap.classList.contains("on"),
+                 transform: page.style.transform, margin: page.style.marginLeft };
+  batch.innerHTML = "";
+  setBusy(true, "인쇄 준비 중…");
+  wrap.classList.add("measuring");
+  try{
+    for(let i = 0; i < list.length; i++){
+      $("#busyText").textContent = "인쇄 준비 중… (" + (i+1) + "/" + list.length + ") " + (list[i].name || "");
+      current = list[i]; sheetKind = "form";
+      renderSheetDOM();
+      page.style.transform = "none"; page.style.marginLeft = "0";
+      fillActiveSheet(current);
+      await new Promise(res => setTimeout(res, 0));   // 칸 크기 계산이 자리 잡을 틈
+      const clone = page.cloneNode(true);
+      clone.removeAttribute("id");
+      clone.className = "pClone";
+      clone.style.transform = "none"; clone.style.marginLeft = "0"; clone.style.width = "";
+      const one = document.createElement("div");
+      one.className = "printOne";
+      one.appendChild(clone);
+      batch.appendChild(one);
+    }
+  }catch(e){
+    alert("인쇄 준비 중 문제가 생겼습니다: " + ((e && e.message) || e));
+  }finally{
+    wrap.classList.remove("measuring");
+    current = prev.current; sheetKind = prev.sheetKind;
+    page.style.transform = prev.transform; page.style.marginLeft = prev.margin;
+    if(prev.wasOn && current){ renderSheetDOM(); fillActiveSheet(current); fitSheetView(); }
+    else page.innerHTML = "";
+    setBusy(false);
+  }
+  if(!batch.children.length) return;
+
+  document.body.classList.add("batchPrinting");
+  const cleanup = () => {
+    document.body.classList.remove("batchPrinting");
+    batch.innerHTML = "";
+    window.removeEventListener("afterprint", cleanup);
+  };
+  window.addEventListener("afterprint", cleanup);
+  window.print();          // 대화상자가 닫힐 때까지 여기서 멈춘다
+  cleanup();               // afterprint 가 안 오는 브라우저 대비 (두 번 불려도 안전)
+}
+$("#printSelected").addEventListener("click", () => printList(
+  submissions.filter(r => selectedCodes.has(docId(r)))));
+
 function updateDeleteSelectedBtn(){
-  const btn = $("#delSelected"); if(!btn) return;
   const n = selectedCodes.size;
-  btn.textContent = n > 0 ? "선택 삭제 ("+n+")" : "선택 삭제";
-  btn.disabled = n === 0;
+  const btn = $("#delSelected");
+  if(btn){ btn.textContent = n > 0 ? "선택 삭제 ("+n+")" : "선택 삭제"; btn.disabled = n === 0; }
+  const pb = $("#printSelected");
+  if(pb){ pb.textContent = n > 0 ? "선택 인쇄 ("+n+")" : "선택 인쇄"; pb.disabled = n === 0; }
 }
 function renderToday(){ renderTodayTable(); }
 function renderRisk(){
@@ -4561,9 +4851,9 @@ function hyphenPhone(v){
 /* 원청사가 등록해 둔 협력사 목록을 내려받아 고를 수 있게 한다 */
 async function loadCompanyList(){
   try{
-    const list = await Store.load("companies", null);
-    if(Array.isArray(list) && list.length){
-      $("#coList").innerHTML = list.map(c => '<option value="'+esc(c)+'"></option>').join("");
+    const list = normCompanies(await Store.load("companies", null));
+    if(list.length){
+      $("#coList").innerHTML = list.map(c => '<option value="'+esc(c.name)+'"></option>').join("");
     }
   }catch(e){}
 }
