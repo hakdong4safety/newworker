@@ -292,6 +292,11 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .resultHead{display:flex;align-items:center;justify-content:space-between;
   margin-bottom:10px;min-height:22px}
 .resultHead .findCount{margin-left:0}
+.howto{display:flex;flex-direction:column;gap:10px}
+.howto > div{display:flex;gap:12px;align-items:flex-start;font-size:.92rem;line-height:1.55}
+.howto > div > b{flex:0 0 28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;font-size:.85rem}
+.howto span b{color:var(--ink)}
 .prBar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;
   border:1.5px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:12px;
   position:sticky;top:8px;z-index:5}
@@ -1150,6 +1155,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button type="button" id="tabToday" aria-pressed="false">날짜별 제출</button>
     <button type="button" id="tabRisk" aria-pressed="false">취약 근로자</button>
     <button type="button" id="tabPrint" aria-pressed="false">일괄 인쇄</button>
+    <button type="button" id="tabCo" aria-pressed="false">협력사 등록</button>
     <button type="button" id="tabAcct" aria-pressed="false">계정 관리</button>
     <button type="button" id="tabTpl" aria-pressed="false">설정</button>
   </div>
@@ -1225,29 +1231,25 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div id="prList"></div>
   </div>
 
+  <div id="admCo" class="hidden">
+    <div class="card">
+      <h3>협력사 등록</h3>
+      <div class="howto">
+        <div><b>1</b><span>협력사명을 등록하면 <b>고유번호</b>가 자동 발급됩니다.</span></div>
+        <div><b>2</b><span><b>[안내문 복사]</b>를 눌러 그 업체 담당자에게 전달합니다.</span></div>
+        <div><b>3</b><span>담당자가 가입할 때 <b>고유번호를 맞게 입력해야</b> 계정이 만들어집니다.<br>
+          번호는 서버가 대조하며, 원청 외에는 볼 수 없습니다.</span></div>
+        <div><b>4</b><span>가입이 들어오면 <b>[계정 관리]</b>에서 승인합니다.</span></div>
+      </div>
+      <div class="findBar" style="margin-top:16px">
+        <input type="text" id="coNew" placeholder="협력사명을 입력하고 추가를 누르세요">
+        <button class="btn small padd" type="button" id="coAdd">추가</button>
+      </div>
+      <div id="coChips" style="margin-top:12px"></div>
+    </div>
+  </div>
+
   <div id="admAcct" class="hidden">
-    <div class="card" id="myAcctCard">
-      <h3>내 아이디 · 비밀번호 바꾸기</h3>
-      <p class="note info" style="margin:0 0 14px">지금 로그인한 계정의 아이디와 비밀번호를 바꿉니다.
-        바꾸면 <b>새 아이디로 다시 로그인</b>해야 합니다.</p>
-      <div class="f"><label for="myPwNow">현재 비밀번호</label>
-        <input type="password" id="myPwNow" placeholder="본인 확인용" autocomplete="current-password"></div>
-      <div class="f"><label for="myIdNew">새 아이디 <span style="font-weight:500;color:var(--mute)">(안 바꾸면 비워 두세요)</span></label>
-        <input type="text" id="myIdNew" placeholder="예) hdcipark01" autocapitalize="off" spellcheck="false"></div>
-      <div class="f"><label for="myPwNew">새 비밀번호 <span style="font-weight:500;color:var(--mute)">(안 바꾸면 비워 두세요)</span></label>
-        <input type="password" id="myPwNew" placeholder="6자 이상" autocomplete="new-password"></div>
-      <button class="btn padd" type="button" id="myAcctSave" style="min-height:52px">바꾸기</button>
-      <div class="note" id="myAcctMsg" style="margin-top:10px;display:none"></div>
-    </div>
-
-    <div class="card hidden" id="seatCard">
-      <h3>원청 아이디를 새로 만들기</h3>
-      <p class="note info" style="margin:0 0 12px">위 방법이 Firebase 설정 때문에 막힐 때 쓰는 길입니다.
-        <b>원청 자리를 비우면</b> 로그아웃되고, 새 아이디로 원청 계정을 다시 만들 수 있습니다.
-        지금 이 계정은 그대로 남으니, 새 계정으로 들어온 뒤 <b>계정 관리에서 차단</b>해 주세요.</p>
-      <button class="btn" type="button" id="seatRelease" style="min-height:52px">원청 자리 비우고 새 아이디 만들기</button>
-    </div>
-
     <p class="note info">협력사 담당자가 가입 신청하면 여기에 뜹니다.
       <b>승인해야 자기 회사 근로자를 볼 수 있습니다.</b> 승인 전에는 아무 자료도 보이지 않습니다.</p>
     <div id="acctList"></div>
@@ -1270,17 +1272,6 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
       <button class="btn" type="button" id="btnCopyLink" style="min-height:52px">안내문 복사</button>
     </div>
 
-    <div class="card">
-      <h3>협력사 목록</h3>
-      <p class="note info" style="margin:0 0 12px">여기에 등록해 두면 근로자 작성 화면에서
-        <b>목록에서 골라</b> 넣습니다. 같은 회사를 "대한철골 / (주)대한철골 / 대한 철골"처럼
-        제각각 적어 업체별 집계가 어긋나는 일을 막아 줍니다.</p>
-      <div class="findBar">
-        <input type="text" id="coNew" placeholder="협력사명을 입력하고 추가를 누르세요">
-        <button class="btn small padd" type="button" id="coAdd">추가</button>
-      </div>
-      <div id="coChips"></div>
-    </div>
 
     <div class="curtpl">
       <span>현재 양식: <b id="curTplName">기본 (Rev.5)</b></span>
@@ -3670,11 +3661,9 @@ async function repairGC(email, pw, name, seatUid){
   }catch(e){
     const c = String((e && e.code) || "");
     if(/user-not-found/i.test(c)){
-      lgFail("원청 자리는 이미 등록돼 있는데, 이 아이디로는 계정이 없습니다.\n"
-        + "▸ 처음 만드실 때 쓴 아이디(또는 이메일)로 로그인하신 뒤, "
-        + "[계정 관리] 탭에서 '내 아이디 바꾸기'로 hdcipark01 같은 아이디로 바꾸실 수 있습니다.\n"
-        + "▸ 처음 만든 계정을 모르시면 Firebase 콘솔에서 Authentication 의 사용자와 "
-        + "Firestore 의 meta/bootstrap 문서를 지우면 처음부터 다시 만들 수 있습니다.");
+      lgFail("원청 자리는 이미 등록돼 있는데, 이 아이디로는 계정이 없습니다. "
+        + "처음 만드실 때 쓴 아이디로 로그인해 주세요. 그 아이디를 모르시면 Firebase 콘솔에서 "
+        + "Authentication 의 사용자와 Firestore 의 meta/bootstrap 문서를 지운 뒤 다시 만드시면 됩니다.");
     } else if(/wrong-password|invalid-credential|invalid-login/i.test(c)){
       lgFail("원청 계정은 이미 있습니다. 비밀번호가 맞지 않습니다 — 아래 '비밀번호를 잊었습니다'를 눌러 주세요.");
     } else {
@@ -3902,77 +3891,7 @@ $("#lgGo").addEventListener("click", async () => {
 });
 
 /* ── 계정 관리 (원청 전용) ─────────────────────────────────── */
-/* 내 아이디·비밀번호 바꾸기.
-   Firebase 는 최근에 로그인한 상태여야 아이디를 바꿔 준다.
-   그래서 현재 비밀번호로 본인 확인을 한 번 더 한다. */
-async function changeMyAccount(){
-  const out = $("#myAcctMsg");
-  const show = (t, bad) => { out.style.display="block"; out.textContent = t;
-    out.style.color = bad ? "#960014" : "var(--steel)"; };
-  const nowPw = $("#myPwNow").value;
-  const newId = $("#myIdNew").value.trim();
-  const newPw = $("#myPwNew").value;
-  if(!AUTH.user){ show("로그인 상태가 아닙니다.", true); return; }
-  if(!nowPw){ show("본인 확인을 위해 현재 비밀번호를 넣어 주세요.", true); return; }
-  if(!newId && !newPw){ show("바꿀 아이디나 비밀번호를 넣어 주세요.", true); return; }
-  if(newPw && newPw.length < 6){ show("새 비밀번호는 6자 이상이어야 합니다.", true); return; }
-
-  const btn = $("#myAcctSave"); btn.disabled = true; const t0 = btn.textContent; btn.textContent = "바꾸는 중…";
-  try{
-    const auth = await loadAuth();
-    const cur = AUTH.user.email || "";
-    // 본인 확인 (다시 로그인)
-    const cred = firebase.auth.EmailAuthProvider.credential(cur, nowPw);
-    await AUTH.user.reauthenticateWithCredential(cred);
-
-    if(newId){
-      const target = toLoginEmail(newId);
-      await AUTH.user.updateEmail(target);
-      const db = await loadFirebase();
-      await db.collection("users").doc(AUTH.user.uid).set({ email: target }, { merge:true });
-      if(AUTH.profile) AUTH.profile.email = target;
-    }
-    if(newPw) await AUTH.user.updatePassword(newPw);
-
-    show("바꿨습니다. 새 아이디" + (newPw ? "와 비밀번호" : "") + "로 다시 로그인해 주세요.");
-    $("#myPwNow").value = ""; $("#myIdNew").value = ""; $("#myPwNew").value = "";
-    setTimeout(async () => { await doLogout(); paint(); openLogin(); }, 1800);
-  }catch(e){
-    const c = String((e && e.code) || ""), m = String((e && e.message) || e);
-    if(/wrong-password|invalid-credential|invalid-login/i.test(c+m))
-      show("현재 비밀번호가 맞지 않습니다.", true);
-    else if(/email-already-in-use/i.test(c+m))
-      show("그 아이디는 이미 쓰이고 있습니다. 다른 아이디를 넣어 주세요.", true);
-    else if(/requires-recent-login/i.test(c+m))
-      show("로그아웃 후 다시 로그인하시고 곧바로 시도해 주세요.", true);
-    else if(/operation-not-allowed|verify-before-update|requires-verification/i.test(c+m))
-      show("Firebase 설정 때문에 앱에서 아이디를 바꿀 수 없습니다. "
-         + "콘솔 → Authentication → 설정에서 '이메일 열거 보호'를 끄고 다시 시도하시거나, "
-         + "콘솔에서 사용자를 새로 만들어 주세요.  (" + (c||"오류") + ")", true);
-    else show("바꾸지 못했습니다: " + m.slice(0,120), true);
-  }
-  btn.disabled = false; btn.textContent = t0;
-}
-$("#myAcctSave").addEventListener("click", changeMyAccount);
-
-$("#seatRelease").addEventListener("click", async () => {
-  if(!isGC()) return;
-  if(!confirm("원청 자리를 비웁니다.\n\n· 지금 로그아웃됩니다\n· 바로 이어서 새 아이디로 원청 계정을 만드세요\n· 새 계정으로 들어와 이 계정을 차단해 주세요\n\n진행할까요?")) return;
-  try{
-    const db = await loadFirebase();
-    await db.collection("meta").doc("bootstrap").delete();
-  }catch(e){ alert("자리를 비우지 못했습니다: " + ((e&&e.message)||e)); return; }
-  await doLogout(); paint();
-  openLogin(); gcMode = true; signupMode = false; syncLoginMode();
-  lgFail("자리를 비웠습니다. 이제 새 아이디로 원청 계정을 만드세요.");
-  $("#lgErr").style.color = "var(--steel)"; $("#lgErr").style.background = "#EFF1F4";
-});
-
 async function renderAccounts(){
-  const mine = $("#myAcctCard");
-  if(mine) mine.classList.toggle("hidden", !authReady());
-  const seat = $("#seatCard");
-  if(seat) seat.classList.toggle("hidden", !isGC());
   const box = $("#acctList");
   if(!isGC()){
     box.innerHTML = '<div class="findEmpty">원청 안전보건팀만 볼 수 있는 화면입니다.</div>';
@@ -4038,8 +3957,8 @@ function applyRoleToUI(){
   } else w.classList.add("hidden");
 
   const gc = !authReady() || isGC();
-  $("#tabAcct").classList.toggle("hidden", !authReady());
-  $("#tabAcct").textContent = gc ? "계정 관리" : "내 계정";
+  $("#tabAcct").classList.toggle("hidden", !gc);
+  $("#tabCo").classList.toggle("hidden", !gc);
   $("#tabTpl").classList.toggle("hidden", !gc);
   // 협력사는 자기 회사만 보므로 업체 고르기가 의미 없다
   const coRow = $("#findCo") && $("#findCo").closest(".filterRow");
@@ -4073,7 +3992,7 @@ function tryPw(){
     $("#pwErr").classList.add("on");
   }
 }
-const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", print:"일괄 인쇄", acct:"계정 관리", tpl:"설정" };
+const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", print:"일괄 인쇄", co:"협력사 등록", acct:"계정 관리", tpl:"설정" };
 async function openAdm(tab){
   lastAdmTab = tab || "today";
   await ensureSubmissionsLoaded();   // 여기서 처음으로 목록을 받아 온다
@@ -4335,13 +4254,14 @@ function ymd(iso){ const d = new Date(iso); return d.getFullYear()+"-"+String(d.
 function recDate(r){ return (r && r.dateKey) ? r.dateKey : ymd(r.submittedAt); }
 function setAdmTab(tab){
   lastAdmTab = tab;
-  ["find","today","risk","print","acct","tpl"].forEach(t => {
+  ["find","today","risk","print","co","acct","tpl"].forEach(t => {
     $("#tab"+t[0].toUpperCase()+t.slice(1)).setAttribute("aria-pressed", String(t===tab));
     $("#adm"+t[0].toUpperCase()+t.slice(1)).classList.toggle("hidden", t!==tab);
   });
   $("#hTitle").textContent = ADM_TITLE[tab] || "관리자";
   if(tab==="find") renderFind();
   if(tab==="print") renderPrintTab();
+  if(tab==="co") loadCompaniesAdmin();
   if(tab==="acct") renderAccounts();
   if(tab==="tpl") loadCompaniesAdmin();
   if(tab==="today") renderToday();
@@ -4350,6 +4270,7 @@ function setAdmTab(tab){
 }
 $("#tabFind").addEventListener("click", () => setAdmTab("find"));
 $("#tabPrint").addEventListener("click", () => setAdmTab("print"));
+$("#tabCo").addEventListener("click", () => setAdmTab("co"));
 $("#tabAcct").addEventListener("click", () => setAdmTab("acct"));
 $("#tabToday").addEventListener("click", () => setAdmTab("today"));
 $("#tabRisk").addEventListener("click", () => setAdmTab("risk"));
