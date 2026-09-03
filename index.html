@@ -1226,6 +1226,28 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   </div>
 
   <div id="admAcct" class="hidden">
+    <div class="card" id="myAcctCard">
+      <h3>내 아이디 · 비밀번호 바꾸기</h3>
+      <p class="note info" style="margin:0 0 14px">지금 로그인한 계정의 아이디와 비밀번호를 바꿉니다.
+        바꾸면 <b>새 아이디로 다시 로그인</b>해야 합니다.</p>
+      <div class="f"><label for="myPwNow">현재 비밀번호</label>
+        <input type="password" id="myPwNow" placeholder="본인 확인용" autocomplete="current-password"></div>
+      <div class="f"><label for="myIdNew">새 아이디 <span style="font-weight:500;color:var(--mute)">(안 바꾸면 비워 두세요)</span></label>
+        <input type="text" id="myIdNew" placeholder="예) hdcipark01" autocapitalize="off" spellcheck="false"></div>
+      <div class="f"><label for="myPwNew">새 비밀번호 <span style="font-weight:500;color:var(--mute)">(안 바꾸면 비워 두세요)</span></label>
+        <input type="password" id="myPwNew" placeholder="6자 이상" autocomplete="new-password"></div>
+      <button class="btn padd" type="button" id="myAcctSave" style="min-height:52px">바꾸기</button>
+      <div class="note" id="myAcctMsg" style="margin-top:10px;display:none"></div>
+    </div>
+
+    <div class="card hidden" id="seatCard">
+      <h3>원청 아이디를 새로 만들기</h3>
+      <p class="note info" style="margin:0 0 12px">위 방법이 Firebase 설정 때문에 막힐 때 쓰는 길입니다.
+        <b>원청 자리를 비우면</b> 로그아웃되고, 새 아이디로 원청 계정을 다시 만들 수 있습니다.
+        지금 이 계정은 그대로 남으니, 새 계정으로 들어온 뒤 <b>계정 관리에서 차단</b>해 주세요.</p>
+      <button class="btn" type="button" id="seatRelease" style="min-height:52px">원청 자리 비우고 새 아이디 만들기</button>
+    </div>
+
     <p class="note info">협력사 담당자가 가입 신청하면 여기에 뜹니다.
       <b>승인해야 자기 회사 근로자를 볼 수 있습니다.</b> 승인 전에는 아무 자료도 보이지 않습니다.</p>
     <div id="acctList"></div>
@@ -3014,9 +3036,44 @@ function newCoCode(){
   return out.slice(0,3) + "-" + out.slice(3);
 }
 
+/* 업체명은 공개(근로자 화면이 읽음), 고유번호는 cocodes/{업체명} 에 따로 두고 원청만 읽는다.
+   가입할 때 번호가 맞는지는 서버 규칙이 확인하므로 앱을 뜯어봐도 번호를 알 수 없다. */
+function coKey(name){ return String(name||"").trim().replace(/\//g, "／"); }
+async function saveCompanies(){
+  // 이름 목록은 공개 저장소에, 번호는 원청 전용 컬렉션에
+  const res = await Store.save("companies", coNames());
+  if(!res || !res.ok) return res;
+  if(fbEnabled()){
+    try{
+      const db = await loadFirebase();
+      const snap = await db.collection("cocodes").get();
+      const have = new Set(); snap.forEach(d => have.add(d.id));
+      for(const c of COMPANIES){
+        await db.collection("cocodes").doc(coKey(c.name)).set({ code: c.code || "", name: c.name });
+        have.delete(coKey(c.name));
+      }
+      for(const gone of have) await db.collection("cocodes").doc(gone).delete();
+    }catch(e){ console.warn("고유번호 저장 실패:", e); return { ok:false, message:(e&&e.message)||String(e) }; }
+  } else {
+    try{ localStorage.setItem("hd4_cocodes", JSON.stringify(COMPANIES.map(c => ({name:c.name, code:c.code})))); }catch(e){}
+  }
+  return { ok:true };
+}
 async function loadCompaniesAdmin(){
   try{ COMPANIES = normCompanies(await Store.load("companies", [])); }
   catch(e){ COMPANIES = []; }
+  // 번호 붙이기
+  try{
+    let codes = {};
+    if(fbEnabled()){
+      const db = await loadFirebase();
+      const snap = await db.collection("cocodes").get();
+      snap.forEach(d => { const v = d.data()||{}; codes[v.name || d.id] = v.code || ""; });
+    } else {
+      (JSON.parse(localStorage.getItem("hd4_cocodes")||"[]")).forEach(x => codes[x.name] = x.code);
+    }
+    COMPANIES.forEach(c => { if(codes[c.name] != null) c.code = codes[c.name]; });
+  }catch(e){ console.warn("고유번호 읽기 실패:", e); }
   renderCoChips();
 }
 function renderCoChips(){
@@ -3045,18 +3102,18 @@ function renderCoChips(){
   box.querySelectorAll("[data-co]").forEach(b => b.addEventListener("click", async () => {
     if(!confirm(b.dataset.co + " 을(를) 목록에서 뺄까요?\n(이미 제출된 서류는 그대로 남습니다)")) return;
     COMPANIES = COMPANIES.filter(c => c.name !== b.dataset.co);
-    await Store.save("companies", COMPANIES); renderCoChips();
+    await saveCompanies(); renderCoChips();
   }));
   box.querySelectorAll("[data-add]").forEach(b => b.addEventListener("click", async () => {
     COMPANIES = COMPANIES.concat([{ name:b.dataset.add, code:newCoCode() }])
       .sort((x,y)=>x.name.localeCompare(y.name));
-    await Store.save("companies", COMPANIES); renderCoChips();
+    await saveCompanies(); renderCoChips();
   }));
   box.querySelectorAll("[data-regen]").forEach(b => b.addEventListener("click", async () => {
     const c = lookupCo(b.dataset.regen); if(!c) return;
     if(!confirm(c.name + " 의 고유번호를 새로 발급할까요?\n예전 번호로는 가입할 수 없게 됩니다.")) return;
     c.code = newCoCode();
-    await Store.save("companies", COMPANIES); renderCoChips();
+    await saveCompanies(); renderCoChips();
   }));
   box.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => {
     const c = lookupCo(b.dataset.copy); if(!c) return;
@@ -3076,8 +3133,8 @@ $("#coAdd").addEventListener("click", async () => {
   if(lookupCo(v)){ alert("이미 등록된 협력사입니다."); return; }
   const item = { name:v, code:newCoCode() };
   COMPANIES = COMPANIES.concat([item]).sort((x,y)=>x.name.localeCompare(y.name));
-  const res = await Store.save("companies", COMPANIES);
-  if(!res || !res.ok){ alert("저장하지 못했습니다."); COMPANIES = COMPANIES.filter(c => c.name !== v); }
+  const res = await saveCompanies();
+  if(!res || !res.ok){ alert("저장하지 못했습니다.\n" + ((res && res.message) || "")); COMPANIES = COMPANIES.filter(c => c.name !== v); }
   $("#coNew").value = ""; renderCoChips();
   if(res && res.ok) alert(v + " 등록 완료\n\n고유번호: " + item.code
     + "\n\n이 번호가 있어야 그 업체 담당자가 가입할 수 있습니다.\n목록의 [안내문 복사]로 전달하세요.");
@@ -3613,7 +3670,11 @@ async function repairGC(email, pw, name, seatUid){
   }catch(e){
     const c = String((e && e.code) || "");
     if(/user-not-found/i.test(c)){
-      lgFail("이미 다른 분이 원청 계정을 만들었습니다. 그 담당자에게 문의해 주세요.");
+      lgFail("원청 자리는 이미 등록돼 있는데, 이 아이디로는 계정이 없습니다.\n"
+        + "▸ 처음 만드실 때 쓴 아이디(또는 이메일)로 로그인하신 뒤, "
+        + "[계정 관리] 탭에서 '내 아이디 바꾸기'로 hdcipark01 같은 아이디로 바꾸실 수 있습니다.\n"
+        + "▸ 처음 만든 계정을 모르시면 Firebase 콘솔에서 Authentication 의 사용자와 "
+        + "Firestore 의 meta/bootstrap 문서를 지우면 처음부터 다시 만들 수 있습니다.");
     } else if(/wrong-password|invalid-credential|invalid-login/i.test(c)){
       lgFail("원청 계정은 이미 있습니다. 비밀번호가 맞지 않습니다 — 아래 '비밀번호를 잊었습니다'를 눌러 주세요.");
     } else {
@@ -3635,12 +3696,22 @@ async function repairGC(email, pw, name, seatUid){
   return prof;
 }
 
-async function doSignup(email, pw, company, name){
+async function doSignup(email, pw, company, name, code){
   const auth = await loadAuth();
   const cred = await auth.createUserWithEmailAndPassword(toLoginEmail(email), pw);
   const db = await loadFirebase();
-  const prof = { role:"sub", company, name, email, approved:false, at:Date.now() };
-  await db.collection("users").doc(cred.user.uid).set(prof);
+  const prof = { role:"sub", company, name, email:toLoginEmail(email), approved:false, at:Date.now(),
+                 code: String(code||"").toUpperCase().replace(/\s/g,"") };
+  try{
+    await db.collection("users").doc(cred.user.uid).set(prof);
+  }catch(e){
+    // 규칙이 거부했다 = 고유번호가 틀렸다. 방금 만든 로그인 계정은 지워서 다시 시도할 수 있게 한다.
+    try{ await cred.user.delete(); }catch(_){}
+    try{ await auth.signOut(); }catch(_){}
+    if(/permission-denied|insufficient/i.test(String((e&&e.code)||"")+String((e&&e.message)||"")))
+      throw Object.assign(new Error("고유번호가 맞지 않습니다. 원청에서 받으신 번호를 다시 확인해 주세요."), { code:"app/bad-code" });
+    throw e;
+  }
   AUTH.user = cred.user; AUTH.profile = prof; AUTH.on = true;
   return prof;
 }
@@ -3686,12 +3757,13 @@ async function loadCompanyOptions(){
     ? "원청에서 받으신 고유번호를 함께 넣어 주세요."
     : "등록된 협력사가 아직 없습니다. 원청 안전보건팀에 업체 등록을 먼저 요청해 주세요.";
 }
-function lgFail(msg){ const e = $("#lgErr"); e.textContent = msg; e.classList.add("on"); }
+function lgFail(msg){ const e = $("#lgErr"); e.textContent = msg; e.classList.add("on"); e.style.color=""; e.style.background=""; }
 
 /* 로그인이 막히는 이유는 여러 가지인데 영어 코드만 보여 주면 현장에서는 손 쓸 수 없다.
    무엇을 어디서 고쳐야 하는지까지 적고, 코드도 함께 남겨 문의할 때 쓰게 한다. */
 function explainAuthError(e){
   const code = String((e && e.code) || "");
+  if(code === "app/bad-code") return String(e.message);
   const msg  = String((e && e.message) || e);
   const both = code + " " + msg;
   const tail = code ? "  (" + code + ")" : "";
@@ -3790,18 +3862,13 @@ $("#lgGo").addEventListener("click", async () => {
       if(!nm){ lgFail("담당자 성함을 넣어 주세요."); throw 0; }
       if(pw.length < 6){ lgFail("비밀번호는 6자 이상이어야 합니다."); throw 0; }
 
-      // 원청이 발급한 고유번호와 맞아야 가입할 수 있다
       const hit = SIGNUP_COS.find(c => c.name.trim().toLowerCase() === co.toLowerCase());
       if(!hit){
         lgFail("등록되지 않은 협력사입니다. 회사명을 확인하시거나, 원청 안전보건팀에 업체 등록을 요청해 주세요."); throw 0;
       }
-      if(!hit.code){
-        lgFail(hit.name + " 는 아직 고유번호가 발급되지 않았습니다. 원청 안전보건팀에 문의해 주세요."); throw 0;
-      }
-      if(code !== hit.code.toUpperCase().replace(/\s/g,"")){
-        lgFail("고유번호가 맞지 않습니다. 원청에서 받으신 번호를 다시 확인해 주세요."); throw 0;
-      }
-      prof = await doSignup(email, pw, hit.name, nm);
+      if(!code){ lgFail("원청에서 받으신 고유번호를 넣어 주세요."); throw 0; }
+      // 번호가 맞는지는 서버 규칙이 확인한다 (앱에는 번호가 내려오지 않는다)
+      prof = await doSignup(email, pw, hit.name, nm, code);
     } else {
       prof = await doLogin(email, pw);
     }
@@ -3835,7 +3902,77 @@ $("#lgGo").addEventListener("click", async () => {
 });
 
 /* ── 계정 관리 (원청 전용) ─────────────────────────────────── */
+/* 내 아이디·비밀번호 바꾸기.
+   Firebase 는 최근에 로그인한 상태여야 아이디를 바꿔 준다.
+   그래서 현재 비밀번호로 본인 확인을 한 번 더 한다. */
+async function changeMyAccount(){
+  const out = $("#myAcctMsg");
+  const show = (t, bad) => { out.style.display="block"; out.textContent = t;
+    out.style.color = bad ? "#960014" : "var(--steel)"; };
+  const nowPw = $("#myPwNow").value;
+  const newId = $("#myIdNew").value.trim();
+  const newPw = $("#myPwNew").value;
+  if(!AUTH.user){ show("로그인 상태가 아닙니다.", true); return; }
+  if(!nowPw){ show("본인 확인을 위해 현재 비밀번호를 넣어 주세요.", true); return; }
+  if(!newId && !newPw){ show("바꿀 아이디나 비밀번호를 넣어 주세요.", true); return; }
+  if(newPw && newPw.length < 6){ show("새 비밀번호는 6자 이상이어야 합니다.", true); return; }
+
+  const btn = $("#myAcctSave"); btn.disabled = true; const t0 = btn.textContent; btn.textContent = "바꾸는 중…";
+  try{
+    const auth = await loadAuth();
+    const cur = AUTH.user.email || "";
+    // 본인 확인 (다시 로그인)
+    const cred = firebase.auth.EmailAuthProvider.credential(cur, nowPw);
+    await AUTH.user.reauthenticateWithCredential(cred);
+
+    if(newId){
+      const target = toLoginEmail(newId);
+      await AUTH.user.updateEmail(target);
+      const db = await loadFirebase();
+      await db.collection("users").doc(AUTH.user.uid).set({ email: target }, { merge:true });
+      if(AUTH.profile) AUTH.profile.email = target;
+    }
+    if(newPw) await AUTH.user.updatePassword(newPw);
+
+    show("바꿨습니다. 새 아이디" + (newPw ? "와 비밀번호" : "") + "로 다시 로그인해 주세요.");
+    $("#myPwNow").value = ""; $("#myIdNew").value = ""; $("#myPwNew").value = "";
+    setTimeout(async () => { await doLogout(); paint(); openLogin(); }, 1800);
+  }catch(e){
+    const c = String((e && e.code) || ""), m = String((e && e.message) || e);
+    if(/wrong-password|invalid-credential|invalid-login/i.test(c+m))
+      show("현재 비밀번호가 맞지 않습니다.", true);
+    else if(/email-already-in-use/i.test(c+m))
+      show("그 아이디는 이미 쓰이고 있습니다. 다른 아이디를 넣어 주세요.", true);
+    else if(/requires-recent-login/i.test(c+m))
+      show("로그아웃 후 다시 로그인하시고 곧바로 시도해 주세요.", true);
+    else if(/operation-not-allowed|verify-before-update|requires-verification/i.test(c+m))
+      show("Firebase 설정 때문에 앱에서 아이디를 바꿀 수 없습니다. "
+         + "콘솔 → Authentication → 설정에서 '이메일 열거 보호'를 끄고 다시 시도하시거나, "
+         + "콘솔에서 사용자를 새로 만들어 주세요.  (" + (c||"오류") + ")", true);
+    else show("바꾸지 못했습니다: " + m.slice(0,120), true);
+  }
+  btn.disabled = false; btn.textContent = t0;
+}
+$("#myAcctSave").addEventListener("click", changeMyAccount);
+
+$("#seatRelease").addEventListener("click", async () => {
+  if(!isGC()) return;
+  if(!confirm("원청 자리를 비웁니다.\n\n· 지금 로그아웃됩니다\n· 바로 이어서 새 아이디로 원청 계정을 만드세요\n· 새 계정으로 들어와 이 계정을 차단해 주세요\n\n진행할까요?")) return;
+  try{
+    const db = await loadFirebase();
+    await db.collection("meta").doc("bootstrap").delete();
+  }catch(e){ alert("자리를 비우지 못했습니다: " + ((e&&e.message)||e)); return; }
+  await doLogout(); paint();
+  openLogin(); gcMode = true; signupMode = false; syncLoginMode();
+  lgFail("자리를 비웠습니다. 이제 새 아이디로 원청 계정을 만드세요.");
+  $("#lgErr").style.color = "var(--steel)"; $("#lgErr").style.background = "#EFF1F4";
+});
+
 async function renderAccounts(){
+  const mine = $("#myAcctCard");
+  if(mine) mine.classList.toggle("hidden", !authReady());
+  const seat = $("#seatCard");
+  if(seat) seat.classList.toggle("hidden", !isGC());
   const box = $("#acctList");
   if(!isGC()){
     box.innerHTML = '<div class="findEmpty">원청 안전보건팀만 볼 수 있는 화면입니다.</div>';
@@ -3901,7 +4038,8 @@ function applyRoleToUI(){
   } else w.classList.add("hidden");
 
   const gc = !authReady() || isGC();
-  $("#tabAcct").classList.toggle("hidden", !gc);
+  $("#tabAcct").classList.toggle("hidden", !authReady());
+  $("#tabAcct").textContent = gc ? "계정 관리" : "내 계정";
   $("#tabTpl").classList.toggle("hidden", !gc);
   // 협력사는 자기 회사만 보므로 업체 고르기가 의미 없다
   const coRow = $("#findCo") && $("#findCo").closest(".filterRow");
