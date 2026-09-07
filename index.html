@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <meta name="theme-color" content="#15171C">
 <title>신규채용자 준수사항 · 학동4구역</title>
+
+<!-- 홈 화면 아이콘 · 설치형 앱 정보 (파일은 index.html 과 같은 폴더) -->
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="신규채용 서류">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -3031,6 +3041,19 @@ function newCoCode(){
    가입할 때 번호가 맞는지는 서버 규칙이 확인하므로 앱을 뜯어봐도 번호를 알 수 없다. */
 function coKey(name){ return String(name||"").trim().replace(/\//g, "／"); }
 async function saveCompanies(){
+  if(fbEnabled()){
+    // 번호 저장소에 접근되는지 먼저 확인. 규칙이 옛 버전이면 여기서 막힌다.
+    try{
+      const db = await loadFirebase();
+      await db.collection("cocodes").limit(1).get();
+    }catch(e){
+      if(/permission-denied|insufficient/i.test(String((e&&e.code)||"")+String((e&&e.message)||"")))
+        return { ok:false, message:"고유번호 저장소(cocodes)에 접근할 수 없습니다.\n"
+          + "Firestore 규칙이 옛 버전입니다. firestore_규칙.txt 최신본을 콘솔에 다시 붙여넣고 [게시]해 주세요.\n"
+          + "(규칙에 'match /cocodes/{co}' 블록이 있어야 합니다)" };
+      return { ok:false, message:(e&&e.message)||String(e) };
+    }
+  }
   // 이름 목록은 공개 저장소에, 번호는 원청 전용 컬렉션에
   const res = await Store.save("companies", coNames());
   if(!res || !res.ok) return res;
@@ -3044,7 +3067,13 @@ async function saveCompanies(){
         have.delete(coKey(c.name));
       }
       for(const gone of have) await db.collection("cocodes").doc(gone).delete();
-    }catch(e){ console.warn("고유번호 저장 실패:", e); return { ok:false, message:(e&&e.message)||String(e) }; }
+    }catch(e){
+      console.warn("고유번호 저장 실패:", e);
+      const m = String((e&&e.code)||"")+String((e&&e.message)||"");
+      return { ok:false, message: /permission-denied|insufficient/i.test(m)
+        ? "고유번호를 저장하지 못했습니다. Firestore 규칙에 cocodes 항목이 없습니다. 최신 규칙을 다시 게시해 주세요."
+        : ((e&&e.message)||String(e)) };
+    }
   } else {
     try{ localStorage.setItem("hd4_cocodes", JSON.stringify(COMPANIES.map(c => ({name:c.name, code:c.code})))); }catch(e){}
   }
@@ -3092,19 +3121,27 @@ function renderCoChips(){
 
   box.querySelectorAll("[data-co]").forEach(b => b.addEventListener("click", async () => {
     if(!confirm(b.dataset.co + " 을(를) 목록에서 뺄까요?\n(이미 제출된 서류는 그대로 남습니다)")) return;
+    const keep = COMPANIES.slice();
     COMPANIES = COMPANIES.filter(c => c.name !== b.dataset.co);
-    await saveCompanies(); renderCoChips();
+    const r = await saveCompanies();
+    if(!r || !r.ok){ COMPANIES = keep; alert("저장하지 못했습니다.\n\n" + ((r&&r.message)||"")); }
+    renderCoChips();
   }));
   box.querySelectorAll("[data-add]").forEach(b => b.addEventListener("click", async () => {
+    const keep = COMPANIES.slice();
     COMPANIES = COMPANIES.concat([{ name:b.dataset.add, code:newCoCode() }])
       .sort((x,y)=>x.name.localeCompare(y.name));
-    await saveCompanies(); renderCoChips();
+    const r = await saveCompanies();
+    if(!r || !r.ok){ COMPANIES = keep; alert("저장하지 못했습니다.\n\n" + ((r&&r.message)||"")); }
+    renderCoChips();
   }));
   box.querySelectorAll("[data-regen]").forEach(b => b.addEventListener("click", async () => {
     const c = lookupCo(b.dataset.regen); if(!c) return;
     if(!confirm(c.name + " 의 고유번호를 새로 발급할까요?\n예전 번호로는 가입할 수 없게 됩니다.")) return;
-    c.code = newCoCode();
-    await saveCompanies(); renderCoChips();
+    const old = c.code; c.code = newCoCode();
+    const r = await saveCompanies();
+    if(!r || !r.ok){ c.code = old; alert("저장하지 못했습니다.\n\n" + ((r&&r.message)||"")); }
+    renderCoChips();
   }));
   box.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => {
     const c = lookupCo(b.dataset.copy); if(!c) return;
@@ -4103,7 +4140,18 @@ async function diagnoseConnection(){
       stop = stop || e;
     }
 
-    lines.push("", "⑦ 자료 쓰기");
+    lines.push("", "⑦ 협력사 고유번호 저장소 (cocodes)");
+    try{
+      await db.collection("cocodes").limit(1).get();
+      ok("접근 가능");
+    }catch(e){
+      no("접근 불가 (" + (fbErrCode(e) || "오류") + ")");
+      lines.push("   원인: Firestore 규칙에 cocodes 블록이 없습니다 (옛 규칙)");
+      lines.push("   조치: firestore_규칙.txt 최신본을 콘솔에 다시 붙여넣고 [게시]");
+      stop = stop || e;
+    }
+
+    lines.push("", "⑧ 자료 쓰기");
     try{
       const ref = db.collection("kv").doc("__diag");
       await ref.set({ at: Date.now() });
