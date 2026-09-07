@@ -7,7 +7,7 @@
 <title>신규채용자 준수사항 · 학동4구역</title>
 
 <!-- 홈 화면 아이콘 · 설치형 앱 정보 (파일은 index.html 과 같은 폴더) -->
-<link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="./manifest.json?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -3741,7 +3741,59 @@ async function doSignup(email, pw, company, name, code){
   AUTH.user = cred.user; AUTH.profile = prof; AUTH.on = true;
   return prof;
 }
+/* ══════════════════════════════════════════════════════════════
+   로그인 유지 (30분)
+   ──────────────────────────────────────────────────────────────
+   Firebase 는 로그인 상태를 기기에 남겨 두지만, 앱이 그걸 다시 읽지 않으면
+   새로고침마다 로그인 화면이 뜬다. 마지막으로 만진 시각을 기억해 두고,
+   30분 안이면 그대로 이어서 쓰고, 30분 넘게 손을 안 대면 자동으로 나간다.
+   (현장 태블릿은 여러 사람이 만지므로 "쓰지 않으면 잠긴다"가 맞다) ══ */
+const SESSION_MS = 30 * 60 * 1000;
+const SESS_KEY = "hd4_sess";
+function sessTouch(){ try{ localStorage.setItem(SESS_KEY, String(Date.now())); }catch(e){} }
+function sessClear(){ try{ localStorage.removeItem(SESS_KEY); }catch(e){} }
+function sessAlive(){
+  try{ const t = +localStorage.getItem(SESS_KEY) || 0; return t > 0 && (Date.now() - t) < SESSION_MS; }
+  catch(e){ return false; }
+}
+let __sessTimer = null, __lastTouch = 0;
+function startSessionWatch(){
+  if(__sessTimer) return;
+  // 사용 중이면 시각을 갱신 (너무 잦은 저장은 피한다)
+  const bump = () => { if(!authReady()) return; const n = Date.now(); if(n - __lastTouch > 15000){ __lastTouch = n; sessTouch(); } };
+  ["click","keydown","touchstart","pointerdown"].forEach(ev => document.addEventListener(ev, bump, { passive:true }));
+  __sessTimer = setInterval(async () => {
+    if(!authReady()) return;
+    if(sessAlive()) return;
+    // 30분 넘게 손을 안 댔다
+    await doLogout(); paint();
+    openLogin();
+    lgFail("30분 동안 사용이 없어 자동으로 로그아웃되었습니다. 다시 로그인해 주세요.");
+    $("#lgErr").style.color = "var(--steel)"; $("#lgErr").style.background = "#EFF1F4";
+  }, 30000);
+}
+
+/* 페이지를 열 때: 30분 안에 쓰던 로그인이 있으면 그대로 이어 준다 */
+async function restoreSession(){
+  if(!authEnabled() || !sessAlive()) return false;
+  try{
+    const auth = await loadAuth();
+    const user = await new Promise(res => {
+      const off = auth.onAuthStateChanged(u => { off(); res(u); });
+      setTimeout(() => res(auth.currentUser || null), 4000);   // 응답이 없으면 지금 값으로
+    });
+    if(!user){ sessClear(); return false; }
+    const prof = await fetchProfile(user.uid);
+    if(!prof || !prof.approved){ sessClear(); return false; }
+    AUTH.user = user; AUTH.profile = prof; AUTH.on = true;
+    adminUnlocked = true;
+    sessTouch();
+    return true;
+  }catch(e){ console.warn("세션 복원 실패:", e); return false; }
+}
+
 async function doLogout(){
+  sessClear();
   try{ const auth = await loadAuth(); await auth.signOut(); }catch(e){}
   AUTH = { on:false, user:null, profile:null };
   if(LIVE.unsub){ try{ LIVE.unsub(); }catch(e){} LIVE.unsub = null; LIVE.on = false; }
@@ -3920,6 +3972,7 @@ $("#lgGo").addEventListener("click", async () => {
     }
     $("#loginOverlay").classList.add("hidden");
     adminUnlocked = true;
+    sessTouch(); startSessionWatch();
     await openAdm("find");
   }catch(e){
     if(e) lgFail(explainAuthError(e));
@@ -4973,6 +5026,12 @@ async function loadCompanyList(){
   paint();
   showStartNotices();
   loadCompanyList();
+  // 30분 안에 로그인해 두었으면 다시 로그인하지 않고 관리자 화면으로
+  if(await restoreSession()){
+    startSessionWatch();
+    await openAdm(lastAdmTab || "find");
+    showToast((isGC() ? "원청" : myCompany()) + " 계정으로 이어서 사용합니다");
+  }
 })();
 </script>
 </body>
