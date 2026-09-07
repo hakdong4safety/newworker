@@ -502,6 +502,7 @@ table.admTable thead th #chkAll{margin-top:4px}
 .acct .ai span{display:block;font-size:.78rem;color:var(--steel);margin-top:2px}
 .acct .btn{flex:0 0 auto;min-height:38px;font-size:.78rem;min-width:74px}
 .acct.pending{border-color:#F0C97A;background:var(--amber-8)}
+.meTag{display:inline-block;font-size:.7rem;font-weight:800;background:var(--ink);color:#fff;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
 .modal h3{margin:0 0 6px;font-size:1.2rem;font-weight:800}
 .modal p{margin:0 0 16px;font-size:.86rem;color:var(--steel)}
 .modal input{text-align:center;font-size:1.5rem;letter-spacing:.3em;font-weight:700}
@@ -4000,28 +4001,50 @@ async function renderAccounts(){
   users.sort((a,b) => (a.approved === b.approved) ? String(a.company||"").localeCompare(String(b.company||"")) : (a.approved ? 1 : -1));
   if(!users.length){ box.innerHTML = '<div class="findEmpty">등록된 계정이 없습니다.</div>'; return; }
 
-  box.innerHTML = users.map(u =>
-    '<div class="acct'+(u.approved ? "" : " pending")+'" data-uid="'+esc(u.uid)+'">'
-    + '<span class="ai"><b>'+esc(u.name || u.email || u.uid)+'</b>'
-    +   '<span>'+esc(u.email||"")+' · '
-    +   (u.role === "gc" ? "원청 (전체 열람)" : esc(u.company||"소속 미지정"))
+  const myUid = AUTH.user && AUTH.user.uid;
+  box.innerHTML = users.map(u => {
+    const me = u.uid === myUid;
+    return '<div class="acct'+(u.approved ? "" : " pending")+'" data-uid="'+esc(u.uid)+'">'
+    + '<span class="ai"><b>'+esc(u.name || u.email || u.uid)+(me ? ' <span class="meTag">나</span>' : '')+'</b>'
+    +   '<span>'+esc(fromLoginEmail(u.email||""))+' · '
+    +   (u.role === "gc" ? "원청 (전체 열람·승인·삭제)" : esc(u.company||"소속 미지정"))
     +   (u.approved ? "" : " · <b>승인 대기</b>")+'</span></span>'
-    + (u.approved
-        ? '<button class="btn small" type="button" data-act="revoke">차단</button>'
-        : '<button class="btn small padd" type="button" data-act="approve">승인</button>')
-    + (u.role === "gc" ? "" : '<button class="btn small" type="button" data-act="gc">원청으로</button>')
-    + '</div>').join("");
+    // 내 계정은 스스로 막거나 내리지 못하게 한다 (잠기면 콘솔로만 풀 수 있다)
+    + (me ? '' :
+        (u.approved
+          ? '<button class="btn small" type="button" data-act="revoke">차단</button>'
+          : '<button class="btn small padd" type="button" data-act="approve">승인</button>')
+        + (u.role === "gc"
+          ? '<button class="btn small" type="button" data-act="sub">협력사로</button>'
+          : '<button class="btn small" type="button" data-act="gc">원청으로</button>'))
+    + '</div>'; }).join("");
 
   box.querySelectorAll(".acct").forEach(row => {
     row.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", async () => {
       const uid = row.dataset.uid, act = b.dataset.act;
       const u = users.find(x => x.uid === uid);
       if(act === "revoke" && !confirm((u.name||u.email)+" 의 접근을 차단할까요?")) return;
-      if(act === "gc" && !confirm((u.name||u.email)+" 을(를) 원청 권한으로 올릴까요?\n전체 근로자 자료를 볼 수 있게 됩니다.")) return;
+      if(act === "gc" && !confirm((u.name||u.email)+" 을(를) 원청 권한으로 올릴까요?\n\n"
+        + "· 전체 협력사 근로자 자료를 보고 삭제할 수 있습니다\n"
+        + "· 다른 계정을 승인·차단할 수 있습니다 (당신 계정도 포함)\n"
+        + "· 협력사 등록, 취약 판정 해지도 할 수 있습니다\n\n"
+        + "기존 원청 계정은 그대로 유지됩니다.")) return;
+      let patch;
+      if(act === "sub"){
+        // 협력사로 내릴 때 소속이 비어 있으면 아무것도 볼 수 없게 되므로 회사를 받는다
+        let co = u.company || "";
+        if(!co){
+          co = prompt((u.name||u.email)+" 의 소속 협력사명을 넣어 주세요.\n(협력사 등록 탭의 이름과 똑같이)", "");
+          if(co === null) return; co = co.trim();
+          if(!co){ alert("소속이 있어야 협력사 계정으로 쓸 수 있습니다."); return; }
+        }
+        if(!confirm((u.name||u.email)+" 을(를) 협력사("+co+") 권한으로 내릴까요?\n그 회사 근로자만 볼 수 있게 됩니다.")) return;
+        patch = { role:"sub", company:co };
+      }
       b.disabled = true;
       try{
         const db = await loadFirebase();
-        const patch = act === "approve" ? { approved:true }
+        if(!patch) patch = act === "approve" ? { approved:true }
                     : act === "revoke"  ? { approved:false }
                     : { role:"gc", approved:true };
         await db.collection("users").doc(uid).set(patch, { merge:true });
