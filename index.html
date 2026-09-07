@@ -1165,7 +1165,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button type="button" id="tabFind" aria-pressed="true">근로자 찾기</button>
     <button type="button" id="tabToday" aria-pressed="false">날짜별 제출</button>
     <button type="button" id="tabRisk" aria-pressed="false">취약 근로자</button>
-    <button type="button" id="tabPrint" aria-pressed="false">일괄 인쇄</button>
+    <button type="button" id="tabPrint" aria-pressed="false">일괄 PDF</button>
     <button type="button" id="tabCo" aria-pressed="false">협력사 등록</button>
     <button type="button" id="tabAcct" aria-pressed="false">계정 관리</button>
     <button type="button" id="tabTpl" aria-pressed="false">설정</button>
@@ -1208,7 +1208,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div class="admbar">
       <button class="btn" type="button" id="expCsv">CSV 내보내기</button>
       <button class="btn" type="button" id="expJson">백업(JSON)</button>
-      <button class="btn" type="button" id="printSelected" disabled>선택 인쇄</button>
+      <button class="btn" type="button" id="printSelected" disabled>선택 PDF</button>
       <button class="btn" type="button" id="delSelected" disabled>선택 삭제</button>
       <button class="btn danger" type="button" id="wipe">전체 삭제</button>
     </div>
@@ -1220,8 +1220,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   </div>
 
   <div id="admPrint" class="hidden">
-    <p class="note info">인쇄할 근로자를 고른 뒤 아래 <b>인쇄하기</b>를 누르세요.
-      한 사람당 A4 한 장씩 나옵니다. 취약 근로자는 전용 양식으로 자동 인쇄됩니다.</p>
+    <p class="note info">근로자를 고른 뒤 <b>PDF 저장</b>을 누르세요. 한 사람당 A4 한 장씩,
+      <b>PDF 한 파일</b>로 만들어집니다. 취약 근로자는 전용 양식으로 들어갑니다.
+      PDF를 열어 인쇄하면 어느 프린터에서도 같은 모양으로 나옵니다.</p>
     <div class="findRail" style="margin-bottom:14px">
       <div class="findBar">
         <input type="search" id="prName" placeholder="이름 검색" autocomplete="off">
@@ -1237,7 +1238,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div class="prBar">
       <label class="prAll"><input type="checkbox" id="prAll"> 보이는 사람 전체 선택</label>
       <span class="findCount" id="prCount"></span>
-      <button class="btn padd" type="button" id="prGo" disabled>인쇄하기</button>
+      <button class="btn danger" type="button" id="prGo" disabled>PDF 저장</button>
     </div>
     <div id="prList"></div>
   </div>
@@ -1322,9 +1323,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button class="btn ghost" type="button" id="btnPrev" data-i18n="btn.prev">이전</button>
     <button class="btn prime" type="button" id="btnNext" data-i18n="btn.next">다음</button>
     <button class="btn ghost hidden" type="button" id="btnAdmClose">닫기</button>
-    <button class="btn danger hidden" type="button" id="btnPrint">🖨 출력</button>
     <button class="btn ghost hidden sheetDel" type="button" id="btnDelOne">삭제</button>
-    <button class="btn ghost hidden" type="button" id="btnPdf">📄 PDF 저장</button>
+    <button class="btn danger hidden" type="button" id="btnPdf">📄 PDF 저장</button>
   </div>
 </footer>
 
@@ -2058,7 +2058,7 @@ function paint(){
   $$(".step").forEach(s => s.classList.toggle("on", +s.dataset.step === step));
   $("#adm").classList.remove("on");
   $("#sheetWrap").classList.remove("on");
-  $("#btnPrint").classList.add("hidden");
+ 
   $("#btnPdf").classList.add("hidden");
   $("#btnPrev").classList.remove("hidden");
   $("#btnNext").classList.remove("hidden");
@@ -2905,7 +2905,7 @@ function openSheetFor(r, title){
     + (age != null ? "  ·  " + age + "세" + (age>=SENIOR_AGE ? " (고령)" : "") : "");
   renderRiskPanel(r);
   $("#btnPrev").classList.add("hidden"); $("#btnNext").classList.add("hidden");
-  $("#btnAdmClose").classList.remove("hidden"); $("#btnPrint").classList.remove("hidden");
+  $("#btnAdmClose").classList.remove("hidden");
   $("#btnDelOne").classList.toggle("hidden", authReady() && !isGC());
   $("#btnPdf").classList.remove("hidden");
   renderSheetBp(r);
@@ -3566,7 +3566,7 @@ async function exportSheetToPdf(r){
   }catch(e){
     console.error(e);
     alert("PDF를 만들지 못했습니다.\n\n" + ((e && e.message) || e)
-      + "\n\n인터넷이 연결되어 있는지 확인한 뒤 다시 시도해 주세요.\n(대신 🖨 출력 → \"PDF로 저장\"을 쓰셔도 됩니다.)");
+      + "\n\n인터넷이 연결되어 있는지 확인한 뒤 다시 시도해 주세요.");
   }finally{
     page.style.transform = keep.transform; page.style.marginLeft = keep.marginLeft;
     page.style.boxShadow = keep.shadow;
@@ -3576,7 +3576,6 @@ async function exportSheetToPdf(r){
 }
 
 $("#sheetClose").addEventListener("click", () => { $("#sheetWrap").classList.remove("on"); openAdm(lastAdmTab); });
-$("#btnPrint").addEventListener("click", () => window.print());
 $("#btnPdf").addEventListener("click", () => exportSheetToPdf(current));
 $("#btnDelOne").addEventListener("click", async () => {
   if(!current) return;
@@ -4105,7 +4104,7 @@ function tryPw(){
     $("#pwErr").classList.add("on");
   }
 }
-const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", print:"일괄 인쇄", co:"협력사 등록", acct:"계정 관리", tpl:"설정" };
+const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", print:"일괄 PDF", co:"협력사 등록", acct:"계정 관리", tpl:"설정" };
 async function openAdm(tab){
   lastAdmTab = tab || "today";
   await ensureSubmissionsLoaded();   // 여기서 처음으로 목록을 받아 온다
@@ -4116,7 +4115,7 @@ async function openAdm(tab){
   $$(".step").forEach(s => s.classList.remove("on"));
   $("#sheetWrap").classList.remove("on");
   $("#adm").classList.add("on");
-  $("#btnNext").classList.add("hidden"); $("#btnPrev").classList.add("hidden"); $("#btnPrint").classList.add("hidden");
+  $("#btnNext").classList.add("hidden"); $("#btnPrev").classList.add("hidden");
   $("#btnPdf").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden");
   $("#hTitle").textContent = "관리자"; $("#hStep").textContent = "";
@@ -4622,7 +4621,7 @@ function updatePrBar(){
   $("#prCount").textContent = tot + "명 중 " + n + "명 선택";
   const go = $("#prGo");
   go.disabled = n === 0;
-  go.textContent = n > 0 ? "인쇄하기 ("+n+"장)" : "인쇄하기";
+  go.textContent = n > 0 ? "PDF 저장 ("+n+"장)" : "PDF 저장";
 }
 $("#prAll").addEventListener("change", e => {
   const ids = prVisible().map(docId);
@@ -4633,61 +4632,61 @@ $("#prName").addEventListener("input", e => { prQ = e.target.value; renderPrintT
 $("#prClear").addEventListener("click", () => { prQ = ""; $("#prName").value = ""; renderPrintTab(); });
 $("#prCo").addEventListener("change", e => { prCoF = e.target.value; renderPrintTab(); });
 $("#prDate").addEventListener("change", e => { prDateF = e.target.value; renderPrintTab(); });
-$("#prGo").addEventListener("click", () => printList(submissions.filter(r => prSel.has(docId(r)))));
+$("#prGo").addEventListener("click", () => exportListToPdf(submissions.filter(r => prSel.has(docId(r)))));
 
-async function printList(sel){
+/* 여러 명을 PDF 한 파일로 (사람마다 A4 한 장).
+   브라우저 인쇄는 기기마다 설정이 달라 결과가 제각각이라 쓰지 않는다.
+   단일 PDF 저장과 같은 방식으로 찍어서 어디서 열어도 같은 모양이 나온다. */
+async function exportListToPdf(sel){
   const list = (sel || []).slice()
     .sort((a,b) => String(a.company||"").localeCompare(String(b.company||""))
                 || String(a.name||"").localeCompare(String(b.name||"")));
-  if(!list.length){ alert("인쇄할 사람을 먼저 골라 주세요."); return; }
-  if(list.length > 40 && !confirm(list.length + "명입니다. 준비에 시간이 걸릴 수 있습니다. 계속할까요?")) return;
+  if(!list.length){ alert("PDF로 저장할 사람을 먼저 골라 주세요."); return; }
+  if(list.length > 40 && !confirm(list.length + "명입니다. 만드는 데 시간이 걸릴 수 있습니다. 계속할까요?")) return;
 
-  const wrap = $("#sheetWrap"), batch = $("#printBatch"), page = $("#sheetPage");
-  const prev = { current, sheetKind, wasOn: wrap.classList.contains("on"),
-                 transform: page.style.transform, margin: page.style.marginLeft };
-  batch.innerHTML = "";
-  setBusy(true, "인쇄 준비 중…");
+  const keepCur = current, keepKind = sheetKind;
+  const wrap = $("#sheetWrap"), page = $("#sheetPage"), scroll = $("#sheetScroll");
+  const keepStyle = { transform:page.style.transform, marginLeft:page.style.marginLeft,
+    shadow:page.style.boxShadow, height:scroll.style.height, overflow:scroll.style.overflow };
   wrap.classList.add("measuring");
+  setBusy(true, "PDF를 만드는 중… (1/" + list.length + ")");
   try{
+    await loadPdfLibs();
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
+    const PW = 210, PH = 297, M = 6, maxW = PW - M*2, maxH = PH - M*2;
+
     for(let i = 0; i < list.length; i++){
-      $("#busyText").textContent = "인쇄 준비 중… (" + (i+1) + "/" + list.length + ") " + (list[i].name || "");
+      $("#busyText").textContent = "PDF를 만드는 중… (" + (i+1) + "/" + list.length + ")";
       current = list[i]; sheetKind = "form";
-      renderSheetDOM();
-      page.style.transform = "none"; page.style.marginLeft = "0";
-      fillActiveSheet(current);
-      await new Promise(res => setTimeout(res, 0));   // 칸 크기 계산이 자리 잡을 틈
-      const clone = page.cloneNode(true);
-      clone.removeAttribute("id");
-      clone.className = "pClone";
-      clone.style.transform = "none"; clone.style.marginLeft = "0"; clone.style.width = "";
-      const one = document.createElement("div");
-      one.className = "printOne";
-      one.appendChild(clone);
-      batch.appendChild(one);
+      renderSheetDOM(); fillActiveSheet(list[i]);
+      page.style.transform = "none"; page.style.marginLeft = "0"; page.style.boxShadow = "none";
+      scroll.style.height = "auto"; scroll.style.overflow = "visible";
+      await new Promise(r => setTimeout(r, 60));
+      const w = page.scrollWidth, h = page.scrollHeight;
+      const canvas = await window.html2canvas(page, {
+        backgroundColor:"#ffffff", scale: Math.min(3, Math.max(2, 1700 / Math.max(1, w))),
+        useCORS:true, logging:false, imageTimeout:0, scrollX:0, scrollY:0, width:w, height:h });
+      const ratio = canvas.width / canvas.height;
+      let iw = maxW, ih = iw / ratio; if(ih > maxH){ ih = maxH; iw = ih * ratio; }
+      if(i > 0) pdf.addPage();
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", (PW-iw)/2, (PH-ih)/2, iw, ih);
     }
+    const d = new Date(), stamp = d.getFullYear() + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0");
+    pdf.save("신규채용자_준수사항_" + stamp + "_" + list.length + "명.pdf");
   }catch(e){
-    alert("인쇄 준비 중 문제가 생겼습니다: " + ((e && e.message) || e));
+    console.error(e);
+    alert("PDF를 만들지 못했습니다.\n\n" + ((e && e.message) || e) + "\n\n인터넷 연결을 확인한 뒤 다시 시도해 주세요.");
   }finally{
+    page.style.transform = keepStyle.transform; page.style.marginLeft = keepStyle.marginLeft;
+    page.style.boxShadow = keepStyle.shadow; scroll.style.height = keepStyle.height; scroll.style.overflow = keepStyle.overflow;
     wrap.classList.remove("measuring");
-    current = prev.current; sheetKind = prev.sheetKind;
-    page.style.transform = prev.transform; page.style.marginLeft = prev.margin;
-    if(prev.wasOn && current){ renderSheetDOM(); fillActiveSheet(current); fitSheetView(); }
-    else page.innerHTML = "";
+    current = keepCur; sheetKind = keepKind;
     setBusy(false);
   }
-  if(!batch.children.length) return;
-
-  document.body.classList.add("batchPrinting");
-  const cleanup = () => {
-    document.body.classList.remove("batchPrinting");
-    batch.innerHTML = "";
-    window.removeEventListener("afterprint", cleanup);
-  };
-  window.addEventListener("afterprint", cleanup);
-  window.print();          // 대화상자가 닫힐 때까지 여기서 멈춘다
-  cleanup();               // afterprint 가 안 오는 브라우저 대비 (두 번 불려도 안전)
 }
-$("#printSelected").addEventListener("click", () => printList(
+
+$("#printSelected").addEventListener("click", () => exportListToPdf(
   submissions.filter(r => selectedCodes.has(docId(r)))));
 
 function updateDeleteSelectedBtn(){
@@ -4695,7 +4694,7 @@ function updateDeleteSelectedBtn(){
   const btn = $("#delSelected");
   if(btn){ btn.textContent = n > 0 ? "선택 삭제 ("+n+")" : "선택 삭제"; btn.disabled = n === 0; }
   const pb = $("#printSelected");
-  if(pb){ pb.textContent = n > 0 ? "선택 인쇄 ("+n+")" : "선택 인쇄"; pb.disabled = n === 0; }
+  if(pb){ pb.textContent = n > 0 ? "선택 PDF ("+n+")" : "선택 PDF"; pb.disabled = n === 0; }
 }
 function renderToday(){ renderTodayTable(); }
 function renderRisk(){
