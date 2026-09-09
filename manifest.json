@@ -1,10 +1,11 @@
 {
-  "name": "신규채용자 준수사항 · 학동4구역",
+  "name": "신규채용자 준수사항 · 아이파크무등산스카이포레",
   "short_name": "신규채용 서류",
-  "description": "IPARK 학동4구역 신규채용자 준수사항 온라인 작성",
+  "description": "IPARK 아이파크무등산스카이포레 신규채용자 준수사항 온라인 작성",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#15171C",
   "lang": "ko",
