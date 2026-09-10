@@ -1272,9 +1272,10 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div id="admTpl" class="hidden">
     <div class="card">
       <h3>기존 자료 정비</h3>
-      <p class="note info" style="margin:0 0 12px">권한 구분을 넣기 <b>전에</b> 저장된 기록에는
-        문서 겉면에 소속 정보가 없어서 <b>협력사 계정에 보이지 않습니다.</b>
-        아래 버튼 한 번이면 전부 채워집니다. 서류 내용은 바뀌지 않습니다.</p>
+      <p class="note info" style="margin:0 0 12px">두 가지를 한 번에 정리합니다.<br>
+        ① 권한 구분 <b>전에</b> 저장된 기록의 소속 정보 채우기 (없으면 협력사 계정에 안 보입니다)<br>
+        ② "(주)대한철골 / 대한철골(주) / 대한 철골"처럼 <b>(주)·띄어쓰기만 다른 회사명</b>을
+        등록된 이름으로 통일. 서류 내용은 그 외에 바뀌지 않습니다.</p>
       <button class="btn padd" type="button" id="btnRepair" style="min-height:52px">소속 정보 채우기 (일괄 정비)</button>
       <div class="note" id="repairResult" style="margin-top:10px;display:none"></div>
     </div>
@@ -2444,7 +2445,7 @@ function buildRecord(){
     // submittedAt(세계표준시)만 두면, 기기 시간대가 다를 때(예: 외국인 근로자 폰이
     // 본국 시간으로 맞춰져 있는 경우) 밤늦게 작성한 건이 다른 날짜로 잡힌다.
     dateKey: today,
-    company: val("company"), name: val("name"),
+    company: canonCo(val("company")), name: val("name"),
     birth: val("birth"), gender: pick.gender||"", nation, visa: val("visa"), blood: pick.blood||"",
     phone: val("phone"), guardian: val("guardian"), address: val("address"),
     trade: ($("#trade").value==="기타" ? (val("tradeEtc")||"기타") : $("#trade").value),
@@ -3018,6 +3019,25 @@ function missingItems(r){
    업체별 집계·필터가 어긋난다. 원청이 목록을 등록해 두면 근로자 화면에서
    골라 넣게 되어 이름이 하나로 모인다. */
 let COMPANIES = [];
+
+/* 회사명 비교용 열쇠.
+   앞이나 뒤에 붙은 (주)·㈜·주식회사 와 띄어쓰기는 무시한다.
+   → "(주)대한철골" = "대한철골(주)" = "대한 철골" = "대한철골"
+   이름 가운데 있는 글자는 건드리지 않는다 → "대주산업"은 그대로. */
+function coKeyOf(name){
+  let t = String(name || "").trim();
+  t = t.replace(/^(?:\(주\)|㈜|주식회사)\s*/, "").replace(/\s*(?:\(주\)|㈜|주식회사)$/, "");
+  return t.replace(/\s+/g, "").toLowerCase();
+}
+/* 근로자가 적은 회사명이 등록된 협력사와 같은 회사면 등록된 이름 그대로 저장한다.
+   서버가 회사별로 열람을 나누므로 글자가 조금만 달라도 협력사에게 안 보인다. */
+function canonCo(name){
+  const raw = String(name || "").trim();
+  const k = coKeyOf(raw);
+  if(!k) return raw;
+  const hit = COMPANIES.find(c => coKeyOf(c.name) === k);
+  return hit ? hit.name : raw;
+}
 /* 협력사는 {name, code} 로 관리한다.
    code = 가입할 때 입력해야 하는 고유번호. 원청이 업체에 따로 알려 준다.
    예전에는 문자열 배열이었으므로 읽을 때 형태를 맞춰 준다. */
@@ -3029,8 +3049,8 @@ function normCompanies(l){
 }
 function coNames(){ return COMPANIES.map(c => c.name); }
 function lookupCo(name){
-  const t = String(name||"").trim().toLowerCase();
-  return COMPANIES.find(c => c.name.trim().toLowerCase() === t) || null;
+  const k = coKeyOf(name);
+  return k ? (COMPANIES.find(c => coKeyOf(c.name) === k) || null) : null;
 }
 function newCoCode(){
   // 헷갈리는 глиф(0/O, 1/I) 는 뺀다 — 전화로 불러 주기 쉽게
@@ -3161,7 +3181,8 @@ function renderCoChips(){
 $("#coAdd").addEventListener("click", async () => {
   const v = $("#coNew").value.trim();
   if(!v) return;
-  if(lookupCo(v)){ alert("이미 등록된 협력사입니다."); return; }
+  const dup = lookupCo(v);
+  if(dup){ alert("이미 등록된 협력사입니다: " + dup.name + "\n((주)·띄어쓰기 차이는 같은 회사로 봅니다)"); return; }
   const item = { name:v, code:newCoCode() };
   COMPANIES = COMPANIES.concat([item]).sort((x,y)=>x.name.localeCompare(y.name));
   const res = await saveCompanies();
@@ -3185,19 +3206,24 @@ async function repairCompanyFields(){
     const db = await loadFirebase();
     const snap = await db.collection("records").get();
     const todo = [];
+    if(!COMPANIES.length){ try{ COMPANIES = normCompanies(await Store.load("companies", [])); }catch(e){} }
     snap.forEach(d => {
       const v = d.data() || {};
-      if(v.company) return;                       // 이미 최신 형식
       try{
         const r = JSON.parse(v.json);
-        todo.push({ id:d.id, json:v.json,
-          company: String(r.company || ""),
-          dateKey: String(r.dateKey || (r.submittedAt ? ymd(r.submittedAt) : "")) });
+        const canon = canonCo(r.company || v.company || "");
+        const needFill  = !v.company;                       // 겉면에 소속이 없음
+        const needCanon = canon && (canon !== (r.company||"") || canon !== (v.company||""));  // (주)·띄어쓰기 차이
+        if(!needFill && !needCanon) return;
+        if(needCanon) r.company = canon;
+        todo.push({ id:d.id, json: needCanon ? JSON.stringify(r) : v.json,
+          company: canon || String(r.company || ""),
+          dateKey: String(v.dateKey || r.dateKey || (r.submittedAt ? ymd(r.submittedAt) : "")) });
       }catch(e){}
     });
     if(!todo.length){
       setBusy(false);
-      out.textContent = "정비할 자료가 없습니다. 전부 최신 형식입니다.";
+      out.textContent = "정비할 자료가 없습니다. 소속 정보와 회사명이 모두 정리된 상태입니다.";
       return;
     }
     let done = 0, fail = 0;
@@ -3213,7 +3239,7 @@ async function repairCompanyFields(){
     setBusy(false);
     out.textContent = "끝났습니다 — " + done + "건 정비"
       + (fail ? " · " + fail + "건 실패 (연결 진단을 확인해 주세요)" : "")
-      + ". 이제 협력사 계정에서도 보입니다.";
+      + ". 소속을 채우고, (주)·띄어쓰기만 다른 회사명은 등록된 이름으로 맞췄습니다.";
     await reloadSubmissions();
   }catch(e){
     setBusy(false);
@@ -3942,7 +3968,7 @@ $("#lgGo").addEventListener("click", async () => {
       if(!nm){ lgFail("담당자 성함을 넣어 주세요."); throw 0; }
       if(pw.length < 6){ lgFail("비밀번호는 6자 이상이어야 합니다."); throw 0; }
 
-      const hit = SIGNUP_COS.find(c => c.name.trim().toLowerCase() === co.toLowerCase());
+      const hit = SIGNUP_COS.find(c => coKeyOf(c.name) === coKeyOf(co));
       if(!hit){
         lgFail("등록되지 않은 협력사입니다. 회사명을 확인하시거나, 원청 안전보건팀에 업체 등록을 요청해 주세요."); throw 0;
       }
@@ -5036,6 +5062,7 @@ function hyphenPhone(v){
 async function loadCompanyList(){
   try{
     const list = normCompanies(await Store.load("companies", null));
+    COMPANIES = list;   // 저장할 때 등록된 이름으로 맞추는 데 쓴다
     if(list.length){
       $("#coList").innerHTML = list.map(c => '<option value="'+esc(c.name)+'"></option>').join("");
     }
