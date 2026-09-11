@@ -72,6 +72,8 @@ main{padding:16px var(--pad) 140px;max-width:var(--shell);margin:0 auto}
 .f > label{display:block;font-size:.94rem;font-weight:700;margin-bottom:7px}
 .f > label .req{color:var(--signal);margin-left:3px}
 .f .hint{font-size:.8rem;color:var(--mute);font-weight:400;margin-left:6px}
+/* 항목 제목 바로 아래 한 줄 설명 (무엇을 적는 칸인지) */
+.f .fsub{font-size:.84rem;color:var(--steel);margin:-4px 0 8px;line-height:1.45}
 
 input[type=text],input[type=tel],input[type=number],input[type=date],input[type=month],input[type=password],textarea,select{
   width:100%;min-height:var(--tap);padding:0 14px;background:#fff;border:1.5px solid var(--line);
@@ -848,7 +850,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div class="f"><label data-i18n="field.phone">본인 연락처 <span class="req">*</span></label>
       <input type="tel" id="phone" inputmode="numeric" placeholder="010-0000-0000" autocomplete="tel">
       <div class="err" data-i18n="err.phone">연락처를 입력해 주세요.</div></div>
-    <div class="f"><label data-i18n="field.guardian">비상 연락처 <span class="req">*</span><span class="hint" data-i18n="hint.guardian">가족·보호자</span></label>
+    <div class="f"><label data-i18n="field.guardian">비상 연락처 <span class="req">*</span></label>
+      <p class="fsub" data-i18n="hint.guardian">가족, 팀장 등 연락 가능한 번호</p>
       <input type="tel" id="guardian" inputmode="numeric" placeholder="010-0000-0000">
       <div class="err" data-i18n="err.guardian">비상 연락처를 입력해 주세요.</div></div>
     <div class="f" style="margin-bottom:0"><label data-i18n="field.address">주소 <span class="req">*</span></label>
@@ -1514,7 +1517,7 @@ ko:{ "bigtext":"글씨 크게 보기",
 "opt.kr":"대한민국","opt.cn":"중국","opt.vn":"베트남","opt.etc":"기타",
 "field.nationEtc":"국적","field.visa":"체류자격","field.blood":"혈액형",
 "card.contact":"연락처","field.phone":'본인 연락처 <span class="req">*</span>',"err.phone":"연락처를 입력해 주세요.",
-"field.guardian":'비상 연락처 <span class="req">*</span>',"hint.guardian":"가족·보호자","err.guardian":"비상 연락처를 입력해 주세요.",
+"field.guardian":'비상 연락처 <span class="req">*</span>',"hint.guardian":"가족, 팀장 등 연락 가능한 번호","err.guardian":"비상 연락처를 입력해 주세요.",
 "field.address":'주소 <span class="req">*</span>',"err.address":"주소를 입력해 주세요.",
 "card.job":"담당 업무","field.trade":'공종 <span class="req">*</span>',"err.trade":"공종을 선택해 주세요.","opt.select":"선택하세요",
 "field.career":'해당 공종 경력 <span class="req">*</span>',"err.career":"경력을 입력해 주세요.","unit.year":"년","unit.month":"개월","unit.day":"일",
@@ -1584,7 +1587,7 @@ vi:{ "bigtext":"Phóng to chữ",
 "opt.kr":"Hàn Quốc","opt.cn":"Trung Quốc","opt.vn":"Việt Nam","opt.etc":"Khác",
 "field.nationEtc":"Quốc tịch","field.visa":"Loại visa","field.blood":"Nhóm máu",
 "card.contact":"Liên hệ","field.phone":'Số điện thoại <span class="req">*</span>',"err.phone":"Vui lòng nhập số điện thoại.",
-"field.guardian":'Liên hệ khẩn cấp <span class="req">*</span>',"hint.guardian":"Gia đình/người bảo lãnh","err.guardian":"Vui lòng nhập liên hệ khẩn cấp.",
+"field.guardian":'Liên hệ khẩn cấp <span class="req">*</span>',"hint.guardian":"Số có thể liên lạc: gia đình, tổ trưởng…","err.guardian":"Vui lòng nhập liên hệ khẩn cấp.",
 "field.address":'Địa chỉ <span class="req">*</span>',"err.address":"Vui lòng nhập địa chỉ.",
 "card.job":"Công việc","field.trade":'Loại công việc <span class="req">*</span>',"err.trade":"Vui lòng chọn loại công việc.","opt.select":"Chọn",
 "field.career":'Kinh nghiệm <span class="req">*</span>',"err.career":"Vui lòng nhập kinh nghiệm.","unit.year":"năm","unit.month":"tháng","unit.day":"ngày",
@@ -1654,7 +1657,7 @@ zh:{ "bigtext":"放大字体",
 "opt.kr":"韩国","opt.cn":"中国","opt.vn":"越南","opt.etc":"其他",
 "field.nationEtc":"国籍","field.visa":"签证类型","field.blood":"血型",
 "card.contact":"联系方式","field.phone":'本人联系电话 <span class="req">*</span>',"err.phone":"请输入联系电话。",
-"field.guardian":'紧急联系电话 <span class="req">*</span>',"hint.guardian":"家人/监护人","err.guardian":"请输入紧急联系电话。",
+"field.guardian":'紧急联系电话 <span class="req">*</span>',"hint.guardian":"可联系的号码：家人、班组长等","err.guardian":"请输入紧急联系电话。",
 "field.address":'地址 <span class="req">*</span>',"err.address":"请输入地址。",
 "card.job":"负责工种","field.trade":'工种 <span class="req">*</span>',"err.trade":"请选择工种。","opt.select":"请选择",
 "field.career":'该工种经验 <span class="req">*</span>',"err.career":"请输入工作经验。","unit.year":"年","unit.month":"个月","unit.day":"天",
@@ -1724,7 +1727,7 @@ th:{ "bigtext":"ขยายตัวอักษร",
 "opt.kr":"เกาหลีใต้","opt.cn":"จีน","opt.vn":"เวียดนาม","opt.etc":"อื่นๆ",
 "field.nationEtc":"สัญชาติ","field.visa":"ประเภทวีซ่า","field.blood":"กรุ๊ปเลือด",
 "card.contact":"ข้อมูลติดต่อ","field.phone":'เบอร์โทรของท่าน <span class="req">*</span>',"err.phone":"กรุณากรอกเบอร์โทร",
-"field.guardian":'เบอร์โทรฉุกเฉิน <span class="req">*</span>',"hint.guardian":"ครอบครัว/ผู้รับรอง","err.guardian":"กรุณากรอกเบอร์โทรฉุกเฉิน",
+"field.guardian":'เบอร์โทรฉุกเฉิน <span class="req">*</span>',"hint.guardian":"เบอร์ที่ติดต่อได้: ครอบครัว หัวหน้าทีม ฯลฯ","err.guardian":"กรุณากรอกเบอร์โทรฉุกเฉิน",
 "field.address":'ที่อยู่ <span class="req">*</span>',"err.address":"กรุณากรอกที่อยู่",
 "card.job":"งานที่รับผิดชอบ","field.trade":'ประเภทงาน <span class="req">*</span>',"err.trade":"กรุณาเลือกประเภทงาน","opt.select":"กรุณาเลือก",
 "field.career":'ประสบการณ์ในงานนี้ <span class="req">*</span>',"err.career":"กรุณากรอกประสบการณ์","unit.year":"ปี","unit.month":"เดือน","unit.day":"วัน",
