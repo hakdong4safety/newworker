@@ -1,3 +1,7 @@
+★★★ 규칙이 바뀌었습니다 — 반드시 다시 게시해 주세요 ★★★
+    (사진 분리 저장 · 삭제 기록 · 투입 예정자 명단 이 추가됨.
+     옛 규칙이면 근로자 제출과 사진 첨부가 거부됩니다)
+
 ════════════════════════════════════════════════════════════
 Firebase 설정 — 순서대로 3단계
 ════════════════════════════════════════════════════════════
@@ -45,6 +49,31 @@ service cloud.firestore {
       allow update: if okRecord()
                     && (isGC() || (ok() && resource.data.company == myCo()));
       allow delete: if isGC();
+    }
+
+    // ── 사진 (기록과 분리 저장 · 1명당 문서 1건) ──
+    // 관리자가 목록을 열 때 사진까지 내려받지 않게 따로 둔다.
+    match /photos/{id} {
+      function okPhoto() {
+        return request.resource.data.keys().hasOnly(['idPhoto','eduCertPhoto','bpPhoto','company','updatedAt'])
+            && request.resource.data.company is string;
+      }
+      allow create: if okPhoto();                      // 근로자 제출 시 함께 저장
+      allow read:   if isGC() || (ok() && resource.data.company == myCo());
+      allow update: if okPhoto() && (isGC() || (ok() && resource.data.company == myCo()));
+      allow delete: if isGC();
+    }
+
+    // ── 삭제 기록 (누가 언제 누구 것을 지웠나 · 원청만) ──
+    match /deleted/{id} {
+      allow read, create: if isGC();
+    }
+
+    // ── 투입 예정자 명단 (원청 전체 · 협력사는 자기 회사만) ──
+    match /roster/{id} {
+      allow create: if isGC() || (ok() && request.resource.data.company == myCo());
+      allow read:   if isGC() || (ok() && resource.data.company == myCo());
+      allow update, delete: if isGC() || (ok() && resource.data.company == myCo());
     }
 
     // ── 원청 자리 (한 번에 한 계정만) ──
@@ -103,9 +132,10 @@ service cloud.firestore {
   → 아이디 · 비밀번호 · 회사명 · 고유번호 · 성함
   → 원청이 [계정 관리]에서 승인하면 자기 회사 근로자만 보입니다
 
-▸ 기존 자료 정비 (한 번만)
-  [설정] 탭 → [소속 정보 채우기]
-  → 권한 구분 전에 저장된 기록이 협력사에게도 보이게 됩니다
+▸ 기존 자료 정비 (규칙 게시 후 한 번만 · 꼭)
+  [설정] 탭 → [소속 정보 채우기 (일괄 정비)]
+  → ① 옛 기록의 소속 채우기 ② 회사명 통일
+    ③ 기록 안에 들어 있던 사진을 따로 옮기기 (관리자 화면이 빨라짐)
 
 ▸ 원청 아이디를 바꾸고 싶을 때 (콘솔에서)
   Authentication → 사용자 → 기존 원청 계정 삭제
