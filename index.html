@@ -74,6 +74,8 @@ main{padding:16px var(--pad) 140px;max-width:var(--shell);margin:0 auto}
 .f .hint{font-size:.8rem;color:var(--mute);font-weight:400;margin-left:6px}
 /* 항목 제목 바로 아래 한 줄 설명 (무엇을 적는 칸인지) */
 .f .fsub{font-size:.84rem;color:var(--steel);margin:-4px 0 8px;line-height:1.45}
+.coPick{margin-bottom:10px}
+.coPick .opt{font-size:.98rem;padding:0 10px;word-break:keep-all}
 
 input[type=text],input[type=tel],input[type=number],input[type=date],input[type=month],input[type=password],textarea,select{
   width:100%;min-height:var(--tap);padding:0 14px;background:#fff;border:1.5px solid var(--line);
@@ -189,6 +191,10 @@ input::placeholder,textarea::placeholder{color:#B2B9C2;font-weight:400}
 .riskOv{font-size:.78rem;color:#8A5400;background:var(--amber-8);border-radius:8px;padding:9px 11px;margin-bottom:10px;line-height:1.5}
 .riskOv span{display:block;margin-top:3px;color:var(--steel)}
 .riskBtns{display:flex;gap:6px}
+.flagNote .flagBox{background:var(--amber-8);border-left:5px solid #E0A400;border-radius:10px;padding:14px}
+.flagNote .flagBox b{display:block;margin-bottom:4px}
+.flagNote .flagBox span{display:block;font-size:.84rem;color:var(--steel);line-height:1.5}
+.flagNote .riskBtns{margin-top:10px}
 .riskBtns .btn{flex:1;min-height:44px;font-size:.82rem}
 .riskBtns .riskOff{background:var(--signal);color:#fff;border-color:var(--signal)}
 .riskNote2{font-size:.8rem;color:var(--steel);background:#EFF1F4;border-radius:8px;padding:10px 12px;line-height:1.55}
@@ -715,6 +721,7 @@ html.xl{--shell:840px}
   #sheetWrap.on{display:flex;flex-direction:column}
   #sheetWrap > .sheetTitleBar{order:1}
   #sheetWrap > .docTabs{order:2}
+  #sheetWrap > #sheetFlag{order:3}
   #sheetWrap > #sheetBp{order:3}
   #sheetWrap > #sheetPhotos{order:4;margin-bottom:14px}
   #sheetWrap > #sheetScroll{order:5}
@@ -820,6 +827,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div class="done-note hidden" id="alreadyBox">
     <b data-i18n="already.title">이미 제출하셨습니다</b>
     <span id="alreadyInfo"></span>
+    <button class="btn prime hidden" type="button" id="alreadyAgain" data-i18n="already.again">다른 업체로 다시 제출 (내용 그대로)</button>
     <button class="btn" type="button" id="alreadyNew" data-i18n="already.new">다른 사람 것 작성하기</button>
   </div>
   <div class="card"><h3 data-i18n="start.prepTitle">준비물</h3>
@@ -830,9 +838,10 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div class="note info" data-i18n="start.note">작성한 내용은 <b>현장 안전보건팀만</b> 열람하며, 준공 후 3년간 보관 후 파기합니다.</div>
   <div class="card">
     <div class="f"><label data-i18n="field.company">협력회사 <span class="req">*</span></label>
-      <input type="text" id="company" placeholder="예) 대한철골" autocomplete="organization" list="coList">
-      <datalist id="coList"></datalist>
-      <div class="err" data-i18n="err.company">협력회사명을 입력해 주세요.</div></div>
+      <div class="opts coPick hidden" id="coPick"></div>
+      <button type="button" class="linkbtn hidden" id="coOther" data-i18n="co.other" style="margin:2px 0 10px">목록에 없어요 · 직접 입력</button>
+      <input type="text" id="company" placeholder="회사명을 정확히 적어 주세요" autocomplete="organization" autocapitalize="off">
+      <div class="err" data-i18n="err.company">협력회사를 골라 주세요.</div></div>
     <div class="f" style="margin-bottom:0"><label data-i18n="field.name">성명 <span class="req">*</span></label>
       <input type="text" id="name" placeholder="예) 홍길동" autocomplete="name">
       <div class="err" data-i18n="err.name">성명을 입력해 주세요.</div></div>
@@ -1388,6 +1397,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button type="button" id="tabDocPhoto" aria-pressed="false">사진 대지</button>
   </div>
   <div id="sheetScroll"><div id="sheetPage"></div></div>
+  <div class="sheetPhotos hidden flagNote" id="sheetFlag"></div>
   <div class="sheetPhotos hidden" id="sheetRisk"></div>
   <div class="sheetPhotos hidden" id="sheetBp"></div>
   <div class="sheetPhotos hidden" id="sheetPhotos"></div>
@@ -1400,6 +1410,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button class="btn ghost hidden" type="button" id="btnAdmClose">닫기</button>
     <button class="btn ghost hidden sheetDel" type="button" id="btnDelOne">삭제</button>
     <button class="btn ghost hidden" type="button" id="btnEdit">✎ 내용 수정</button>
+    <button class="btn ghost hidden" type="button" id="btnWrongCo">소속이 다릅니다</button>
     <button class="btn danger hidden" type="button" id="btnPdf">📄 PDF 저장</button>
   </div>
 </footer>
@@ -1592,7 +1603,7 @@ function loadFirebase(){
 const I18N = {
 ko:{ "bigtext":"글씨 크게 보기",
 "start.title":"안전교육 전<br>작성해 주세요","start.sub":"약 5분 걸립니다. 다 쓰면 저장 버튼을 누르세요.",
-"resume.title":"쓰다 만 내용이 있습니다","resume.go":"이어서 쓰기","resume.new":"처음부터","resume.at":"{n}단계까지 쓰셨습니다","already.title":"이미 제출하셨습니다","already.new":"다른 사람 것 작성하기","already.at":"제출 완료 · 현장에서 담당자가 확인합니다","start.prepTitle":"준비물","start.prep1":"· 신분증 (생년월일·국적 확인)","start.prep2":"· 기초안전보건교육 이수증","start.prep3":"· 혈압 측정 결과",
+"resume.title":"쓰다 만 내용이 있습니다","resume.go":"이어서 쓰기","resume.new":"처음부터","resume.at":"{n}단계까지 쓰셨습니다","already.title":"이미 제출하셨습니다","already.new":"다른 사람 것 작성하기","already.at":"제출 완료 · 현장에서 담당자가 확인합니다","already.again":"다른 업체로 다시 제출 (내용 그대로)","co.other":"목록에 없어요 · 직접 입력","co.list":"목록에서 고르기","start.prepTitle":"준비물","start.prep1":"· 신분증 (생년월일·국적 확인)","start.prep2":"· 기초안전보건교육 이수증","start.prep3":"· 혈압 측정 결과",
 "start.note":"작성한 내용은 <b>현장 안전보건팀만</b> 열람하며, 준공 후 3년간 보관 후 파기합니다.",
 "field.company":'협력회사 <span class="req">*</span>',"err.company":"협력회사명을 입력해 주세요.",
 "field.name":'성명 <span class="req">*</span>',"err.name":"성명을 입력해 주세요.",
@@ -1662,7 +1673,7 @@ ko:{ "bigtext":"글씨 크게 보기",
 
 vi:{ "bigtext":"Phóng to chữ",
 "start.title":"Điền trước khi<br>huấn luyện an toàn","start.sub":"Mất khoảng 5 phút. Điền xong hãy nhấn Lưu.",
-"resume.title":"Bạn có phần chưa viết xong","resume.go":"Viết tiếp","resume.new":"Bắt đầu lại","resume.at":"Đã viết đến bước {n}","already.title":"Bạn đã nộp rồi","already.new":"Viết cho người khác","already.at":"Đã nộp · Cán bộ sẽ kiểm tra tại công trường","start.prepTitle":"Cần chuẩn bị","start.prep1":"· Giấy tờ tùy thân (ngày sinh, quốc tịch)","start.prep2":"· Chứng chỉ đào tạo an toàn cơ bản","start.prep3":"· Kết quả đo huyết áp",
+"resume.title":"Bạn có phần chưa viết xong","resume.go":"Viết tiếp","resume.new":"Bắt đầu lại","resume.at":"Đã viết đến bước {n}","already.title":"Bạn đã nộp rồi","already.new":"Viết cho người khác","already.at":"Đã nộp · Cán bộ sẽ kiểm tra tại công trường","already.again":"Nộp lại cho công ty khác (giữ nội dung)","co.other":"Không có trong danh sách · Tự nhập","co.list":"Chọn từ danh sách","start.prepTitle":"Cần chuẩn bị","start.prep1":"· Giấy tờ tùy thân (ngày sinh, quốc tịch)","start.prep2":"· Chứng chỉ đào tạo an toàn cơ bản","start.prep3":"· Kết quả đo huyết áp",
 "start.note":"Nội dung chỉ <b>Đội an toàn công trường</b> được xem, lưu 3 năm sau khi hoàn công rồi hủy.",
 "field.company":'Công ty đối tác <span class="req">*</span>',"err.company":"Vui lòng nhập tên công ty.",
 "field.name":'Họ và tên <span class="req">*</span>',"err.name":"Vui lòng nhập họ tên.",
@@ -1732,7 +1743,7 @@ vi:{ "bigtext":"Phóng to chữ",
 
 zh:{ "bigtext":"放大字体",
 "start.title":"请在安全教育前<br>填写此表","start.sub":"大约需要5分钟。填完后请点击保存。",
-"resume.title":"有未填完的内容","resume.go":"继续填写","resume.new":"重新开始","resume.at":"已填写到第 {n} 步","already.title":"您已提交","already.new":"为他人填写","already.at":"已提交 · 现场负责人会确认","start.prepTitle":"准备事项","start.prep1":"· 身份证件（确认出生日期、国籍）","start.prep2":"· 基础安全保健教育结业证","start.prep3":"· 血压测量结果",
+"resume.title":"有未填完的内容","resume.go":"继续填写","resume.new":"重新开始","resume.at":"已填写到第 {n} 步","already.title":"您已提交","already.new":"为他人填写","already.at":"已提交 · 现场负责人会确认","already.again":"以其他公司身份再次提交（内容不变）","co.other":"列表中没有 · 手动输入","co.list":"从列表中选择","start.prepTitle":"准备事项","start.prep1":"· 身份证件（确认出生日期、国籍）","start.prep2":"· 基础安全保健教育结业证","start.prep3":"· 血压测量结果",
 "start.note":"填写内容仅供<b>现场安全保健组</b>查阅，竣工后保存3年后销毁。",
 "field.company":'合作公司 <span class="req">*</span>',"err.company":"请输入合作公司名称。",
 "field.name":'姓名 <span class="req">*</span>',"err.name":"请输入姓名。",
@@ -1802,7 +1813,7 @@ zh:{ "bigtext":"放大字体",
 
 th:{ "bigtext":"ขยายตัวอักษร",
 "start.title":"กรุณากรอกก่อน<br>อบรมความปลอดภัย","start.sub":"ใช้เวลาประมาณ 5 นาที เมื่อกรอกเสร็จให้กดบันทึก",
-"resume.title":"มีข้อมูลที่กรอกค้างไว้","resume.go":"กรอกต่อ","resume.new":"เริ่มใหม่","resume.at":"กรอกถึงขั้นตอนที่ {n}","already.title":"คุณส่งแล้ว","already.new":"กรอกให้คนอื่น","already.at":"ส่งแล้ว · เจ้าหน้าที่จะตรวจสอบที่หน่วยงาน","start.prepTitle":"สิ่งที่ต้องเตรียม","start.prep1":"· บัตรประจำตัว (วันเกิด/สัญชาติ)","start.prep2":"· ใบรับรองอบรมความปลอดภัยขั้นพื้นฐาน","start.prep3":"· ผลตรวจวัดความดันโลหิต",
+"resume.title":"มีข้อมูลที่กรอกค้างไว้","resume.go":"กรอกต่อ","resume.new":"เริ่มใหม่","resume.at":"กรอกถึงขั้นตอนที่ {n}","already.title":"คุณส่งแล้ว","already.new":"กรอกให้คนอื่น","already.at":"ส่งแล้ว · เจ้าหน้าที่จะตรวจสอบที่หน่วยงาน","already.again":"ส่งใหม่ในนามบริษัทอื่น (เนื้อหาเดิม)","co.other":"ไม่มีในรายการ · พิมพ์เอง","co.list":"เลือกจากรายการ","start.prepTitle":"สิ่งที่ต้องเตรียม","start.prep1":"· บัตรประจำตัว (วันเกิด/สัญชาติ)","start.prep2":"· ใบรับรองอบรมความปลอดภัยขั้นพื้นฐาน","start.prep3":"· ผลตรวจวัดความดันโลหิต",
 "start.note":"ข้อมูลที่กรอกจะเปิดให้เฉพาะ<b>ทีมความปลอดภัยของไซต์งาน</b>ดู จะเก็บไว้ 3 ปีหลังงานเสร็จแล้วทำลาย",
 "field.company":'บริษัทคู่ค้า <span class="req">*</span>',"err.company":"กรุณากรอกชื่อบริษัท",
 "field.name":'ชื่อ-นามสกุล <span class="req">*</span>',"err.name":"กรุณากรอกชื่อ-นามสกุล",
@@ -2068,7 +2079,19 @@ const Store = (() => {
           await batch.commit();
           savedRemote = true;
         }catch(e){
-          firstErr = { where:"Firebase", message:(e && e.message) || String(e) };
+          let msg = (e && e.message) || String(e);
+          if(/permission-denied|insufficient/i.test(String((e&&e.code)||"") + msg)){
+            // 어느 규칙이 막았는지 알아내 준다 (사진 저장소 규칙이 없는 경우가 가장 흔함)
+            try{
+              const db2 = await loadFirebase();
+              await db2.collection("photos").limit(1).get();
+              msg = "서버가 저장을 거부했습니다. 로그인 상태와 권한을 확인해 주세요.";
+            }catch(e2){
+              msg = "사진 저장소(photos)에 대한 Firestore 규칙이 없습니다.\n"
+                + "규칙이 옛 버전입니다 — firestore_규칙.txt 최신본을 콘솔에 다시 붙여넣고 [게시]해 주세요.";
+            }
+          }
+          firstErr = { where:"Firebase", message: msg };
           console.warn("firebase saveRecord 실패:", e);
         }
       }
@@ -2194,7 +2217,7 @@ function paint(){
 
 document.addEventListener("click", e => {
   const b = e.target.closest(".opt"); if(!b) return;
-  const wrap = b.parentElement;
+  const wrap = b.parentElement; if(!wrap) return;   // 다른 핸들러가 이미 새로 그린 버튼
   if(wrap.dataset.pick){
     const k = wrap.dataset.pick, v = b.dataset.v;
     const off = pick[k]===v && k==="pledge";
@@ -2522,6 +2545,9 @@ function applyDraft(d){
   });
   Object.keys(d.pick||{}).forEach(k => { pick[k] = d.pick[k]; });
   Object.keys(d.multi||{}).forEach(k => { multi[k] = d.multi[k]; });
+  // 선택값에 따라 열리고 닫히는 칸(외국인 면담, 지병 상세 등)을 다시 맞춘다.
+  // 이걸 빼먹으면 숨겨야 할 필수 칸이 열린 채 남아 다음 단계로 못 넘어간다.
+  Object.keys(pick).forEach(k => { try{ onPick(k, pick[k]); }catch(e){} });
   Object.keys(d.photo||{}).forEach(k => { PHOTO[k] = d.photo[k]; });
   // 화면의 선택 버튼·사진 미리보기를 저장된 값에 맞춘다
   $$("[data-pick]").forEach(w => {
@@ -2537,6 +2563,7 @@ function applyDraft(d){
     if(t && im && PHOTO[key]){ im.src = PHOTO[key]; t.classList.remove("hidden"); }
   });
   step = FLOW.includes(d.step) ? d.step : 0;
+  coManual = false; renderCoPick();
   paint();
   setTimeout(() => {
     Object.keys(d.sigs||{}).forEach(k => { if(PADS[k]) PADS[k].restore(d.sigs[k]); });
@@ -2562,6 +2589,8 @@ function buildRecord(){
     // 본국 시간으로 맞춰져 있는 경우) 밤늦게 작성한 건이 다른 날짜로 잡힌다.
     dateKey: today,
     company: canonCo(val("company")), name: val("name"),
+    prevCode: RESUBMIT_PREV ? String(RESUBMIT_PREV.code||"") : "",
+    prevCompany: RESUBMIT_PREV ? String(RESUBMIT_PREV.company||"") : "",
     birth: val("birth"), gender: pick.gender||"", nation, visa: val("visa"), blood: pick.blood||"",
     phone: val("phone"), guardian: val("guardian"), address: val("address"),
     trade: ($("#trade").value==="기타" ? (val("tradeEtc")||"기타") : $("#trade").value),
@@ -2687,14 +2716,16 @@ $("#btnNext").addEventListener("click", async () => {
         + "-" + String(seq).padStart(3,"0");
     }
     submissions.push(current);
-    try{
-      localStorage.setItem(MINE_KEY, JSON.stringify({
-        code: current.code, name: current.name, date: current.dateKey }));
-    }catch(e){}
-    clearDraft();
+    // 재제출용: 지금 화면 그대로(선택·사진·서명 포함)를 남겨 둔다
+    try{ localStorage.setItem(LAST_KEY, JSON.stringify(Object.assign(collectDraft(), { code: current.code, company: current.company }))); }catch(e){}
     // 새로 쓴 1건만 올린다 (전원 재업로드를 하면 인원이 많을 때 몇 분씩 걸린다)
     const res = await Store.saveRecord(current, submissions);
     btn.disabled = false; btn.textContent = oldTxt;
+    if(res && res.ok){
+      try{ localStorage.setItem(MINE_KEY, JSON.stringify({ code: current.code, name: current.name, date: current.dateKey })); }catch(e){}
+      clearDraft();
+      RESUBMIT_PREV = null;
+    }
     if(!res || !res.ok){
       submissions.pop();   // 저장 실패 시 목록에서 되돌린다
       alert("저장하지 못했습니다.\n\n"
@@ -3065,6 +3096,8 @@ async function openSheetFor(r, title){
   $("#btnAdmClose").classList.remove("hidden");
   $("#btnDelOne").classList.toggle("hidden", authReady() && !isGC());
   $("#btnEdit").classList.toggle("hidden", authReady() && !isGC());
+  $("#btnWrongCo").classList.toggle("hidden", !isSub());
+  renderFlagNote(r);
   $("#btnPdf").classList.remove("hidden");
   renderSheetBp(r);
   renderSheetPhotos(r);
@@ -3088,6 +3121,7 @@ function bpDone(r){ return !!(r && r.bp && r.bp.sys1 && r.bp.dia1); }
    저장이 됐는지 몰라서 다시 쓰는 일이 실제로 생긴다. 원청이 확인 후
    하나를 지울 수 있게 표시만 해 준다. */
 function dupKey(r){
+  if(r && r.prevCode) return "re|" + String(r.prevCode);   // 재제출은 이전 제출과 짝이므로 중복이 아니다
   return String(r.name||"").replace(/\s+/g,"") + "|" + String(r.birth||"").replace(/[^0-9]/g,"");
 }
 function buildDupMap(list){
@@ -3498,6 +3532,7 @@ function renderFind(){
   const nNoBp   = base.filter(r => !bpDone(r)).length;
   const nMiss   = base.filter(r => missingItems(r).length).length;
   const nRisk   = base.filter(r => isRisk(r)).length;
+  const nFlag   = base.filter(r => r.flag && r.flag.type === "company").length;
   const stat = (key,num,label,warn) =>
     '<button class="stat'+(warn?" warnStat":"")+'" type="button" data-only="'+key+'" aria-pressed="'
     + (findOnly===key) + '"><b>'+num+'</b><u>'+label+'</u></button>';
@@ -3505,7 +3540,8 @@ function renderFind(){
       stat("", base.length, "전체", false)
     + stat("bp", nNoBp, "혈압 미측정", nNoBp>0)
     + stat("miss", nMiss, "서류 미비", nMiss>0)
-    + stat("risk", nRisk, "취약 검토", nRisk>0);
+    + stat("risk", nRisk, "취약 검토", nRisk>0)
+    + (nFlag ? stat("flag", nFlag, "소속 확인", true) : "");
   $$("#statRow .stat").forEach(b => b.addEventListener("click", () => {
     findOnly = (findOnly === b.dataset.only) ? "" : b.dataset.only;
     renderFind();
@@ -3517,6 +3553,7 @@ function renderFind(){
   if(findOnly === "bp")   list = list.filter(r => !bpDone(r));
   if(findOnly === "miss") list = list.filter(r => missingItems(r).length);
   if(findOnly === "risk") list = list.filter(r => isRisk(r));
+  if(findOnly === "flag") list = list.filter(r => r.flag && r.flag.type === "company");
   if(q){
     const qd = q.replace(/\D/g, "");   // 숫자만 남긴 검색어 (전화번호용)
     list = list.filter(r => String(r.name||"").toLowerCase().includes(q)
@@ -3549,6 +3586,8 @@ function renderFind(){
     + '</span>'
     + '<span class="flags">'
     +   (dup[dupKey(r)] > 1 ? '<span class="fl warn">중복 의심</span>' : '')
+    +   (r.flag && r.flag.type === "company" ? '<span class="fl warn">소속 확인 요청</span>' : '')
+    +   (r.prevCode ? '<span class="fl">재제출</span>' : '')
     +   (isRisk(r) ? '<span class="fl risky">취약'+(riskIsAuto(r)?" 자동":"")+'</span>'
                    : (r.riskOverride ? '<span class="fl warn">해지됨</span>' : ''))
     +   (bpDone(r) ? '<span class="fl done">'+esc(r.bp.sys1)+'/'+esc(r.bp.dia1)+'</span>'
@@ -3685,6 +3724,7 @@ function openEdit(r){
   $("#editOverlay").classList.remove("hidden");
 }
 $("#editCancel").addEventListener("click", () => $("#editOverlay").classList.add("hidden"));
+$("#editWhy").addEventListener("input", () => $("#editErr").classList.remove("on"));
 $("#editSave").addEventListener("click", async () => {
   const r = current; if(!r) return;
   const rec = submissions.find(x => docId(x) === docId(r)) || r;
@@ -3706,6 +3746,7 @@ $("#editSave").addEventListener("click", async () => {
   const who = (AUTH.profile && (AUTH.profile.name || fromLoginEmail(AUTH.profile.email||""))) || "관리자";
   rec.edits = (rec.edits || []).concat([{ by: who, at: new Date().toISOString(), why, fields: changed.map(f => f.label) }]);
   r.edits = rec.edits;
+  if(changed.some(f => f.k === "company") && rec.flag && rec.flag.type === "company"){ delete rec.flag; delete r.flag; }
   const res = await Store.saveRecord(rec, submissions);
   if(!res || !res.ok){
     for(const k in before){ rec[k] = before[k]; r[k] = before[k]; }
@@ -3714,10 +3755,51 @@ $("#editSave").addEventListener("click", async () => {
   }
   $("#editOverlay").classList.add("hidden");
   showToast(changed.length + "개 항목을 고쳤습니다");
+  renderFlagNote(r);
   renderSheetDOM(); fillActiveSheet(r); fitSheetView();
   $("#sheetTitleText").textContent = r.name + " · " + r.company;
 });
 $("#btnEdit").addEventListener("click", () => openEdit(current));
+
+/* ── 소속 확인 요청 ─────────────────────────────────────────────
+   협력사는 소속을 직접 바꿀 수 없다 — 바꾸는 순간 그 근로자의 신분증·건강정보가
+   다른 회사 열람 범위로 넘어가기 때문에 원청이 결정한다.
+   대신 "우리 회사 사람이 아니다"라고 표시만 남기면 원청 화면에 바로 뜬다. */
+$("#btnWrongCo").addEventListener("click", async () => {
+  const r = current; if(!r || !isSub()) return;
+  const real = prompt(r.name + " 님이 " + (r.company||"") + " 소속이 아니라고 원청에 알립니다.\n실제 소속을 아시면 적어 주세요 (몰라도 됩니다).", "");
+  if(real === null) return;
+  const rec = submissions.find(x => docId(x) === docId(r)) || r;
+  const who = (AUTH.profile && (AUTH.profile.name || fromLoginEmail(AUTH.profile.email||""))) || myCompany();
+  const backup = rec.flag;
+  rec.flag = { type:"company", by: who + " (" + myCompany() + ")", at: new Date().toISOString(), note: real.trim() };
+  r.flag = rec.flag;
+  const res = await Store.saveRecord(rec, submissions);
+  if(!res || !res.ok){ rec.flag = backup; r.flag = backup; alert("알리지 못했습니다.\n\n" + ((res&&res.message)||"")); return; }
+  showToast("원청에 알렸습니다. 원청이 소속을 바로잡습니다.");
+  renderFlagNote(r);
+});
+function renderFlagNote(r){
+  const el = $("#sheetFlag"); if(!el) return;
+  if(!r || !r.flag || r.flag.type !== "company"){ el.classList.add("hidden"); el.innerHTML = ""; return; }
+  el.classList.remove("hidden");
+  el.innerHTML = '<div class="flagBox"><b>소속 확인 요청</b>'
+    + '<span>' + esc(r.flag.by||"") + ' 님이 "우리 회사 근로자가 아닙니다"라고 알렸습니다'
+    + (r.flag.note ? ' · 실제 소속: <b style="display:inline">' + esc(r.flag.note) + '</b>' : '')
+    + (r.flag.at ? ' · ' + esc(String(r.flag.at).slice(0,10)) : '') + '</span>'
+    + (isGC() ? '<div class="riskBtns"><button class="btn small padd" type="button" id="flagFix">내용 수정에서 소속 바꾸기</button>'
+              + '<button class="btn small" type="button" id="flagDismiss">요청 지우기</button></div>' : '')
+    + '</div>';
+  const fx = $("#flagFix"); if(fx) fx.addEventListener("click", () => openEdit(r));
+  const dm = $("#flagDismiss"); if(dm) dm.addEventListener("click", async () => {
+    if(!confirm("소속이 맞다고 보고 요청을 지울까요?")) return;
+    const rec = submissions.find(x => docId(x) === docId(r)) || r;
+    const backup = rec.flag; delete rec.flag; delete r.flag;
+    const res = await Store.saveRecord(rec, submissions);
+    if(!res || !res.ok){ rec.flag = backup; r.flag = backup; alert("저장하지 못했습니다."); return; }
+    renderFlagNote(r); if(lastAdmTab === "find") renderFind();
+  });
+}
 function renderSheetPhotos(r){
   const ph = $("#sheetPhotos");
   ph.classList.remove("hidden");
@@ -4536,7 +4618,13 @@ async function diagnoseConnection(){
       stop = stop || e;
     }
 
-    lines.push("", "⑧ 자료 쓰기");
+    lines.push("", "⑧ 사진 · 삭제기록 · 예정자 명단 저장소");
+    for(const [coll, label] of [["photos","사진(photos)"],["deleted","삭제기록(deleted)"],["roster","예정자(roster)"]]){
+      try{ await db.collection(coll).limit(1).get(); ok(label + " 접근 가능"); }
+      catch(e){ no(label + " 접근 불가 (" + (fbErrCode(e) || "오류") + ") — 규칙 최신본을 다시 게시하세요"); stop = stop || e; }
+    }
+
+    lines.push("", "⑨ 자료 쓰기");
     try{
       const ref = db.collection("kv").doc("__diag");
       await ref.set({ at: Date.now() });
@@ -5416,6 +5504,8 @@ async function ensureSubmissionsLoaded(){
 
 /* 시작 화면 안내: 쓰다 만 것 / 이미 제출한 것 */
 const MINE_KEY = "hd4_mine";
+const LAST_KEY = "hd4_last";           // 마지막 제출 직전 화면 상태 (재제출용)
+let RESUBMIT_PREV = null;              // 재제출이면 {code, company} — 새 기록에 "이전 제출" 표시
 function showStartNotices(){
   const d = readDraft();
   const box = $("#resumeBox");
@@ -5435,7 +5525,9 @@ function showStartNotices(){
   const ab = $("#alreadyBox");
   if(mine && mine.code){
     const at = (I18N[LANG] && I18N[LANG]["already.at"]) || "제출 완료 · 현장에서 담당자가 확인합니다";
-    $("#alreadyInfo").textContent = mine.name + " · " + mine.code + " · " + mine.date + "\n" + at;
+    $("#alreadyInfo").textContent = mine.name + " · " + mine.code + " · " + (mine.date || mine.dateKey || "") + "\n" + at;
+    let last = null; try{ last = JSON.parse(localStorage.getItem(LAST_KEY) || "null"); }catch(e){}
+    $("#alreadyAgain").classList.toggle("hidden", !(last && last.f));
     ab.classList.remove("hidden");
   } else ab.classList.add("hidden");
 }
@@ -5455,8 +5547,23 @@ $("#resumeNew").addEventListener("click", () => {
   clearDraft(); location.reload();
 });
 $("#alreadyNew").addEventListener("click", () => {
-  try{ localStorage.removeItem(MINE_KEY); }catch(e){}
+  try{ localStorage.removeItem(MINE_KEY); localStorage.removeItem(LAST_KEY); }catch(e){}
   clearDraft(); location.reload();
+});
+/* 용역처럼 어제 A업체, 오늘 B업체로 오는 경우:
+   직전 제출 내용을 그대로 불러와 회사만 다시 고르게 한다. 혈압은 현장에서 다시 측정. */
+$("#alreadyAgain").addEventListener("click", () => {
+  let last = null; try{ last = JSON.parse(localStorage.getItem(LAST_KEY) || "null"); }catch(e){}
+  if(!last || !last.f){ alert("불러올 이전 내용이 없습니다."); return; }
+  if(!confirm("이전에 제출한 내용을 그대로 불러옵니다.\n협력회사만 다시 고르고, 확인하며 넘기면 됩니다.\n(혈압은 현장에서 다시 측정합니다)")) return;
+  RESUBMIT_PREV = { code: last.code || "", company: last.company || (last.f.company || "") };
+  const d = JSON.parse(JSON.stringify(last));
+  d.f.company = "";                       // 회사는 새로 고른다
+  if(d.photo) d.photo.bp = "";            // 혈압 사진은 새 현장에서
+  d.step = 0;
+  $("#alreadyBox").classList.add("hidden");
+  applyDraft(d);
+  setTimeout(() => { const el = $("#coPick"); (el && !el.classList.contains("hidden") ? el : $("#company")).scrollIntoView({ block:"center" }); }, 200);
 });
 
 /* 전화번호는 치는 대로 하이픈을 넣어 준다 (업체마다 형식이 제각각이면 찾기가 어렵다) */
@@ -5481,14 +5588,48 @@ function hyphenPhone(v){
   });
 });
 
+/* 회사 고르기.
+   글자로 치게 하면 "태흥건설/태흥특수"처럼 비슷한 이름을 잘못 고르고,
+   안드로이드에서 한글 자동완성이 엉키는 일도 있다. 등록된 회사는 버튼으로 고르고,
+   목록에 없을 때만 직접 친다. */
+let coManual = false;
+function renderCoPick(){
+  const box = $("#coPick"), other = $("#coOther"), inp = $("#company");
+  if(!box || !inp) return;
+  const names = coNames();
+  if(!names.length){                 // 등록된 회사가 없으면 예전처럼 입력칸만
+    box.classList.add("hidden"); other.classList.add("hidden"); inp.classList.remove("hidden"); return;
+  }
+  const cur = inp.value.trim();
+  const hit = names.find(n => coKeyOf(n) === coKeyOf(cur));
+  if(hit && inp.value !== hit) inp.value = hit;
+  box.classList.remove("hidden"); other.classList.remove("hidden");
+  box.innerHTML = names.map(n => '<button type="button" class="opt" data-co="'+esc(n)+'" aria-pressed="'+(hit===n)+'">'+esc(n)+'</button>').join("");
+  const manual = coManual || (!!cur && !hit);
+  inp.classList.toggle("hidden", !manual);
+  other.textContent = manual ? ((I18N[LANG]||{})["co.list"] || "목록에서 고르기") : ((I18N[LANG]||{})["co.other"] || "목록에 없어요 · 직접 입력");
+  box.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => {
+    inp.value = b.dataset.co; coManual = false;
+    box.querySelectorAll(".opt").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    inp.classList.add("hidden");
+    other.textContent = (I18N[LANG]||{})["co.other"] || "목록에 없어요 · 직접 입력";
+    inp.dispatchEvent(new Event("input", { bubbles:true }));
+    clearErr(inp.closest(".f"));
+  }));
+}
+$("#coOther").addEventListener("click", () => {
+  const inp = $("#company");
+  coManual = !coManual;
+  if(coManual){ inp.value = ""; renderCoPick(); setTimeout(() => inp.focus(), 50); }
+  else { inp.value = ""; renderCoPick(); }
+});
+
 /* 원청사가 등록해 둔 협력사 목록을 내려받아 고를 수 있게 한다 */
 async function loadCompanyList(){
   try{
     const list = normCompanies(await Store.load("companies", null));
     COMPANIES = list;   // 저장할 때 등록된 이름으로 맞추는 데 쓴다
-    if(list.length){
-      $("#coList").innerHTML = list.map(c => '<option value="'+esc(c.name)+'"></option>').join("");
-    }
+    renderCoPick();
   }catch(e){}
 }
 
