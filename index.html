@@ -535,6 +535,9 @@ table.admTable thead th #chkAll{margin-top:4px}
 .acct .ai span{display:block;font-size:.78rem;color:var(--steel);margin-top:2px}
 .acct .btn{flex:0 0 auto;min-height:38px;font-size:.78rem;min-width:74px}
 .acct.pending{border-color:#F0C97A;background:var(--amber-8)}
+.acct .ai span b{display:inline}
+.acctId{display:inline;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ink);font-weight:800;font-size:.9rem}
+.acct .acctDel{color:var(--signal);border-color:#F0B4BC}
 .meTag{display:inline-block;font-size:.7rem;font-weight:800;background:var(--ink);color:#fff;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
 .modal h3{margin:0 0 6px;font-size:1.2rem;font-weight:800}
 .modal p{margin:0 0 16px;font-size:.86rem;color:var(--steel)}
@@ -4397,7 +4400,7 @@ async function renderAccounts(){
     const me = u.uid === myUid;
     return '<div class="acct'+(u.approved ? "" : " pending")+'" data-uid="'+esc(u.uid)+'">'
     + '<span class="ai"><b>'+esc(u.name || u.email || u.uid)+(me ? ' <span class="meTag">나</span>' : '')+'</b>'
-    +   '<span>'+esc(fromLoginEmail(u.email||""))+' · '
+    +   '<span>아이디 <b class="acctId">'+esc(fromLoginEmail(u.email||""))+'</b> · '
     +   (u.role === "gc" ? "원청 (전체 열람·승인·삭제)" : esc(u.company||"소속 미지정"))
     +   (u.approved ? "" : " · <b>승인 대기</b>")+'</span></span>'
     // 내 계정은 스스로 막거나 내리지 못하게 한다 (잠기면 콘솔로만 풀 수 있다)
@@ -4407,7 +4410,8 @@ async function renderAccounts(){
           : '<button class="btn small padd" type="button" data-act="approve">승인</button>')
         + (u.role === "gc"
           ? '<button class="btn small" type="button" data-act="sub">협력사로</button>'
-          : '<button class="btn small" type="button" data-act="gc">원청으로</button>'))
+          : '<button class="btn small" type="button" data-act="gc">원청으로</button>')
+        + '<button class="btn small acctDel" type="button" data-act="del">삭제</button>')
     + '</div>'; }).join("");
 
   box.querySelectorAll(".acct").forEach(row => {
@@ -4415,6 +4419,23 @@ async function renderAccounts(){
       const uid = row.dataset.uid, act = b.dataset.act;
       const u = users.find(x => x.uid === uid);
       if(act === "revoke" && !confirm((u.name||u.email)+" 의 접근을 차단할까요?")) return;
+      if(act === "del"){
+        // 앱에서는 권한(프로필)만 지울 수 있다. 로그인 아이디 자체는 Firebase 콘솔에서만 지워진다.
+        const idTxt = fromLoginEmail(u.email||"");
+        if(!confirm((u.name||idTxt) + " 계정을 삭제할까요?\n\n"
+          + "· 이 아이디(" + idTxt + ")로는 더 이상 자료를 볼 수 없게 됩니다\n"
+          + "· 같은 아이디로 다시 가입하려면 Firebase 콘솔 → Authentication → 사용자에서\n"
+          + "  그 아이디를 지워야 합니다 (앱에서는 지울 수 없습니다)\n"
+          + "· 다른 아이디로 새로 가입하는 것은 바로 됩니다")) return;
+        b.disabled = true;
+        try{
+          const db = await loadFirebase();
+          await db.collection("users").doc(uid).delete();
+          showToast(idTxt + " 계정을 삭제했습니다");
+        }catch(e){ alert("삭제하지 못했습니다: " + ((e&&e.message)||e)); }
+        renderAccounts();
+        return;
+      }
       if(act === "gc" && !confirm((u.name||u.email)+" 을(를) 원청 권한으로 올릴까요?\n\n"
         + "· 전체 협력사 근로자 자료를 보고 삭제할 수 있습니다\n"
         + "· 다른 계정을 승인·차단할 수 있습니다 (당신 계정도 포함)\n"
