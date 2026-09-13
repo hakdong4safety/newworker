@@ -74,8 +74,10 @@ main{padding:16px var(--pad) 140px;max-width:var(--shell);margin:0 auto}
 .f .hint{font-size:.8rem;color:var(--mute);font-weight:400;margin-left:6px}
 /* 항목 제목 바로 아래 한 줄 설명 (무엇을 적는 칸인지) */
 .f .fsub{font-size:.84rem;color:var(--steel);margin:-4px 0 8px;line-height:1.45}
-.coPick{margin-bottom:10px}
-.coPick .opt{font-size:.98rem;padding:0 10px;word-break:keep-all}
+.coPick{margin-bottom:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.coPick .opt{font-size:.98rem;padding:10px 10px;line-height:1.25;white-space:normal;
+  word-break:keep-all;overflow-wrap:anywhere;min-height:60px;height:auto}
+@media (max-width:480px){ .coPick{grid-template-columns:repeat(2,minmax(0,1fr))} }
 
 input[type=text],input[type=tel],input[type=number],input[type=date],input[type=month],input[type=password],textarea,select{
   width:100%;min-height:var(--tap);padding:0 14px;background:#fff;border:1.5px solid var(--line);
@@ -297,9 +299,15 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .findBar input{flex:1;min-width:0;min-height:50px;font-size:1.02rem}
 .findBar .btn{flex:0 0 auto;min-width:88px}
 #coChips{display:flex;flex-direction:column;gap:8px}
-.coRow{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);
-  border-radius:12px;padding:12px 14px;flex-wrap:wrap}
-.coRow b{flex:1;min-width:120px;font-size:.98rem}
+.coRow{display:grid;grid-template-columns:minmax(140px,1fr) auto auto;align-items:center;gap:10px 14px;
+  background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px 16px}
+.coRow b{min-width:0;font-size:.98rem;overflow-wrap:anywhere}
+.coRow .coBtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:640px){
+  .coRow{grid-template-columns:1fr auto;gap:8px 10px;padding:14px}
+  .coRow .coBtns{grid-column:1 / -1;justify-content:stretch}
+  .coRow .coBtns .btn{flex:1 1 0;min-height:44px}
+}
 .coCode{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800;letter-spacing:.06em;
   background:var(--ink);color:#fff;border-radius:7px;padding:5px 11px;font-size:.86rem}
 .coRow .btn{min-height:38px;font-size:.78rem;flex:0 0 auto}
@@ -528,12 +536,23 @@ table.admTable thead th #chkAll{margin-top:4px}
 .whoami .role{font-weight:800;border-radius:999px;padding:3px 10px;font-size:.74rem}
 .role.gc{background:var(--ink);color:#fff}
 .role.sub{background:var(--go-8);color:#075C32}
-.acct{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);
-  border-radius:12px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap}
-.acct .ai{flex:1;min-width:0}
-.acct .ai b{display:block}
-.acct .ai span{display:block;font-size:.78rem;color:var(--steel);margin-top:2px}
+/* 계정 줄. 컴퓨터에서는 [이름] [아이디·소속] [버튼]이 세로로 맞아 표처럼 읽히고,
+   폰에서는 글자를 위에, 버튼을 아래 한 줄로 내려 서로 겹치지 않게 한다. */
+.acct{display:grid;grid-template-columns:minmax(200px,1fr) minmax(240px,1.6fr) auto;
+  align-items:center;gap:10px 16px;background:#fff;border:1.5px solid var(--line);
+  border-radius:12px;padding:12px 16px;margin-bottom:8px}
+.acct .ai{display:contents}
+.acct .ai b{display:block;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct .ai span{display:block;font-size:.8rem;color:var(--steel);min-width:0;overflow-wrap:anywhere}
+.acctBtns{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;min-width:254px}   /* 버튼이 없는 줄도 칸을 유지 → 아이디가 세로로 맞는다 */
 .acct .btn{flex:0 0 auto;min-height:38px;font-size:.78rem;min-width:74px}
+@media (max-width:640px){
+  .acct{grid-template-columns:1fr;gap:6px;padding:14px}
+  .acct .ai b{white-space:normal}
+  .acctBtns{justify-content:stretch;margin-top:6px;min-width:0}
+  .acctBtns .btn{flex:1 1 0;min-height:44px}
+  .acctBtns:empty{display:none}
+}
 .acct.pending{border-color:#F0C97A;background:var(--amber-8)}
 .acct .ai span b{display:inline}
 .acct .ai b .gcLogo{height:18px;width:auto;vertical-align:-3px;margin-right:8px;
@@ -3325,10 +3344,11 @@ function renderCoChips(){
       '<div class="coRow">'
       + '<b>'+esc(c.name)+'</b>'
       + '<code class="coCode">'+esc(c.code || "번호 없음")+'</code>'
+      + '<span class="coBtns">'
       + '<button class="btn small" type="button" data-copy="'+esc(c.name)+'">안내문 복사</button>'
       + '<button class="btn small" type="button" data-regen="'+esc(c.name)+'">번호 재발급</button>'
       + '<button class="btn small" type="button" data-co="'+esc(c.name)+'">삭제</button>'
-      + '</div>').join("")
+      + '</span></div>').join("")
     + (extra.length
         ? '<div style="width:100%;margin-top:12px;font-size:.82rem;color:var(--steel)">'
           + '제출 기록에는 있으나 목록에 없는 업체: '
@@ -4411,14 +4431,14 @@ async function renderAccounts(){
     +   (u.role === "gc" ? "원청 (전체 열람·승인·삭제)" : esc(u.company||"소속 미지정"))
     +   (u.approved ? "" : " · <b>승인 대기</b>")+'</span></span>'
     // 내 계정은 스스로 막거나 내리지 못하게 한다 (잠기면 콘솔로만 풀 수 있다)
-    + (me ? '' :
+    + (me ? '<span class="acctBtns"></span>' : '<span class="acctBtns">' +
         (u.approved
           ? '<button class="btn small" type="button" data-act="revoke">차단</button>'
           : '<button class="btn small padd" type="button" data-act="approve">승인</button>')
         + (u.role === "gc"
           ? '<button class="btn small" type="button" data-act="sub">협력사로</button>'
           : '<button class="btn small" type="button" data-act="gc">원청으로</button>')
-        + '<button class="btn small acctDel" type="button" data-act="del">삭제</button>')
+        + '<button class="btn small acctDel" type="button" data-act="del">삭제</button></span>')
     + '</div>'; }).join("");
 
   box.querySelectorAll(".acct").forEach(row => {
