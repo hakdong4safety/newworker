@@ -536,6 +536,10 @@ table.admTable thead th #chkAll{margin-top:4px}
 .acct .btn{flex:0 0 auto;min-height:38px;font-size:.78rem;min-width:74px}
 .acct.pending{border-color:#F0C97A;background:var(--amber-8)}
 .acct .ai span b{display:inline}
+.acct .ai b .gcLogo{height:18px;width:auto;vertical-align:-3px;margin-right:8px;
+  background:#fff;border-radius:4px;padding:1px 4px}
+.acct.isGc{border-left:4px solid var(--ink)}
+.acct .ai b .meTag{display:inline-block;vertical-align:middle}   /* .ai span 블록 규칙에 밀리지 않게 */
 .acctId{display:inline;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ink);font-weight:800;font-size:.9rem}
 .acct .acctDel{color:var(--signal);border-color:#F0B4BC}
 .meTag{display:inline-block;font-size:.7rem;font-weight:800;background:var(--ink);color:#fff;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
@@ -4396,10 +4400,13 @@ async function renderAccounts(){
   if(!users.length){ box.innerHTML = '<div class="findEmpty">등록된 계정이 없습니다.</div>'; return; }
 
   const myUid = AUTH.user && AUTH.user.uid;
+  // 원청 계정은 이름 앞에 회사 로고 (상단 헤더와 같은 이미지)
+  const logoEl = document.querySelector(".brand img");
+  const logo = logoEl ? '<img class="gcLogo" src="'+logoEl.src+'" alt="IPARK">' : '';
   box.innerHTML = users.map(u => {
     const me = u.uid === myUid;
-    return '<div class="acct'+(u.approved ? "" : " pending")+'" data-uid="'+esc(u.uid)+'">'
-    + '<span class="ai"><b>'+esc(u.name || u.email || u.uid)+(me ? ' <span class="meTag">나</span>' : '')+'</b>'
+    return '<div class="acct'+(u.approved ? "" : " pending")+(u.role === "gc" ? " isGc" : "")+'" data-uid="'+esc(u.uid)+'">'
+    + '<span class="ai"><b>'+(u.role === "gc" ? logo : '')+esc(u.name || u.email || u.uid)+(me ? ' <span class="meTag">나</span>' : '')+'</b>'
     +   '<span>아이디 <b class="acctId">'+esc(fromLoginEmail(u.email||""))+'</b> · '
     +   (u.role === "gc" ? "원청 (전체 열람·승인·삭제)" : esc(u.company||"소속 미지정"))
     +   (u.approved ? "" : " · <b>승인 대기</b>")+'</span></span>'
