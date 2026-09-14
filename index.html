@@ -148,6 +148,10 @@ input::placeholder,textarea::placeholder{color:#B2B9C2;font-weight:400}
 .pad.mini canvas{min-height:150px}
 .pad canvas{min-height:170px}
 
+.photoBtns{display:flex;gap:8px;flex-wrap:wrap;flex:1;min-width:0}
+.photoBtns .photoBtn{flex:1 1 0;min-width:0;justify-content:center;white-space:nowrap;padding:0 8px}
+.photoBtns.busy{opacity:.5;pointer-events:none}
+@media (max-width:480px){ .photoBtns .photoBtn{font-size:.9rem} }
 .photoRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .photoBtn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 18px;
   background:#F6F7F9;border:1.5px dashed var(--line);border-radius:9px;font-weight:700;font-size:.9rem;
@@ -900,8 +904,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div class="card"><h3 data-i18n="card.idPhoto">신분증 사진</h3>
     <p style="margin:-6px 0 12px;font-size:.84rem;color:var(--steel)" data-i18n="hint.idPhoto">관리자 확인용입니다. 선택 사항이지만 등록해 두면 확인이 빨라집니다.</p>
     <div class="photoRow" id="idPhotoRow">
-      <input type="file" accept="image/*" capture="environment" id="idPhotoInput" class="hidden">
-      <label for="idPhotoInput" class="photoBtn" id="idPhotoBtn" data-i18n="photo.take">사진 촬영 · 선택</label>
+      <input type="file" accept="image/*" capture="environment" id="idPhotoCam" class="hidden">
+      <input type="file" accept="image/*" id="idPhotoPick" class="hidden">
+      <input type="file" id="idPhotoFile" class="hidden">
+      <div class="photoBtns" id="idPhotoBtn">
+        <label for="idPhotoCam" class="photoBtn" data-i18n="photo.cam">📷 사진 찍기</label>
+        <label for="idPhotoPick" class="photoBtn" data-i18n="photo.gallery">🖼 사진첩</label>
+        <label for="idPhotoFile" class="photoBtn" data-i18n="photo.file">📁 파일</label>
+      </div>
       <div class="photoThumb hidden" id="idPhotoThumb"><img id="idPhotoImg"><button type="button" class="photoDel" id="idPhotoDel">✕</button></div>
     </div></div>
   <div class="card"><h3 data-i18n="card.contact">연락처</h3>
@@ -946,8 +956,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
         <div class="f"><label data-i18n="field.eduDate">이수일</label><input type="date" id="eduDate"></div>
         <div class="f" style="margin:0"><label data-i18n="card.eduPhoto">이수증 사진 <span class="hint" data-i18n="hint.optional2">선택</span></label>
           <div class="photoRow" id="eduPhotoRow">
-            <input type="file" accept="image/*" capture="environment" id="eduPhotoInput" class="hidden">
-            <label for="eduPhotoInput" class="photoBtn" id="eduPhotoBtn" data-i18n="photo.take">사진 촬영 · 선택</label>
+            <input type="file" accept="image/*" capture="environment" id="eduPhotoCam" class="hidden">
+            <input type="file" accept="image/*" id="eduPhotoPick" class="hidden">
+            <input type="file" id="eduPhotoFile" class="hidden">
+            <div class="photoBtns" id="eduPhotoBtn">
+              <label for="eduPhotoCam" class="photoBtn" data-i18n="photo.cam">📷 사진 찍기</label>
+              <label for="eduPhotoPick" class="photoBtn" data-i18n="photo.gallery">🖼 사진첩</label>
+              <label for="eduPhotoFile" class="photoBtn" data-i18n="photo.file">📁 파일</label>
+            </div>
             <div class="photoThumb hidden" id="eduPhotoThumb"><img id="eduPhotoImg"><button type="button" class="photoDel" id="eduPhotoDel">✕</button></div>
           </div></div></div>
       <div class="when" id="wEduN"><div class="note warn" style="margin:0" data-i18n="note.eduX">미이수자는 <b>현장 출입이 제한</b>됩니다. 안전관리자에게 알려 주세요.</div></div>
@@ -1091,8 +1107,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   <div class="card"><h3 data-i18n="card.bpPhoto">혈압 측정지 사진</h3>
     <p style="margin:-6px 0 12px;font-size:.84rem;color:var(--steel)" data-i18n="hint.bpPhoto">측정기 화면이나 종이 결과지를 찍어 두면 확인이 빠릅니다. 선택 사항입니다.</p>
     <div class="photoRow" id="bpPhotoRow">
-      <input type="file" accept="image/*" capture="environment" id="bpPhotoInput" class="hidden">
-      <label for="bpPhotoInput" class="photoBtn" id="bpPhotoBtn" data-i18n="photo.take">사진 촬영 · 선택</label>
+      <input type="file" accept="image/*" capture="environment" id="bpPhotoCam" class="hidden">
+      <input type="file" accept="image/*" id="bpPhotoPick" class="hidden">
+      <input type="file" id="bpPhotoFile" class="hidden">
+      <div class="photoBtns" id="bpPhotoBtn">
+        <label for="bpPhotoCam" class="photoBtn" data-i18n="photo.cam">📷 사진 찍기</label>
+        <label for="bpPhotoPick" class="photoBtn" data-i18n="photo.gallery">🖼 사진첩</label>
+        <label for="bpPhotoFile" class="photoBtn" data-i18n="photo.file">📁 파일</label>
+      </div>
       <div class="photoThumb hidden" id="bpPhotoThumb"><img id="bpPhotoImg"><button type="button" class="photoDel" id="bpPhotoDel">✕</button></div>
     </div></div>
 </section>
@@ -1629,7 +1651,7 @@ function loadFirebase(){
 const I18N = {
 ko:{ "bigtext":"글씨 크게 보기",
 "start.title":"안전교육 전<br>작성해 주세요","start.sub":"약 5분 걸립니다. 다 쓰면 저장 버튼을 누르세요.",
-"resume.title":"쓰다 만 내용이 있습니다","resume.go":"이어서 쓰기","resume.new":"처음부터","resume.at":"{n}단계까지 쓰셨습니다","already.title":"이미 제출하셨습니다","already.new":"다른 사람 것 작성하기","already.at":"제출 완료 · 현장에서 담당자가 확인합니다","already.again":"다른 업체로 다시 제출 (내용 그대로)","co.other":"목록에 없어요 · 직접 입력","co.list":"목록에서 고르기","start.prepTitle":"준비물","start.prep1":"· 신분증 (생년월일·국적 확인)","start.prep2":"· 기초안전보건교육 이수증","start.prep3":"· 혈압 측정 결과",
+"resume.title":"쓰다 만 내용이 있습니다","resume.go":"이어서 쓰기","resume.new":"처음부터","resume.at":"{n}단계까지 쓰셨습니다","already.title":"이미 제출하셨습니다","already.new":"다른 사람 것 작성하기","already.at":"제출 완료 · 현장에서 담당자가 확인합니다","already.again":"다른 업체로 다시 제출 (내용 그대로)","co.other":"목록에 없어요 · 직접 입력","co.list":"목록에서 고르기","photo.cam":"📷 사진 찍기","photo.gallery":"🖼 사진첩","photo.file":"📁 파일","start.prepTitle":"준비물","start.prep1":"· 신분증 (생년월일·국적 확인)","start.prep2":"· 기초안전보건교육 이수증","start.prep3":"· 혈압 측정 결과",
 "start.note":"작성한 내용은 <b>현장 안전보건팀만</b> 열람하며, 준공 후 3년간 보관 후 파기합니다.",
 "field.company":'협력회사 <span class="req">*</span>',"err.company":"협력회사명을 입력해 주세요.",
 "field.name":'성명 <span class="req">*</span>',"err.name":"성명을 입력해 주세요.",
@@ -1699,7 +1721,7 @@ ko:{ "bigtext":"글씨 크게 보기",
 
 vi:{ "bigtext":"Phóng to chữ",
 "start.title":"Điền trước khi<br>huấn luyện an toàn","start.sub":"Mất khoảng 5 phút. Điền xong hãy nhấn Lưu.",
-"resume.title":"Bạn có phần chưa viết xong","resume.go":"Viết tiếp","resume.new":"Bắt đầu lại","resume.at":"Đã viết đến bước {n}","already.title":"Bạn đã nộp rồi","already.new":"Viết cho người khác","already.at":"Đã nộp · Cán bộ sẽ kiểm tra tại công trường","already.again":"Nộp lại cho công ty khác (giữ nội dung)","co.other":"Không có trong danh sách · Tự nhập","co.list":"Chọn từ danh sách","start.prepTitle":"Cần chuẩn bị","start.prep1":"· Giấy tờ tùy thân (ngày sinh, quốc tịch)","start.prep2":"· Chứng chỉ đào tạo an toàn cơ bản","start.prep3":"· Kết quả đo huyết áp",
+"resume.title":"Bạn có phần chưa viết xong","resume.go":"Viết tiếp","resume.new":"Bắt đầu lại","resume.at":"Đã viết đến bước {n}","already.title":"Bạn đã nộp rồi","already.new":"Viết cho người khác","already.at":"Đã nộp · Cán bộ sẽ kiểm tra tại công trường","already.again":"Nộp lại cho công ty khác (giữ nội dung)","co.other":"Không có trong danh sách · Tự nhập","co.list":"Chọn từ danh sách","photo.cam":"📷 Chụp ảnh","photo.gallery":"🖼 Thư viện","photo.file":"📁 Tệp","start.prepTitle":"Cần chuẩn bị","start.prep1":"· Giấy tờ tùy thân (ngày sinh, quốc tịch)","start.prep2":"· Chứng chỉ đào tạo an toàn cơ bản","start.prep3":"· Kết quả đo huyết áp",
 "start.note":"Nội dung chỉ <b>Đội an toàn công trường</b> được xem, lưu 3 năm sau khi hoàn công rồi hủy.",
 "field.company":'Công ty đối tác <span class="req">*</span>',"err.company":"Vui lòng nhập tên công ty.",
 "field.name":'Họ và tên <span class="req">*</span>',"err.name":"Vui lòng nhập họ tên.",
@@ -1769,7 +1791,7 @@ vi:{ "bigtext":"Phóng to chữ",
 
 zh:{ "bigtext":"放大字体",
 "start.title":"请在安全教育前<br>填写此表","start.sub":"大约需要5分钟。填完后请点击保存。",
-"resume.title":"有未填完的内容","resume.go":"继续填写","resume.new":"重新开始","resume.at":"已填写到第 {n} 步","already.title":"您已提交","already.new":"为他人填写","already.at":"已提交 · 现场负责人会确认","already.again":"以其他公司身份再次提交（内容不变）","co.other":"列表中没有 · 手动输入","co.list":"从列表中选择","start.prepTitle":"准备事项","start.prep1":"· 身份证件（确认出生日期、国籍）","start.prep2":"· 基础安全保健教育结业证","start.prep3":"· 血压测量结果",
+"resume.title":"有未填完的内容","resume.go":"继续填写","resume.new":"重新开始","resume.at":"已填写到第 {n} 步","already.title":"您已提交","already.new":"为他人填写","already.at":"已提交 · 现场负责人会确认","already.again":"以其他公司身份再次提交（内容不变）","co.other":"列表中没有 · 手动输入","co.list":"从列表中选择","photo.cam":"📷 拍照","photo.gallery":"🖼 相册","photo.file":"📁 文件","start.prepTitle":"准备事项","start.prep1":"· 身份证件（确认出生日期、国籍）","start.prep2":"· 基础安全保健教育结业证","start.prep3":"· 血压测量结果",
 "start.note":"填写内容仅供<b>现场安全保健组</b>查阅，竣工后保存3年后销毁。",
 "field.company":'合作公司 <span class="req">*</span>',"err.company":"请输入合作公司名称。",
 "field.name":'姓名 <span class="req">*</span>',"err.name":"请输入姓名。",
@@ -1839,7 +1861,7 @@ zh:{ "bigtext":"放大字体",
 
 th:{ "bigtext":"ขยายตัวอักษร",
 "start.title":"กรุณากรอกก่อน<br>อบรมความปลอดภัย","start.sub":"ใช้เวลาประมาณ 5 นาที เมื่อกรอกเสร็จให้กดบันทึก",
-"resume.title":"มีข้อมูลที่กรอกค้างไว้","resume.go":"กรอกต่อ","resume.new":"เริ่มใหม่","resume.at":"กรอกถึงขั้นตอนที่ {n}","already.title":"คุณส่งแล้ว","already.new":"กรอกให้คนอื่น","already.at":"ส่งแล้ว · เจ้าหน้าที่จะตรวจสอบที่หน่วยงาน","already.again":"ส่งใหม่ในนามบริษัทอื่น (เนื้อหาเดิม)","co.other":"ไม่มีในรายการ · พิมพ์เอง","co.list":"เลือกจากรายการ","start.prepTitle":"สิ่งที่ต้องเตรียม","start.prep1":"· บัตรประจำตัว (วันเกิด/สัญชาติ)","start.prep2":"· ใบรับรองอบรมความปลอดภัยขั้นพื้นฐาน","start.prep3":"· ผลตรวจวัดความดันโลหิต",
+"resume.title":"มีข้อมูลที่กรอกค้างไว้","resume.go":"กรอกต่อ","resume.new":"เริ่มใหม่","resume.at":"กรอกถึงขั้นตอนที่ {n}","already.title":"คุณส่งแล้ว","already.new":"กรอกให้คนอื่น","already.at":"ส่งแล้ว · เจ้าหน้าที่จะตรวจสอบที่หน่วยงาน","already.again":"ส่งใหม่ในนามบริษัทอื่น (เนื้อหาเดิม)","co.other":"ไม่มีในรายการ · พิมพ์เอง","co.list":"เลือกจากรายการ","photo.cam":"📷 ถ่ายรูป","photo.gallery":"🖼 อัลบั้ม","photo.file":"📁 ไฟล์","start.prepTitle":"สิ่งที่ต้องเตรียม","start.prep1":"· บัตรประจำตัว (วันเกิด/สัญชาติ)","start.prep2":"· ใบรับรองอบรมความปลอดภัยขั้นพื้นฐาน","start.prep3":"· ผลตรวจวัดความดันโลหิต",
 "start.note":"ข้อมูลที่กรอกจะเปิดให้เฉพาะ<b>ทีมความปลอดภัยของไซต์งาน</b>ดู จะเก็บไว้ 3 ปีหลังงานเสร็จแล้วทำลาย",
 "field.company":'บริษัทคู่ค้า <span class="req">*</span>',"err.company":"กรุณากรอกชื่อบริษัท",
 "field.name":'ชื่อ-นามสกุล <span class="req">*</span>',"err.name":"กรุณากรอกชื่อ-นามสกุล",
@@ -2316,22 +2338,30 @@ function compressImage(file, maxW, targetBytes){
     reader.readAsDataURL(file);
   });
 }
+/* 사진 넣기: 📷 사진 찍기(카메라 바로) · 🖼 사진첩 · 📁 파일 세 갈래.
+   전에는 카메라만 열려서 이미 찍어 둔 신분증 사진을 못 골랐다. */
 function wirePhoto(prefix, key){
-  const input = document.getElementById(prefix+"Input");
-  const btn = document.getElementById(prefix+"Btn");
+  const btns = document.getElementById(prefix+"Btn");
   const thumb = document.getElementById(prefix+"Thumb");
   const img = document.getElementById(prefix+"Img");
   const del = document.getElementById(prefix+"Del");
-  input.addEventListener("change", async () => {
-    const f = input.files[0]; if(!f) return;
-    btn.textContent = "처리 중…";
-    try{
-      const data = await compressImage(f, 1000, 190000);   // 약 190KB 이하로 맞춘다
-      PHOTO[key] = data;
-      img.src = data; thumb.classList.remove("hidden");
-    }catch(e){ alert("사진을 불러오지 못했습니다: " + (e && e.message || e)); }
-    btn.textContent = (I18N[LANG] && I18N[LANG]["photo.take"]) || "사진 촬영 · 선택";
-    input.value = "";
+  ["Cam","Pick","File"].forEach(kind => {
+    const input = document.getElementById(prefix+kind);
+    if(!input) return;
+    input.addEventListener("change", async () => {
+      const f = input.files[0]; if(!f) return;
+      if(f.type && !/^image\//.test(f.type) && !/\.(jpe?g|png|heic|heif|webp|gif|bmp)$/i.test(f.name||"")){
+        alert("사진 파일만 넣을 수 있습니다. (JPG·PNG 등)"); input.value = ""; return;
+      }
+      btns.classList.add("busy");
+      try{
+        const data = await compressImage(f, 1000, 190000);   // 약 190KB 이하로 맞춘다
+        PHOTO[key] = data;
+        img.src = data; thumb.classList.remove("hidden");
+      }catch(e){ alert("사진을 불러오지 못했습니다: " + (e && e.message || e)); }
+      btns.classList.remove("busy");
+      input.value = "";
+    });
   });
   del.addEventListener("click", () => { PHOTO[key] = ""; thumb.classList.add("hidden"); });
   img.addEventListener("click", () => openLightbox(PHOTO[key]));
