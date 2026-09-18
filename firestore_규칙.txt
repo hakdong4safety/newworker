@@ -1,5 +1,5 @@
 ★★★ 규칙이 바뀌었습니다 — 반드시 다시 게시해 주세요 ★★★
-    (사진 분리 저장 · 삭제 기록 · 투입 예정자 명단 이 추가됨.
+    (사진 분리 저장 · 삭제 기록 · 투입 예정자 명단 · 사진 나중 올리기.
      옛 규칙이면 근로자 제출과 사진 첨부가 거부됩니다)
 
 ════════════════════════════════════════════════════════════
@@ -60,7 +60,10 @@ service cloud.firestore {
       }
       allow create: if okPhoto();                      // 근로자 제출 시 함께 저장
       allow read:   if isGC() || (ok() && resource.data.company == myCo());
-      allow update: if okPhoto() && (isGC() || (ok() && resource.data.company == myCo()));
+      // 근로자가 제출 뒤 사진만 나중에 올리는 경우가 있어 쓰기는 열어 둔다.
+      // 문서 번호(R+무작위)를 아는 사람만 쓸 수 있고, 여기에는 사진만 들어간다.
+      // 서류 내용(records)은 아래처럼 원청·소속 협력사만 고칠 수 있다.
+      allow update: if okPhoto();
       allow delete: if isGC();
     }
 
