@@ -602,6 +602,12 @@ table.admTable thead th #chkAll{margin-top:4px}
 .addPhotoOne .photoBtns{flex:1}
 .addPhotoOne .done{color:#075C32;font-weight:800;font-size:.86rem}
 .addPhotoState{font-size:.84rem;color:var(--steel);margin-top:10px;line-height:1.5}
+.sendState{margin:14px auto 0;max-width:420px;border-radius:12px;padding:12px 14px;font-size:.9rem;line-height:1.55;text-align:left}
+.sendState.ok{background:var(--go-8);color:#075C32}
+.sendState.wait{background:var(--amber-8);color:#8A5400}
+.sendState.bad{background:var(--signal-8);color:#960014}
+.sendState b{display:block;margin-bottom:3px}
+.sendState .btn{margin-top:10px;width:100%;min-height:46px}
 .resume span,.done-note span{display:block;font-size:.88rem;color:var(--steel);margin-bottom:12px;line-height:1.5;white-space:pre-line}
 .resumeBtns{display:flex;gap:8px}
 .resumeBtns .btn{flex:1;min-height:50px}
@@ -692,6 +698,8 @@ table.sheet img.logo{height:12px;width:auto;vertical-align:middle}
    ══════════════════════════════════════════════════════════ */
 .brandrow,.hbar,.prog{max-width:var(--shell);margin-left:auto;margin-right:auto}
 body.admmode{--shell:var(--shell-wide)}
+body.kiosk .brand::after{content:"현장 태블릿";font-size:.68rem;font-weight:800;color:#fff;background:var(--signal);
+  border-radius:999px;padding:3px 8px;margin-left:8px;vertical-align:middle;white-space:nowrap}
 body.admmode .prog{visibility:hidden;height:4px;padding-bottom:0}
 body.admmode .hbar em{display:none}
 
@@ -1261,6 +1269,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div class="donecheck">✓</div>
     <div class="lead"><h2 data-i18n="lead.9.h">저장되었습니다</h2><p data-i18n="lead.9.p">안전관리자에게 알려 주세요. 출력은 사무실 컴퓨터에서 합니다.</p></div>
     <div class="donecode" id="doneCode">—</div>
+    <div class="sendState hidden" id="sendState"></div>
   </div>
   <button class="btn" style="width:100%" type="button" id="newOne" data-i18n="btn.newOne">다른 사람 작성 시작</button>
 </section>
@@ -1410,6 +1419,15 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 
   <div id="admTpl" class="hidden">
     <div class="card">
+      <h3>현장 태블릿 모드</h3>
+      <p class="note info" style="margin:0 0 12px">여러 근로자가 돌려 쓰는 <b>현장 태블릿에서만</b> 켜세요.
+        켜면 이 기기에서: 제출 뒤 20초 후 자동으로 처음 화면 · 앞사람 서류·사진·언어 자동 삭제 ·
+        10분 방치 시 초기화 · 담당자 로그인 유지 안 함(매번 로그인) · [관리자] 닫으면 로그아웃.</p>
+      <label class="prAll" style="font-size:1rem"><input type="checkbox" id="kioskToggle"> 이 기기를 현장 태블릿으로 사용</label>
+      <div class="note" id="kioskState" style="margin-top:8px;display:none"></div>
+    </div>
+
+    <div class="card">
       <h3>백업 불러오기 (복원)</h3>
       <p class="note info" style="margin:0 0 12px">설정에서 내려받은 <b>백업(JSON)</b> 파일을 다시 불러옵니다.
         서버에 없는 기록만 추가하고, 이미 있는 기록은 건드리지 않습니다.</p>
@@ -1487,6 +1505,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button class="btn ghost hidden sheetDel" type="button" id="btnDelOne">삭제</button>
     <button class="btn ghost hidden" type="button" id="btnEdit">✎ 내용 수정</button>
     <button class="btn ghost hidden" type="button" id="btnWrongCo">소속이 다릅니다</button>
+    <button class="btn ghost hidden" type="button" id="btnCopy">📋 복사</button>
     <button class="btn danger hidden" type="button" id="btnPdf">📄 PDF 저장</button>
   </div>
 </footer>
@@ -1654,27 +1673,46 @@ const FIREBASE_CONFIG = {
 };
 function fbEnabled(){ return !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId); }
 let __fbApp = null, __fbDb = null, __fbLoading = null;
+/* 현장은 신호가 들쭉날쭉하다. 오프라인 보관을 켜 두면 저장 요청이 폰에 남았다가
+   연결되는 순간 자동으로 서버에 올라간다. 페이지를 닫았다 열어도 남아 있다. */
+let OFFLINE_OK = false;
+async function enableOffline(db){
+  if(!db || typeof db.enablePersistence !== "function") return;
+  try{ await db.enablePersistence({ synchronizeTabs:true }); OFFLINE_OK = true; }
+  catch(e){ OFFLINE_OK = false; console.warn("오프라인 보관 사용 불가:", e && e.code); }
+}
+/* 약속에 시간 제한을 건다. 신호가 약할 때 영영 기다리지 않게. */
+function withTimeout(promise, ms, label){
+  let t; const timeout = new Promise((_, rej) => { t = setTimeout(() => rej(Object.assign(new Error(label || "시간 초과"), { code:"app/timeout" })), ms); });
+  return Promise.race([promise.finally(() => clearTimeout(t)), timeout]);
+}
+
 function loadFirebase(){
   if(__fbDb) return Promise.resolve(__fbDb);
   if(__fbLoading) return __fbLoading;
   const netErr = () => new Error("Firebase 프로그램을 내려받지 못했습니다. 인터넷 연결이나 사내망 차단 여부를 확인해 주세요.");
   __fbLoading = new Promise((resolve, reject) => {
     if(window.firebase && window.firebase.firestore){
-      try{
-        __fbApp = firebase.apps && firebase.apps.length ? firebase.apps[0] : firebase.initializeApp(FIREBASE_CONFIG);
-        __fbDb = firebase.firestore();
-        resolve(__fbDb); return;
-      }catch(e){ reject(e); return; }
+      (async () => {
+        try{
+          __fbApp = firebase.apps && firebase.apps.length ? firebase.apps[0] : firebase.initializeApp(FIREBASE_CONFIG);
+          __fbDb = firebase.firestore();
+          await enableOffline(__fbDb);
+          resolve(__fbDb);
+        }catch(e){ reject(e); }
+      })();
+      return;
     }
     const s1 = document.createElement("script");
     s1.src = "https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js";
     s1.onload = () => {
       const s2 = document.createElement("script");
       s2.src = "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js";
-      s2.onload = () => {
+      s2.onload = async () => {
         try{
           __fbApp = firebase.initializeApp(FIREBASE_CONFIG);
           __fbDb = firebase.firestore();
+          await enableOffline(__fbDb);
           resolve(__fbDb);
         }catch(e){ reject(e); }
       };
@@ -2122,12 +2160,12 @@ const Store = (() => {
         const db = await loadFirebase();
         const ref = db.collection("kv").doc("seq-"+dateKey);
         if(typeof db.runTransaction !== "function") return fallback;
-        return await db.runTransaction(async tx => {
+        return await withTimeout(db.runTransaction(async tx => {
           const d = await tx.get(ref);
           const cur = (d && d.exists && +d.data().n) || 0;
           tx.set(ref, { n: cur + 1, updatedAt: Date.now() });
           return cur + 1;
-        });
+        }), 8000, "순번 받기 시간 초과");
       }catch(e){ console.warn("순번 받기 실패, 이 기기 기준으로 매깁니다:", e); return fallback; }
     },
     /* 한 사람의 기록만 저장한다.
@@ -2162,9 +2200,27 @@ const Store = (() => {
             batch.set(db.collection("photos").doc(docId(rec)),
               Object.assign({ company: String(rec.company || ""), updatedAt: Date.now() }, photos),
               { merge:true });
+          } else if(authReady() && PHOTO_KEYS.some(k => rec[k] === PHOTO_MARK)){
+            // 사진은 안 바뀌었어도 소속이 바뀌었을 수 있다 → 사진 문서의 소속만 맞춘다
+            batch.set(db.collection("photos").doc(docId(rec)),
+              { company: String(rec.company || ""), updatedAt: Date.now() }, { merge:true });
           }
-          await batch.commit();
-          savedRemote = true;
+          const commit = batch.commit();
+          // 서버 확인이 늦게 오는 경우를 대비해, 결과는 따로 기록해 둔다
+          const pendKey = "hd4_pending_" + docId(rec);
+          commit.then(() => { try{ localStorage.setItem(pendKey, JSON.stringify({ state:"ok", at:Date.now() })); }catch(e){} })
+                .catch(e => { try{ localStorage.setItem(pendKey, JSON.stringify({ state:"fail", at:Date.now(), why:String((e&&e.code)||"")+" "+String((e&&e.message)||"") })); }catch(e2){} });
+          try{
+            await withTimeout(commit, 25000, "서버 응답 시간 초과");
+            savedRemote = true;
+            try{ localStorage.removeItem(pendKey); }catch(e){}
+          }catch(e){
+            if(e && e.code === "app/timeout" && OFFLINE_OK){
+              // 쓰기는 폰에 보관됐고 연결되면 자동 전송된다. 성공으로 보되 "확인 대기"로 표시.
+              savedRemote = true; this.queued = pendKey;
+              try{ localStorage.setItem(pendKey, JSON.stringify({ state:"queued", at:Date.now() })); }catch(e2){}
+            } else throw e;
+          }
         }catch(e){
           let msg = (e && e.message) || String(e);
           if(/permission-denied|insufficient/i.test(String((e&&e.code)||"") + msg)){
@@ -2178,6 +2234,10 @@ const Store = (() => {
                 + "규칙이 옛 버전입니다 — firestore_규칙.txt 최신본을 콘솔에 다시 붙여넣고 [게시]해 주세요.";
             }
           }
+          if(e && e.code === "app/timeout")
+            msg = "신호가 약해 서버 응답을 받지 못했습니다.\n적어 주신 내용은 이 폰에 그대로 남아 있습니다.\n인터넷이 되는 곳에서 [저장]을 다시 눌러 주세요.";
+          else if(/unavailable|network|Failed to fetch|내려받지/i.test(String((e&&e.code)||"") + msg))
+            msg = "인터넷에 연결되지 않았습니다.\n적어 주신 내용은 이 폰에 그대로 남아 있습니다.\n연결을 확인한 뒤 [저장]을 다시 눌러 주세요.";
           firstErr = { where:"Firebase", message: msg };
           console.warn("firebase saveRecord 실패:", e);
         }
@@ -2208,7 +2268,7 @@ const Store = (() => {
         return { ok:false, where:(firstErr && firstErr.where) || "Firebase",
                  message:(firstErr && firstErr.message) || "서버에 저장하지 못했습니다." };
       }
-      if(savedRemote || savedLocal) return { ok:true, remote:savedRemote, local:savedLocal, warn:firstErr };
+      if(savedRemote || savedLocal) return { ok:true, remote:savedRemote, local:savedLocal, warn:firstErr, queued: this.queued ? (this.queued = null, true) : false };
       this.lastError = firstErr;
       return { ok:false, where: firstErr && firstErr.where, message: firstErr && firstErr.message };
     },
@@ -2288,7 +2348,7 @@ function paint(){
   $("#adm").classList.remove("on");
   $("#sheetWrap").classList.remove("on");
  
-  $("#btnPdf").classList.add("hidden");
+  $("#btnPdf").classList.add("hidden"); $("#btnCopy").classList.add("hidden");
   $("#btnPrev").classList.remove("hidden");
   $("#btnNext").classList.remove("hidden");
   $("#btnAdmClose").classList.add("hidden");
@@ -2630,7 +2690,8 @@ function saveDraft(){
     catch(e){ /* 저장공간이 부족하면 임시저장만 조용히 포기한다 */ }
   }, 250);
 }
-function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }
+function clearDraft(){ clearTimeout(draftTimer); try{ localStorage.removeItem(DRAFT_KEY); }catch(e){} }   // 예약된 저장도 함께 취소
+function saveDraftNow(){ clearTimeout(draftTimer); try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(collectDraft())); }catch(e){} }
 function readDraft(){
   try{
     const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
@@ -2772,7 +2833,10 @@ async function hydratePhotos(r){
     r.__photoChecked = true;
   }catch(e){
     console.warn("사진 불러오기 실패:", e);
-    // 못 가져왔으면 표시만 남겨 두고 화면에는 "불러오지 못함"으로 보이게 한다
+    const m = String((e&&e.code)||"") + " " + String((e&&e.message)||"");
+    r.__photoErr = /permission|insufficient/i.test(m)
+      ? "사진을 불러올 권한이 없습니다 (규칙 또는 소속 불일치)"
+      : /unavailable|offline|network/i.test(m) ? "연결이 끊겨 사진을 불러오지 못했습니다" : "사진을 불러오지 못했습니다";
   }
   return r;
 }
@@ -2817,6 +2881,8 @@ $("#btnNext").addEventListener("click", async () => {
   if(step===8){
     const btn = $("#btnNext");
     btn.disabled = true; const oldTxt = btn.textContent; btn.textContent = "저장 중…";
+    try{ saveDraftNow(); }catch(e){}       // 전송 중 앱이 꺼져도 적은 내용은 남는다
+    const slow = setTimeout(() => { btn.textContent = "아직 전송 중… 신호를 확인해 주세요"; }, 7000);
     current = buildRecord();
     // 관리번호 뒷자리는 서버에서 받아 온다 (기기끼리 번호가 겹치지 않게)
     const seq = await Store.nextSeq(current.dateKey, null);
@@ -2829,6 +2895,7 @@ $("#btnNext").addEventListener("click", async () => {
     try{ localStorage.setItem(LAST_KEY, JSON.stringify(Object.assign(collectDraft(), { code: current.code, company: current.company }))); }catch(e){}
     // 새로 쓴 1건만 올린다 (전원 재업로드를 하면 인원이 많을 때 몇 분씩 걸린다)
     const res = await Store.saveRecord(current, submissions);
+    clearTimeout(slow);
     btn.disabled = false; btn.textContent = oldTxt;
     if(res && res.ok){
       try{ localStorage.setItem(MINE_KEY, JSON.stringify({ code: current.code, name: current.name, date: current.dateKey,
@@ -2845,16 +2912,68 @@ $("#btnNext").addEventListener("click", async () => {
         + "\n\n사진을 지우거나 줄인 뒤 다시 시도해 주세요. 계속 안 되면 안전관리자에게 알려 주세요.");
       return;
     }
-    if(res.warn && !res.remote){
-      showToast("이 기기에만 저장되었습니다 (서버 연결 실패)");
-    }
     $("#doneCode").textContent = current.code;
     step = 9; paint();
+    showSendState(res.queued ? "queued" : "ok", docId(current));
+    if(isKiosk()){
+      // 다음 사람을 위해 20초 뒤 처음 화면으로 (앞사람 자료는 지운다)
+      let n = 20; const b = $("#newOne");
+      const t = setInterval(() => { n--; if(b) b.textContent = "다음 사람 작성 시작 (" + n + "초 뒤 자동)"; if(n <= 0){ clearInterval(t); kioskWipe(); location.reload(); } }, 1000);
+    }
     return;
   }
   step = nextStep(step); paint();
 });
-$("#newOne").addEventListener("click", () => location.reload());
+$("#newOne").addEventListener("click", () => { if(isKiosk()) kioskWipe(); location.reload(); });
+
+/* ── 전송 상태 ─────────────────────────────────────────────
+   신호가 약해 서버 확인을 못 받은 경우, 근로자가 "됐는지 안 됐는지"를 알 수 있어야 한다.
+   오프라인 보관에 들어간 쓰기는 연결되면 자동으로 올라간다. */
+function showSendState(state, uid, why){
+  const el = $("#sendState"); if(!el) return;
+  el.className = "sendState " + (state === "ok" ? "ok" : state === "fail" ? "bad" : "wait");
+  el.classList.remove("hidden");
+  if(state === "ok"){
+    el.innerHTML = "<b>✓ 서버에 저장되었습니다</b>현장 담당자 화면에 바로 보입니다.";
+  } else if(state === "fail"){
+    // "이미 제출" 상자 안이면 제목도 맞춘다 — 완료가 아니다
+    const t = document.querySelector('#alreadyBox b[data-i18n="already.title"]'); if(t) t.textContent = "저장이 완료되지 않았습니다";
+    const info = $("#alreadyInfo"); if(info) info.textContent = info.textContent.split("\n")[0];
+    el.innerHTML = "<b>⚠ 저장이 거부되었습니다</b>" + esc(why || "") + "<br>현장 담당자에게 이 화면을 보여 주세요."
+      + '<button class="btn" type="button" id="sendRetry">다시 저장하기</button>';
+    const b = $("#sendRetry"); if(b) b.addEventListener("click", () => { $("#alreadyAgain") && $("#alreadyAgain").click(); });
+  } else {
+    el.innerHTML = "<b>⏳ 전송 확인을 기다리는 중</b>신호가 약합니다. 적어 주신 내용은 폰에 보관되어 있고, "
+      + "인터넷이 연결되면 <b style='display:inline'>자동으로 전송</b>됩니다. 이 폰에서 이 페이지를 다시 열면 상태를 확인할 수 있습니다."
+      + '<button class="btn" type="button" id="sendCheck">지금 확인하기</button>';
+    const b = $("#sendCheck"); if(b) b.addEventListener("click", () => checkSendState(uid, true));
+    // 화면을 열어 둔 동안은 알아서 확인한다
+    let n = 0; const t = setInterval(async () => { n++; const st = await checkSendState(uid, false); if(st !== "queued" || n > 30) clearInterval(t); }, 4000);
+  }
+}
+async function checkSendState(uid, manual){
+  const key = "hd4_pending_" + uid;
+  let rec = null; try{ rec = JSON.parse(localStorage.getItem(key) || "null"); }catch(e){}
+  if(!rec){ showSendState("ok", uid); return "ok"; }       // 기록이 없다 = 확인 끝
+  if(rec.state === "ok"){ showSendState("ok", uid); try{ localStorage.removeItem(key); }catch(e){} return "ok"; }
+  if(rec.state === "fail"){ showSendState("fail", uid, humanWhy(rec.why)); return "fail"; }
+  // 아직 대기 중: 서버 확인을 잠깐 기다려 본다
+  try{
+    const db = await loadFirebase();
+    if(typeof db.waitForPendingWrites === "function") await withTimeout(db.waitForPendingWrites(), manual ? 12000 : 2500, "");
+    let again = null; try{ again = JSON.parse(localStorage.getItem(key) || "null"); }catch(e){}
+    if(!again || again.state === "ok"){ showSendState("ok", uid); try{ localStorage.removeItem(key); }catch(e){} return "ok"; }
+    if(again.state === "fail"){ showSendState("fail", uid, humanWhy(again.why)); return "fail"; }
+  }catch(e){}
+  if(manual) showToast("아직 전송 확인이 안 됐습니다. 신호가 잡히는 곳에서 다시 확인해 주세요.");
+  return "queued";
+}
+function humanWhy(w){
+  w = String(w || "");
+  if(/permission|insufficient/i.test(w)) return "현장 설정(저장 규칙) 문제입니다.";
+  if(/too large|exceeds|1048576/i.test(w)) return "사진이 너무 커서 거부되었습니다. 사진을 하나 빼고 다시 저장해 주세요.";
+  return w.slice(0, 120);
+}
 
 const CH = "■", UN = "□";
 const cellOf = ref => document.querySelector('#sheetPage .sheet td[data-ref="'+ref+'"]');
@@ -3210,7 +3329,7 @@ async function openSheetFor(r, title){
   $("#btnEdit").classList.toggle("hidden", authReady() && !(isGC() || isSub()));
   $("#btnWrongCo").classList.toggle("hidden", !isSub());
   renderFlagNote(r);
-  $("#btnPdf").classList.remove("hidden");
+  $("#btnPdf").classList.remove("hidden"); $("#btnCopy").classList.remove("hidden");
   renderSheetBp(r);
   renderSheetPhotos(r);
   fitSheetView(); window.scrollTo(0,0);
@@ -3555,6 +3674,13 @@ async function repairCompanyFields(){
   }
 }
 $("#btnRepair").addEventListener("click", repairCompanyFields);
+$("#kioskToggle").addEventListener("change", e => {
+  try{ if(e.target.checked) localStorage.setItem(KIOSK_KEY, "1"); else localStorage.removeItem(KIOSK_KEY); }catch(err){}
+  const st = $("#kioskState"); st.style.display = "block";
+  st.textContent = e.target.checked
+    ? "켜졌습니다. [닫기]를 누르면 로그아웃되고 근로자 작성 화면으로 돌아갑니다."
+    : "꺼졌습니다. 이 기기는 일반 기기처럼 동작합니다.";
+});
 
 /* ── 백업 불러오기 ── */
 $("#restoreFile").addEventListener("change", async (e) => {
@@ -3985,7 +4111,12 @@ function renderFlagNote(r){
 function renderSheetPhotos(r){
   const ph = $("#sheetPhotos");
   ph.classList.remove("hidden");
+  setTimeout(() => { const a = $("#photoRetry"); if(a) a.addEventListener("click", async (e) => {
+    e.preventDefault(); delete r.__photoErr; delete r.__photoChecked;
+    PHOTO_KEYS.forEach(k => { if(!isPhotoData(r[k]) && r[k] !== "") r[k] = PHOTO_MARK; });
+    await hydratePhotos(r); renderSheetPhotos(r); }); }, 0);
   ph.innerHTML = '<div class="photoPanelTitle">첨부 사진 <span>나중에 추가하거나 바꿀 수 있습니다. 사진대지에 인쇄됩니다.</span></div>'
+    + (r.__photoErr ? '<div class="note warn" style="margin:0 0 10px">⚠ ' + esc(r.__photoErr) + ' — <a href="#" id="photoRetry">다시 불러오기</a></div>' : '')
     + '<div class="photoSlots">'
     + PHOTO_SLOTS.map(s => {
         const src = photoSrc(r[s.key]);
@@ -4101,29 +4232,70 @@ function loadPdfLibs(){
 function safeName(s){ return String(s || "").replace(/[\\/:*?"<>|]/g, "_").trim() || "무제"; }
 
 /* 화면에 보이는 양식을 그대로 찍어 A4 세로 한 장 가운데에 넣는다 */
-async function exportSheetToPdf(r){
-  if(!r){ alert("먼저 근로자를 선택해 주세요."); return; }
-  setBusy(true, "PDF를 만드는 중입니다…");
+/* 화면에 떠 있는 양식을 원래 해상도로 찍는다. PDF 저장과 복사가 같이 쓴다.
+   화면용 축소(transform)를 잠깐 풀어야 글자가 또렷하고 칸이 어긋나지 않는다. */
+async function captureSheet(){
   const page = $("#sheetPage"), scroll = $("#sheetScroll");
-  const keep = {
-    transform: page.style.transform, marginLeft: page.style.marginLeft,
-    shadow: page.style.boxShadow, height: scroll.style.height, overflow: scroll.style.overflow
-  };
+  const keep = { transform: page.style.transform, marginLeft: page.style.marginLeft,
+    shadow: page.style.boxShadow, height: scroll.style.height, overflow: scroll.style.overflow };
   try{
     await loadPdfLibs();
-    // 캡처 중에는 축소를 풀어 원래 해상도로 찍는다 (글자가 또렷해진다)
     page.style.transform = "none"; page.style.marginLeft = "0"; page.style.boxShadow = "none";
     scroll.style.height = "auto"; scroll.style.overflow = "visible";
     await new Promise(res => setTimeout(res, 60));
-
     const w = page.scrollWidth, h = page.scrollHeight;
-    const canvas = await window.html2canvas(page, {
+    return await window.html2canvas(page, {
       backgroundColor: "#ffffff",
       scale: Math.min(3, Math.max(2, 1700 / Math.max(1, w))),
       useCORS: true, logging: false, imageTimeout: 0,
-      scrollX: 0, scrollY: -window.scrollY,
-      width: w, height: h
-    });
+      scrollX: 0, scrollY: -window.scrollY, width: w, height: h });
+  }finally{
+    page.style.transform = keep.transform; page.style.marginLeft = keep.marginLeft;
+    page.style.boxShadow = keep.shadow; scroll.style.height = keep.height; scroll.style.overflow = keep.overflow;
+  }
+}
+
+/* ── 복사 ────────────────────────────────────────────────────
+   양식을 "그림"으로 복사한다. 글로 복사하면 붙여넣는 곳마다 칸이 깨지고 줄이 밀리지만,
+   그림은 어디에 붙여도 화면과 똑같다. 카카오톡·메일·문서 어디든 Ctrl+V. */
+async function copySheetImage(r){
+  if(!r){ alert("먼저 근로자를 선택해 주세요."); return; }
+  const canCopy = !!(navigator.clipboard && window.ClipboardItem);
+  setBusy(true, "양식을 복사하는 중입니다…");
+  try{
+    // 사파리는 버튼을 누른 그 흐름 안에서만 복사를 허락하므로, 그림이 만들어지기 전에 약속을 넘긴다
+    const blobP = captureSheet().then(cv => new Promise(res => cv.toBlob(res, "image/png")));
+    if(canCopy){
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blobP })]);
+      setBusy(false);
+      showToast("복사했습니다 — 카톡·메일·문서에 붙여넣기(Ctrl+V) 하세요");
+      return;
+    }
+    throw new Error("nocopy");
+  }catch(e){
+    // 복사가 막힌 기기(옛 브라우저·http)는 그림 파일로 내려 준다
+    try{
+      const blob = await (captureSheet().then(cv => new Promise(res => cv.toBlob(res, "image/png"))));
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      const kind = sheetKind === "photoboard" ? "사진대지" : "준수사항";
+      a.download = safeName(r.name) + "_" + kind + "_" + safeName(r.code) + ".png";
+      document.body.appendChild(a); a.click(); a.remove();
+      setBusy(false);
+      alert("이 기기에서는 바로 복사가 되지 않아 그림 파일(PNG)로 저장했습니다.\n사진처럼 첨부해서 보내시면 됩니다.");
+    }catch(e2){
+      setBusy(false);
+      alert("복사하지 못했습니다.\n\n" + ((e2 && e2.message) || e2) + "\n\n인터넷이 연결되어 있는지 확인한 뒤 다시 시도해 주세요.");
+    }
+  }
+}
+$("#btnCopy").addEventListener("click", () => copySheetImage(current));
+
+async function exportSheetToPdf(r){
+  if(!r){ alert("먼저 근로자를 선택해 주세요."); return; }
+  setBusy(true, "PDF를 만드는 중입니다…");
+  try{
+    const canvas = await captureSheet();
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation:"portrait", unit:"mm", format:"a4" });
@@ -4142,9 +4314,6 @@ async function exportSheetToPdf(r){
     alert("PDF를 만들지 못했습니다.\n\n" + ((e && e.message) || e)
       + "\n\n인터넷이 연결되어 있는지 확인한 뒤 다시 시도해 주세요.");
   }finally{
-    page.style.transform = keep.transform; page.style.marginLeft = keep.marginLeft;
-    page.style.boxShadow = keep.shadow;
-    scroll.style.height = keep.height; scroll.style.overflow = keep.overflow;
     setBusy(false);
   }
 }
@@ -4711,7 +4880,7 @@ async function openAdm(tab){
   $("#sheetWrap").classList.remove("on");
   $("#adm").classList.add("on");
   $("#btnNext").classList.add("hidden"); $("#btnPrev").classList.add("hidden");
-  $("#btnPdf").classList.add("hidden");
+  $("#btnPdf").classList.add("hidden"); $("#btnCopy").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden");
   $("#hTitle").textContent = "관리자"; $("#hStep").textContent = "";
   $$("#prog i").forEach(el => el.className = "done");
@@ -4967,8 +5136,9 @@ $("#btnAdmClose").addEventListener("click", () => {
     $("#sheetWrap").classList.remove("on");
     openAdm(lastAdmTab);
   } else {
-    // 관리자 탭 자체에서 닫은 경우 → 완전히 종료
+    // 관리자 탭 자체에서 닫은 경우 → 완전히 종료 (공용 태블릿이면 로그인도 끊는다)
     adminUnlocked = false;
+    if(isKiosk()){ doLogout().finally(() => { kioskWipe(); location.reload(); }); return; }
     location.reload();
   }
 });
@@ -4988,7 +5158,7 @@ function setAdmTab(tab){
   if(tab==="roster") renderRoster();
   if(tab==="co") loadCompaniesAdmin();
   if(tab==="acct") renderAccounts();
-  if(tab==="tpl") loadCompaniesAdmin();
+  if(tab==="tpl"){ loadCompaniesAdmin(); const k = $("#kioskToggle"); if(k) k.checked = isKiosk(); }
   if(tab==="today") renderToday();
   if(tab==="risk") renderRisk();
   if(tab==="tpl") renderTpl();
@@ -5706,6 +5876,35 @@ async function ensureSubmissionsLoaded(){
 }
 
 /* 시작 화면 안내: 쓰다 만 것 / 이미 제출한 것 */
+/* ══════════════════════════════════════════════════════════════
+   현장 태블릿 모드 (공용 기기)
+   ──────────────────────────────────────────────────────────────
+   한 태블릿을 여러 근로자가 돌려 쓴다. 그래서
+   · 앞사람 서류(임시본·제출본·사진)가 다음 사람에게 보이면 안 되고
+   · 담당자 로그인이 살아 있어 근로자가 [관리자]로 들어가면 안 되고
+   · 앞사람 언어가 다음 사람에게 남으면 안 된다.
+   이 모드를 켜면 사람이 바뀔 때마다 깨끗이 비운다. ══ */
+const KIOSK_KEY = "hd4_kiosk";
+function isKiosk(){ try{ return localStorage.getItem(KIOSK_KEY) === "1"; }catch(e){ return false; } }
+function kioskWipe(){
+  // 사람이 바뀌었다 — 이 기기에 남은 개인 자료를 전부 지운다
+  try{
+    [DRAFT_KEY, MINE_KEY, LAST_KEY].forEach(k => localStorage.removeItem(k));
+    Object.keys(localStorage).filter(k => k.startsWith("hd4_pending_")).forEach(k => localStorage.removeItem(k));
+    localStorage.removeItem(SESS_KEY);   // 담당자 세션도 끊는다
+  }catch(e){}
+}
+let __idleT = null;
+function kioskArm(){
+  if(!isKiosk()) return;
+  // 10분 동안 아무도 안 만지면 쓰다 만 서류를 지우고 처음으로
+  const reset = () => { clearTimeout(__idleT); __idleT = setTimeout(() => {
+    if(step > 0 && step < 9 && !document.body.classList.contains("admmode")){ kioskWipe(); location.reload(); }
+  }, 10 * 60 * 1000); };
+  ["click","keydown","touchstart","pointerdown","input"].forEach(ev => document.addEventListener(ev, reset, { passive:true }));
+  reset();
+  document.body.classList.add("kiosk");
+}
 const MINE_KEY = "hd4_mine";
 const LAST_KEY = "hd4_last";           // 마지막 제출 직전 화면 상태 (재제출용)
 let RESUBMIT_PREV = null;              // 재제출이면 {code, company} — 새 기록에 "이전 제출" 표시
@@ -5733,6 +5932,15 @@ function showStartNotices(){
     $("#alreadyAgain").classList.toggle("hidden", !(last && last.f));
     renderAddPhoto();
     ab.classList.remove("hidden");
+    // 지난번 전송이 확인되지 않은 채 닫혔으면 여기서 다시 확인한다
+    if(mine.uid){
+      let pend = null; try{ pend = JSON.parse(localStorage.getItem("hd4_pending_" + mine.uid) || "null"); }catch(e){}
+      if(pend){
+        const host = document.createElement("div"); host.id = "sendState"; host.className = "sendState wait";
+        ab.insertBefore(host, ab.firstChild);
+        checkSendState(mine.uid, false).then(st => { if(st === "queued") showSendState("queued", mine.uid); });
+      }
+    }
   } else ab.classList.add("hidden");
 }
 /* 단계를 넘길 때만 저장하면, 지금 화면에 방금 친 내용은 빠진다.
@@ -5828,14 +6036,18 @@ function renderAddPhoto(){
     try{
       const data = await compressImage(f, 1000, 190000);
       const db = await loadFirebase();
-      await db.collection("photos").doc(mine.uid).set(
-        { [key]: data, company: String(mine.company || ""), updatedAt: Date.now() }, { merge:true });
+      await withTimeout(db.collection("photos").doc(mine.uid).set(
+        { [key]: data, company: String(mine.company || ""), updatedAt: Date.now() }, { merge:true }), 25000, "서버 응답 시간 초과");
       mine.photos = Object.assign({}, mine.photos, { [key]: true });
       localStorage.setItem(MINE_KEY, JSON.stringify(mine));
       st.textContent = "올렸습니다. 현장에서 담당자가 확인합니다.";
       renderAddPhoto();
     }catch(e){
-      st.textContent = "올리지 못했습니다: " + ((e && e.message) || e);
+      const m = String((e&&e.code)||"") + " " + String((e&&e.message)||"");
+      st.textContent = e && e.code === "app/timeout"
+        ? (OFFLINE_OK ? "신호가 약해 확인을 못 받았습니다. 폰에 보관되었고 연결되면 자동으로 올라갑니다." : "신호가 약해 올리지 못했습니다. 인터넷이 되는 곳에서 다시 눌러 주세요.")
+        : /permission|insufficient/i.test(m) ? "현장 설정(저장 규칙) 문제로 거부되었습니다. 담당자에게 알려 주세요."
+        : "올리지 못했습니다: " + ((e && e.message) || e);
     }
     inp.value = "";
   }));
@@ -5932,8 +6144,12 @@ async function loadCompanyList(){
   paint();
   showStartNotices();
   loadCompanyList();
-  // 30분 안에 로그인해 두었으면 다시 로그인하지 않고 관리자 화면으로
-  if(await restoreSession()){
+  if(isKiosk()){
+    kioskWipe(); kioskArm();
+    LANG = "ko"; applyLang(); showStartNotices();
+  }
+  // 30분 안에 로그인해 두었으면 다시 로그인하지 않고 관리자 화면으로 (공용 태블릿은 제외)
+  if(!isKiosk() && await restoreSession()){
     startSessionWatch();
     await openAdm(lastAdmTab || "find");
     showToast((isGC() ? "원청" : myCompany()) + " 계정으로 이어서 사용합니다");
