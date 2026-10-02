@@ -57,6 +57,9 @@ header{position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;padding
 .prog i.on{background:var(--signal)} .prog i.done{background:#6E7683}
 
 main{padding:16px var(--pad) 140px;max-width:var(--shell);margin:0 auto}
+/* 하단 고정 바가 늘 떠 있으므로, 화면을 옮겨 보여 줄 때 그만큼 비워 둔다.
+   이게 없으면 서명판이 바 뒤에 깔려 손가락이 바에 닿는다. */
+html{scroll-padding-bottom:150px;scroll-padding-top:90px}
 .admPage{display:none;padding:16px var(--pad) 140px;max-width:var(--shell-wide);margin:0 auto}
 .step{display:none} .step.on{display:block;animation:rise .28s ease}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -503,8 +506,13 @@ table.admTable thead th #chkAll{margin-top:4px}
   text-align:left;letter-spacing:0;font-weight:500}   /* 비밀번호 모달의 큼직한 글자 스타일을 물리친다 */
 #editOverlay .modal{text-align:left}
 #editOverlay .modal h3{text-align:left}
+#consentOverlay .mbtns .btn{flex:1;min-height:52px;white-space:nowrap;padding:0 10px}
+#consentOverlay h3{font-size:1.25rem;line-height:1.3}
 #editOverlay #editWhy{text-align:left;letter-spacing:0;font-size:1rem;font-weight:500;min-height:50px}
 .editGrid .ef.wide{grid-column:1 / -1}
+.efGroup{grid-column:1 / -1;font-size:.82rem;font-weight:800;color:var(--steel);
+  border-bottom:1.5px solid var(--line);padding-bottom:6px;margin:10px 0 2px}
+.efGroup:first-child{margin-top:0}
 .editLog{font-size:.76rem;color:var(--steel);background:#EFF1F4;border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5}
 @media (max-width:560px){ .editGrid{grid-template-columns:1fr} }
 #lgErr{display:none;font-size:.82rem;line-height:1.6;color:#960014;background:var(--signal-8);
@@ -1486,6 +1494,17 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 <!-- 일괄 인쇄용 보관함: 화면에는 숨겨져 있다가 인쇄할 때만 사람 수만큼 페이지로 펼쳐진다 -->
 <div id="printBatch" aria-hidden="true"></div>
 
+<div class="overlay hidden" id="consentOverlay">
+  <div class="modal">
+    <h3 data-i18n="consent.blockTitle">현장에서 근무할 수 없습니다</h3>
+    <p id="consentBlockBody" style="text-align:left;line-height:1.6"></p>
+    <div class="mbtns">
+      <button class="btn ghost" type="button" id="consentClose" data-i18n="consent.blockClose">닫기</button>
+      <button class="btn prime" type="button" id="consentFix" data-i18n="consent.blockFix">동의로 바꾸기</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay hidden" id="editOverlay">
   <div class="modal login" style="max-width:520px">
     <h3>서류 내용 수정</h3>
@@ -1671,7 +1690,7 @@ function loadFirebase(){
 const I18N = {
 ko:{ "bigtext":"글씨 크게 보기",
 "start.title":"안전교육 전<br>작성해 주세요","start.sub":"약 5분 걸립니다. 다 쓰면 저장 버튼을 누르세요.",
-"resume.title":"쓰다 만 내용이 있습니다","resume.go":"이어서 쓰기","resume.new":"처음부터","resume.at":"{n}단계까지 쓰셨습니다","already.title":"이미 제출하셨습니다","already.new":"다른 사람 것 작성하기","already.at":"제출 완료 · 현장에서 담당자가 확인합니다","already.again":"다른 업체로 다시 제출 (내용 그대로)","co.other":"목록에 없어요 · 직접 입력","co.list":"목록에서 고르기","photo.cam":"📷 사진 찍기","photo.gallery":"🖼 사진첩","photo.file":"📁 파일","addphoto.title":"사진을 나중에 올릴 수 있습니다","addphoto.desc":"신분증·이수증 사진을 지금 찍어 올리면 현장에서 바로 확인됩니다.","finphoto.title":"사진이 아직 없습니다","finphoto.desc":"지금 넣어 두면 현장에서 확인이 훨씬 빠릅니다. 나중에 올려도 됩니다.","start.prepTitle":"준비물","start.prep1":"· 신분증 (생년월일·국적 확인)","start.prep2":"· 기초안전보건교육 이수증","start.prep3":"· 혈압 측정 결과",
+"resume.title":"쓰다 만 내용이 있습니다","resume.go":"이어서 쓰기","resume.new":"처음부터","resume.at":"{n}단계까지 쓰셨습니다","already.title":"이미 제출하셨습니다","already.new":"다른 사람 것 작성하기","already.at":"제출 완료 · 현장에서 담당자가 확인합니다","already.again":"다른 업체로 다시 제출 (내용 그대로)","co.other":"목록에 없어요 · 직접 입력","co.list":"목록에서 고르기","photo.cam":"📷 사진 찍기","photo.gallery":"🖼 사진첩","photo.file":"📁 파일","addphoto.title":"사진을 나중에 올릴 수 있습니다","addphoto.desc":"신분증·이수증 사진을 지금 찍어 올리면 현장에서 바로 확인됩니다.","finphoto.title":"사진이 아직 없습니다","finphoto.desc":"지금 넣어 두면 현장에서 확인이 훨씬 빠릅니다. 나중에 올려도 됩니다.","consent.blockTitle":"현장에서 근무할 수 없습니다","consent.blockWhich":"에 동의하지 않으셨습니다.","consent.blockWhy":"이 정보는 산업안전보건법에 따라 근로자 안전 관리에 반드시 필요합니다. 동의하지 않으시면 <b>현장 출입과 근무가 불가능</b>합니다.","consent.blockAsk":"동의하시겠습니까? 궁금한 점은 소속 회사 담당자에게 문의해 주세요.","consent.blockClose":"닫기","consent.blockFix":"동의로 바꾸기","start.prepTitle":"준비물","start.prep1":"· 신분증 (생년월일·국적 확인)","start.prep2":"· 기초안전보건교육 이수증","start.prep3":"· 혈압 측정 결과",
 "start.note":"작성한 내용은 <b>현장 안전보건팀만</b> 열람하며, 준공 후 3년간 보관 후 파기합니다.",
 "field.company":'협력회사 <span class="req">*</span>',"err.company":"협력회사명을 입력해 주세요.",
 "field.name":'성명 <span class="req">*</span>',"err.name":"성명을 입력해 주세요.",
@@ -1741,7 +1760,7 @@ ko:{ "bigtext":"글씨 크게 보기",
 
 vi:{ "bigtext":"Phóng to chữ",
 "start.title":"Điền trước khi<br>huấn luyện an toàn","start.sub":"Mất khoảng 5 phút. Điền xong hãy nhấn Lưu.",
-"resume.title":"Bạn có phần chưa viết xong","resume.go":"Viết tiếp","resume.new":"Bắt đầu lại","resume.at":"Đã viết đến bước {n}","already.title":"Bạn đã nộp rồi","already.new":"Viết cho người khác","already.at":"Đã nộp · Cán bộ sẽ kiểm tra tại công trường","already.again":"Nộp lại cho công ty khác (giữ nội dung)","co.other":"Không có trong danh sách · Tự nhập","co.list":"Chọn từ danh sách","photo.cam":"📷 Chụp ảnh","photo.gallery":"🖼 Thư viện","photo.file":"📁 Tệp","addphoto.title":"Có thể tải ảnh lên sau","addphoto.desc":"Chụp và tải ảnh giấy tờ, chứng chỉ ngay bây giờ để công trường xác nhận nhanh.","finphoto.title":"Chưa có ảnh","finphoto.desc":"Thêm ngay sẽ được xác nhận nhanh hơn tại công trường. Cũng có thể tải lên sau.","start.prepTitle":"Cần chuẩn bị","start.prep1":"· Giấy tờ tùy thân (ngày sinh, quốc tịch)","start.prep2":"· Chứng chỉ đào tạo an toàn cơ bản","start.prep3":"· Kết quả đo huyết áp",
+"resume.title":"Bạn có phần chưa viết xong","resume.go":"Viết tiếp","resume.new":"Bắt đầu lại","resume.at":"Đã viết đến bước {n}","already.title":"Bạn đã nộp rồi","already.new":"Viết cho người khác","already.at":"Đã nộp · Cán bộ sẽ kiểm tra tại công trường","already.again":"Nộp lại cho công ty khác (giữ nội dung)","co.other":"Không có trong danh sách · Tự nhập","co.list":"Chọn từ danh sách","photo.cam":"📷 Chụp ảnh","photo.gallery":"🖼 Thư viện","photo.file":"📁 Tệp","addphoto.title":"Có thể tải ảnh lên sau","addphoto.desc":"Chụp và tải ảnh giấy tờ, chứng chỉ ngay bây giờ để công trường xác nhận nhanh.","finphoto.title":"Chưa có ảnh","finphoto.desc":"Thêm ngay sẽ được xác nhận nhanh hơn tại công trường. Cũng có thể tải lên sau.","consent.blockTitle":"Không thể làm việc tại công trường","consent.blockWhich":" — bạn chưa đồng ý.","consent.blockWhy":"Thông tin này là bắt buộc theo Luật An toàn vệ sinh lao động để quản lý an toàn người lao động. Nếu không đồng ý, bạn <b>không thể vào và làm việc tại công trường</b>.","consent.blockAsk":"Bạn có đồng ý không? Nếu có thắc mắc, vui lòng hỏi người phụ trách của công ty bạn.","consent.blockClose":"Đóng","consent.blockFix":"Chuyển sang đồng ý","start.prepTitle":"Cần chuẩn bị","start.prep1":"· Giấy tờ tùy thân (ngày sinh, quốc tịch)","start.prep2":"· Chứng chỉ đào tạo an toàn cơ bản","start.prep3":"· Kết quả đo huyết áp",
 "start.note":"Nội dung chỉ <b>Đội an toàn công trường</b> được xem, lưu 3 năm sau khi hoàn công rồi hủy.",
 "field.company":'Công ty đối tác <span class="req">*</span>',"err.company":"Vui lòng nhập tên công ty.",
 "field.name":'Họ và tên <span class="req">*</span>',"err.name":"Vui lòng nhập họ tên.",
@@ -1811,7 +1830,7 @@ vi:{ "bigtext":"Phóng to chữ",
 
 zh:{ "bigtext":"放大字体",
 "start.title":"请在安全教育前<br>填写此表","start.sub":"大约需要5分钟。填完后请点击保存。",
-"resume.title":"有未填完的内容","resume.go":"继续填写","resume.new":"重新开始","resume.at":"已填写到第 {n} 步","already.title":"您已提交","already.new":"为他人填写","already.at":"已提交 · 现场负责人会确认","already.again":"以其他公司身份再次提交（内容不变）","co.other":"列表中没有 · 手动输入","co.list":"从列表中选择","photo.cam":"📷 拍照","photo.gallery":"🖼 相册","photo.file":"📁 文件","addphoto.title":"照片可以稍后上传","addphoto.desc":"现在拍摄并上传身份证、结业证照片，现场可立即确认。","finphoto.title":"还没有照片","finphoto.desc":"现在添加，现场确认会快很多。也可以稍后上传。","start.prepTitle":"准备事项","start.prep1":"· 身份证件（确认出生日期、国籍）","start.prep2":"· 基础安全保健教育结业证","start.prep3":"· 血压测量结果",
+"resume.title":"有未填完的内容","resume.go":"继续填写","resume.new":"重新开始","resume.at":"已填写到第 {n} 步","already.title":"您已提交","already.new":"为他人填写","already.at":"已提交 · 现场负责人会确认","already.again":"以其他公司身份再次提交（内容不变）","co.other":"列表中没有 · 手动输入","co.list":"从列表中选择","photo.cam":"📷 拍照","photo.gallery":"🖼 相册","photo.file":"📁 文件","addphoto.title":"照片可以稍后上传","addphoto.desc":"现在拍摄并上传身份证、结业证照片，现场可立即确认。","finphoto.title":"还没有照片","finphoto.desc":"现在添加，现场确认会快很多。也可以稍后上传。","consent.blockTitle":"无法在现场工作","consent.blockWhich":"—您未同意。","consent.blockWhy":"根据《产业安全保健法》，这些信息是劳动者安全管理的必需项。若不同意，<b>将无法进入현场并工作</b>。","consent.blockAsk":"您同意吗？如有疑问，请咨询所属公司负责人。","consent.blockClose":"关闭","consent.blockFix":"改为同意","start.prepTitle":"准备事项","start.prep1":"· 身份证件（确认出生日期、国籍）","start.prep2":"· 基础安全保健教育结业证","start.prep3":"· 血压测量结果",
 "start.note":"填写内容仅供<b>现场安全保健组</b>查阅，竣工后保存3年后销毁。",
 "field.company":'合作公司 <span class="req">*</span>',"err.company":"请输入合作公司名称。",
 "field.name":'姓名 <span class="req">*</span>',"err.name":"请输入姓名。",
@@ -1881,7 +1900,7 @@ zh:{ "bigtext":"放大字体",
 
 th:{ "bigtext":"ขยายตัวอักษร",
 "start.title":"กรุณากรอกก่อน<br>อบรมความปลอดภัย","start.sub":"ใช้เวลาประมาณ 5 นาที เมื่อกรอกเสร็จให้กดบันทึก",
-"resume.title":"มีข้อมูลที่กรอกค้างไว้","resume.go":"กรอกต่อ","resume.new":"เริ่มใหม่","resume.at":"กรอกถึงขั้นตอนที่ {n}","already.title":"คุณส่งแล้ว","already.new":"กรอกให้คนอื่น","already.at":"ส่งแล้ว · เจ้าหน้าที่จะตรวจสอบที่หน่วยงาน","already.again":"ส่งใหม่ในนามบริษัทอื่น (เนื้อหาเดิม)","co.other":"ไม่มีในรายการ · พิมพ์เอง","co.list":"เลือกจากรายการ","photo.cam":"📷 ถ่ายรูป","photo.gallery":"🖼 อัลบั้ม","photo.file":"📁 ไฟล์","addphoto.title":"อัปโหลดรูปภายหลังได้","addphoto.desc":"ถ่ายและอัปโหลดรูปบัตรประชาชนและใบรับรองตอนนี้ เพื่อให้ตรวจสอบได้ทันที","finphoto.title":"ยังไม่มีรูป","finphoto.desc":"ใส่ตอนนี้จะตรวจสอบได้เร็วขึ้นที่หน่วยงาน หรือจะอัปโหลดภายหลังก็ได้","start.prepTitle":"สิ่งที่ต้องเตรียม","start.prep1":"· บัตรประจำตัว (วันเกิด/สัญชาติ)","start.prep2":"· ใบรับรองอบรมความปลอดภัยขั้นพื้นฐาน","start.prep3":"· ผลตรวจวัดความดันโลหิต",
+"resume.title":"มีข้อมูลที่กรอกค้างไว้","resume.go":"กรอกต่อ","resume.new":"เริ่มใหม่","resume.at":"กรอกถึงขั้นตอนที่ {n}","already.title":"คุณส่งแล้ว","already.new":"กรอกให้คนอื่น","already.at":"ส่งแล้ว · เจ้าหน้าที่จะตรวจสอบที่หน่วยงาน","already.again":"ส่งใหม่ในนามบริษัทอื่น (เนื้อหาเดิม)","co.other":"ไม่มีในรายการ · พิมพ์เอง","co.list":"เลือกจากรายการ","photo.cam":"📷 ถ่ายรูป","photo.gallery":"🖼 อัลบั้ม","photo.file":"📁 ไฟล์","addphoto.title":"อัปโหลดรูปภายหลังได้","addphoto.desc":"ถ่ายและอัปโหลดรูปบัตรประชาชนและใบรับรองตอนนี้ เพื่อให้ตรวจสอบได้ทันที","finphoto.title":"ยังไม่มีรูป","finphoto.desc":"ใส่ตอนนี้จะตรวจสอบได้เร็วขึ้นที่หน่วยงาน หรือจะอัปโหลดภายหลังก็ได้","consent.blockTitle":"ไม่สามารถทำงานที่หน่วยงานได้","consent.blockWhich":" — คุณยังไม่ได้ยินยอม","consent.blockWhy":"ข้อมูลนี้จำเป็นตามกฎหมายความปลอดภัยฯ เพื่อดูแลความปลอดภัยของคนงาน หากไม่ยินยอม <b>จะเข้าและทำงานที่หน่วยงานไม่ได้</b>","consent.blockAsk":"คุณยินยอมหรือไม่? หากมีข้อสงสัยกรุณาสอบถามผู้รับผิดชอบของบริษัท","consent.blockClose":"ปิด","consent.blockFix":"เปลี่ยนเป็นยินยอม","start.prepTitle":"สิ่งที่ต้องเตรียม","start.prep1":"· บัตรประจำตัว (วันเกิด/สัญชาติ)","start.prep2":"· ใบรับรองอบรมความปลอดภัยขั้นพื้นฐาน","start.prep3":"· ผลตรวจวัดความดันโลหิต",
 "start.note":"ข้อมูลที่กรอกจะเปิดให้เฉพาะ<b>ทีมความปลอดภัยของไซต์งาน</b>ดู จะเก็บไว้ 3 ปีหลังงานเสร็จแล้วทำลาย",
 "field.company":'บริษัทคู่ค้า <span class="req">*</span>',"err.company":"กรุณากรอกชื่อบริษัท",
 "field.name":'ชื่อ-นามสกุล <span class="req">*</span>',"err.name":"กรุณากรอกชื่อ-นามสกุล",
@@ -2554,6 +2573,13 @@ function validate(){
     const ce=$('[data-pick=cPersonal]').closest(".card").querySelector(".err");
     const all = pick.cPersonal && pick.cUnique && pick.cSensitive;
     ce.classList.toggle("on", !all); if(!all){ first = first||ce; ok=false; }
+    // 하나라도 "동의안함"이면 현장 출입이 안 된다. 다 쓰고 나서 알면 헛걸음이므로 여기서 알린다.
+    const no = [["cPersonal","개인정보"],["cUnique","고유식별정보"],["cSensitive","민감정보"]]
+      .filter(([k]) => pick[k] === "동의안함").map(([,lab]) => lab);
+    if(all && no.length){
+      showConsentBlock(no);
+      first = first || $('[data-pick=cPersonal]').closest(".card"); ok = false;
+    }
     const sc=$("#padSignWrap").closest(".card");
     PADS.padSign.inked ? setErr(sc,false) : fail(sc);
   }
@@ -3181,7 +3207,7 @@ async function openSheetFor(r, title){
   $("#btnPrev").classList.add("hidden"); $("#btnNext").classList.add("hidden");
   $("#btnAdmClose").classList.remove("hidden");
   $("#btnDelOne").classList.toggle("hidden", authReady() && !isGC());
-  $("#btnEdit").classList.toggle("hidden", authReady() && !isGC());
+  $("#btnEdit").classList.toggle("hidden", authReady() && !(isGC() || isSub()));
   $("#btnWrongCo").classList.toggle("hidden", !isSub());
   renderFlagNote(r);
   $("#btnPdf").classList.remove("hidden");
@@ -3779,29 +3805,89 @@ function photoSrc(v){ return isPhotoData(v) ? v : ""; }
 /* ── 서류 내용 수정 (원청) ─────────────────────────────────────
    현장에서 가장 잦은 실수(생년월일·공종·연락처 오타)를 근로자를 다시 부르지 않고 고친다.
    무엇을 누가 왜 바꿨는지 edits[] 에 남긴다. */
+const YN = ["있다","없다"];
 const EDIT_FIELDS = [
+  { g:"인적사항" },
   { k:"name",     label:"성명" },
   { k:"birth",    label:"생년월일 (6자리)" },
   { k:"gender",   label:"성별", opts:["남","여"] },
   { k:"nation",   label:"국적" },
-  { k:"company",  label:"협력회사" },
-  { k:"trade",    label:"공종" },
+  { k:"visa",     label:"체류자격" },
+  { k:"blood",    label:"혈액형", opts:["A","B","O","AB"] },
   { k:"phone",    label:"본인 연락처" },
   { k:"guardian", label:"비상 연락처" },
   { k:"address",  label:"주소", wide:true },
-  { k:"blood",    label:"혈액형", opts:["A","B","O","AB"] },
+
+  { g:"소속 · 업무" },
+  { k:"company",  label:"협력회사", gcOnly:true },
+  { k:"trade",    label:"공종" },
   { k:"careerY",  label:"경력 (년)" },
   { k:"careerM",  label:"경력 (개월)" },
+  { k:"prevSite", label:"직전 현장" },
+  { k:"prevWork", label:"직전 담당 업무" },
+
+  { g:"기초안전보건교육" },
+  { k:"basicEdu", label:"이수 여부", opts:["O","X"] },
+  { k:"eduOrg",   label:"교육기관" },
+  { k:"eduDate",  label:"이수일 (YYYY-MM-DD)" },
+
+  { g:"건강 · 이력" },
+  { k:"hasDisease",      label:"지병 유무", opts:["있음","없음"] },
+  { k:"diseases",        label:"지병 (쉼표로 구분)", list:true, wide:true },
+  { k:"drug",            label:"복용약" },
+  { k:"symptoms",        label:"불편한 신체 부위 (쉼표로 구분)", list:true, wide:true },
+  { k:"checkup",         label:"받은 건강진단 (쉼표로 구분)", list:true, wide:true },
+  { k:"fitGeneral",      label:"일반건강진단 판정" },
+  { k:"fitPre",          label:"배치전건강진단 판정" },
+  { k:"vascular",        label:"혈관건강도검사" },
+  { k:"heatPrev",        label:"온열질환 경험", opts:["유","무"] },
+  { k:"injury.has",      label:"산업재해 이력", opts:YN },
+  { k:"injury.ym",       label:"산재 발생 시기" },
+  { k:"injury.part",     label:"산재 부위" },
+  { k:"accident.has",    label:"사고 이력", opts:YN },
+  { k:"accident.ym",     label:"사고 발생 시기" },
+  { k:"accident.part",   label:"사고 부위" },
+  { k:"surgery.has",     label:"수술 이력", opts:YN },
+  { k:"surgery.ym",      label:"수술 시기" },
+  { k:"surgery.part",    label:"수술 부위" },
+
+  { g:"생활습관" },
+  { k:"smoke",      label:"흡연" },
+  { k:"smokeY",     label:"흡연 기간 (년)" },
+  { k:"smokeD",     label:"하루 흡연량 (개비)" },
+  { k:"drinkDays",  label:"주당 음주 (일)" },
+  { k:"drinkGlass", label:"1회 음주량 (잔)" },
+
+  { g:"동의" },
+  { k:"consentPersonal",  label:"개인정보",     opts:["동의함","동의안함"] },
+  { k:"consentUnique",    label:"고유식별정보", opts:["동의함","동의안함"] },
+  { k:"consentSensitive", label:"민감정보",     opts:["동의함","동의안함"] },
 ];
+/* a.b 같은 중첩 항목도 읽고 쓴다 */
+function getPath(o, k){ return k.split(".").reduce((v, p) => (v == null ? v : v[p]), o); }
+function setPath(o, k, v){
+  const ps = k.split("."); let t = o;
+  for(let i = 0; i < ps.length - 1; i++){ if(typeof t[ps[i]] !== "object" || !t[ps[i]]) t[ps[i]] = {}; t = t[ps[i]]; }
+  t[ps[ps.length-1]] = v;
+}
+function editFieldsFor(){
+  const gc = !authReady() || isGC();
+  return EDIT_FIELDS.filter(f => f.g || gc || !f.gcOnly);
+}
 function openEdit(r){
   if(!r) return;
   const g = $("#editGrid");
-  g.innerHTML = EDIT_FIELDS.map(f =>
-    '<div class="ef'+(f.wide?" wide":"")+'"><label for="ed_'+f.k+'">'+esc(f.label)+'</label>'
+  const idOf = k => "ed_" + k.replace(/\./g, "_");
+  g.innerHTML = editFieldsFor().map(f => {
+    if(f.g) return '<div class="efGroup">'+esc(f.g)+'</div>';
+    const raw = getPath(r, f.k);
+    const cur = f.list ? (Array.isArray(raw) ? raw.join(", ") : String(raw ?? "")) : String(raw ?? "");
+    return '<div class="ef'+(f.wide?" wide":"")+'"><label for="'+idOf(f.k)+'">'+esc(f.label)+'</label>'
     + (f.opts
-        ? '<select id="ed_'+f.k+'">'+f.opts.map(o => '<option value="'+esc(o)+'"'+(String(r[f.k]??"")===o?" selected":"")+'>'+(o||"(없음)")+'</option>').join("")+'</select>'
-        : '<input type="text" id="ed_'+f.k+'" value="'+esc(String(r[f.k] ?? ""))+'">')
-    + '</div>').join("")
+        ? '<select id="'+idOf(f.k)+'"><option value="">(없음)</option>'
+          + f.opts.map(o => '<option value="'+esc(o)+'"'+(cur===o?" selected":"")+'>'+esc(o)+'</option>').join("")+'</select>'
+        : '<input type="text" id="'+idOf(f.k)+'" value="'+esc(cur)+'">')
+    + '</div>'; }).join("")
     + (Array.isArray(r.edits) && r.edits.length
         ? '<div class="editLog wide" style="grid-column:1/-1">이전 수정: ' + r.edits.slice(-3).map(e =>
             esc(String(e.at||"").slice(0,10)) + " " + esc(e.by||"") + " — " + esc((e.fields||[]).join(", ")) + (e.why ? " ("+esc(e.why)+")" : "")).join(" · ") + '</div>'
@@ -3815,28 +3901,37 @@ $("#editWhy").addEventListener("input", () => $("#editErr").classList.remove("on
 $("#editSave").addEventListener("click", async () => {
   const r = current; if(!r) return;
   const rec = submissions.find(x => docId(x) === docId(r)) || r;
-  const changed = [], before = {};
-  for(const f of EDIT_FIELDS){
-    const el = $("#ed_"+f.k); if(!el) continue;
+  const idOf = k => "ed_" + k.replace(/\./g, "_");
+  const readVal = f => {
+    const el = document.getElementById(idOf(f.k)); if(!el) return null;
     let v = String(el.value || "").trim();
     if(f.k === "company") v = canonCo(v);
-    if(String(rec[f.k] ?? "") !== v){ before[f.k] = rec[f.k]; changed.push(f); }
+    return f.list ? v.split(",").map(x => x.trim()).filter(Boolean) : v;
+  };
+  const same = (a, b) => Array.isArray(a) || Array.isArray(b)
+    ? JSON.stringify(Array.isArray(a)?a:[]) === JSON.stringify(Array.isArray(b)?b:[])
+    : String(a ?? "") === String(b ?? "");
+  const changed = [], before = {};
+  for(const f of editFieldsFor()){
+    if(f.g) continue;
+    const v = readVal(f); if(v === null) continue;
+    if(!same(getPath(rec, f.k), v)){ before[f.k] = getPath(rec, f.k); changed.push(f); }
   }
   if(!changed.length){ $("#editOverlay").classList.add("hidden"); return; }
   const why = $("#editWhy").value.trim();
   if(!why){ const e = $("#editErr"); e.textContent = "수정 사유를 적어 주세요."; e.classList.add("on"); return; }
   for(const f of changed){
-    let v = String($("#ed_"+f.k).value || "").trim();
-    if(f.k === "company") v = canonCo(v);
-    rec[f.k] = v; r[f.k] = v;
+    const v = readVal(f);
+    setPath(rec, f.k, v); setPath(r, f.k, v);
   }
   const who = (AUTH.profile && (AUTH.profile.name || fromLoginEmail(AUTH.profile.email||""))) || "관리자";
   rec.edits = (rec.edits || []).concat([{ by: who, at: new Date().toISOString(), why, fields: changed.map(f => f.label) }]);
   r.edits = rec.edits;
   if(changed.some(f => f.k === "company") && rec.flag && rec.flag.type === "company"){ delete rec.flag; delete r.flag; }
+  rec.highRisk = isRisk(rec); r.highRisk = rec.highRisk;   // 지병·재해 이력이 바뀌면 취약 판정도 다시
   const res = await Store.saveRecord(rec, submissions);
   if(!res || !res.ok){
-    for(const k in before){ rec[k] = before[k]; r[k] = before[k]; }
+    for(const k in before){ setPath(rec, k, before[k]); setPath(r, k, before[k]); }
     rec.edits = rec.edits.slice(0,-1); r.edits = rec.edits;
     alert("저장하지 못했습니다.\n\n" + ((res && res.message) || "알 수 없는 오류")); return;
   }
@@ -5659,6 +5754,24 @@ $("#alreadyNew").addEventListener("click", () => {
   try{ localStorage.removeItem(MINE_KEY); localStorage.removeItem(LAST_KEY); }catch(e){}
   clearDraft(); location.reload();
 });
+/* 동의하지 않으면 현장 출입·근무가 안 된다는 것을 분명히 알린다. */
+function showConsentBlock(labels){
+  const T = (k, d) => (I18N[LANG] && I18N[LANG][k]) || d;
+  $("#consentBlockBody").innerHTML =
+    "<b>" + esc(labels.join(" · ")) + "</b>" + T("consent.blockWhich", "에 동의하지 않으셨습니다.") + "<br><br>"
+    + T("consent.blockWhy", "이 정보는 산업안전보건법에 따라 근로자 안전 관리에 반드시 필요합니다. 동의하지 않으시면 <b>현장 출입과 근무가 불가능</b>합니다.") + "<br><br>"
+    + T("consent.blockAsk", "동의하시겠습니까? 궁금한 점은 소속 회사 담당자에게 문의해 주세요.");
+  $("#consentOverlay").classList.remove("hidden");
+}
+$("#consentClose").addEventListener("click", () => $("#consentOverlay").classList.add("hidden"));
+$("#consentFix").addEventListener("click", () => {
+  ["cPersonal","cUnique","cSensitive"].forEach(k => {
+    const w = document.querySelector('[data-pick='+k+']'); if(!w) return;
+    const b = w.querySelector('.opt[data-v="동의함"]'); if(b) b.click();
+  });
+  $("#consentOverlay").classList.add("hidden");
+});
+
 /* 최종 확인 화면: 빠진 사진을 그 자리에서 넣게 한다.
    "작성 다 하고 사진만 안 넣는" 일을 애초에 줄이는 쪽이 낫다. */
 function renderFinPhoto(){
