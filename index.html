@@ -221,6 +221,17 @@ input::placeholder,textarea::placeholder{color:#B2B9C2;font-weight:400}
 .bpBox #bpSave{width:100%;min-height:46px}
 .filepick{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0 0 0 0);border:0;padding:0;margin:-1px}
 @media print{ .sheetPhotos{display:none !important} }
+#printHost{display:none}
+@media print{
+  body.printImg > *:not(#printHost){display:none !important}
+  body.printImg #printHost{display:block !important}
+  body.printImg{margin:0;padding:0;background:#fff}
+  body.printImg .pPage{width:210mm;height:297mm;box-sizing:border-box;padding:6mm;
+    display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page;overflow:hidden}
+  body.printImg .pPage:last-child{page-break-after:auto;break-after:auto}
+  body.printImg .pPage img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+  @page{size:A4 portrait;margin:0}
+}
 
 .bpin{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end}
 .bpin .sep{font-size:1.9rem;font-weight:300;color:var(--mute);padding-bottom:12px}
@@ -257,6 +268,19 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
   backdrop-filter:blur(10px);border-top:1px solid var(--line);
   padding:12px var(--pad) calc(12px + env(safe-area-inset-bottom))}
 .fin{max-width:var(--shell);margin:0 auto;display:flex;gap:10px}
+/* 폰: 양식 화면 바닥에 닫기·⋯·출력·PDF 네 개만. 수정·소속·삭제는 ⋯ 로 접어 둔다 */
+@media (max-width:760px){
+  .sheetMore{display:none;position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));
+    flex-direction:column;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px;
+    box-shadow:0 10px 30px rgba(10,14,20,.18);z-index:41}
+  .sheetMore .btn{width:100%;min-height:48px}
+  body.sheetMoreOpen .sheetMore{display:flex}
+  #btnMore{min-width:52px;font-size:1.3rem;padding:0}
+}
+@media (min-width:761px){
+  .sheetMore{display:contents}
+  #btnMore{display:none !important}
+}
 .btn{min-height:var(--tap);border-radius:10px;border:1.5px solid var(--line);background:#fff;font-size:1.06rem;
   font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 20px}
 .btn:active{transform:scale(.99)}
@@ -285,7 +309,28 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .donecode{font-family:var(--mono);font-size:1.2rem;letter-spacing:.08em;color:var(--steel);margin-top:6px}
 
 .adm{display:none} .adm.on{display:block}
-.admtabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+/* 상태 한 줄: 연결 · 새로고침 · 사용자 — 매일 보는 자리이니 조용하게 */
+.statusBar{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:.8rem;color:var(--steel);min-width:0}
+.statusBar #fbBadge{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:transparent;color:var(--steel);padding:0;font-weight:600;text-align:left}
+.statusBar #fbBadge.ok::before{content:"●";color:#1E9E55;margin-right:6px}
+.statusBar #fbBadge.bad::before{content:"●";color:var(--signal);margin-right:6px}
+.iconBtn{flex:0 0 auto;width:34px;height:34px;border-radius:9px;border:1.5px solid var(--line);background:#fff;
+  font-size:1.05rem;font-weight:800;cursor:pointer;color:var(--ink)}
+.statusBar .whoami{margin:0;flex:0 0 auto;gap:6px}
+.statusBar .whoami .role{padding:2px 8px;font-size:.7rem}
+.statusBar .whoami > span:not(.role){display:none}
+@media (min-width:760px){ .statusBar .whoami > span:not(.role){display:inline} }
+
+.admtabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.admtabs.sub{margin:-4px 0 14px;padding:8px;background:#EDEFF2;border-radius:10px}
+.admtabs.sub button{min-height:40px;font-size:.84rem;min-width:0;background:#fff}
+.admtabs .more{flex:0 0 auto;min-width:0;padding:0 14px}
+.admtabs .more[aria-expanded=true]{background:#EDEFF2;border-color:#EDEFF2}
+@media (max-width:640px){
+  .admtabs{gap:5px}
+  .admtabs button{min-width:0;min-height:42px;font-size:.86rem;padding:0 8px;border-radius:8px}
+}
 .admtabs button{flex:1;min-width:100px;min-height:48px;border-radius:9px;border:1.5px solid var(--line);
   background:#fff;font-size:.9rem;font-weight:700;cursor:pointer}
 .admtabs button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
@@ -298,12 +343,18 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .badgeRow #fbBadge{white-space:normal;max-width:100%;line-height:1.5;text-align:left;
   word-break:keep-all;overflow-wrap:anywhere}
 .badgeRow .btn{flex:0 0 auto;min-height:36px;min-width:96px;font-size:.8rem;padding:0 12px}
+.chipRow{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.chipRow .daysRow{flex:1;margin:0}
+.chipRow .coSel{flex:0 1 160px;min-height:42px;font-size:.9rem;padding:0 10px}
 .daysRow{display:flex;gap:6px;margin-bottom:10px}
-.daysRow button{flex:1;min-height:42px;border:1.5px solid var(--line);background:#fff;
+.daysRow button{flex:1;min-height:42px;border:1.5px solid var(--line);background:#fff;white-space:nowrap;padding:0 6px;
   border-radius:9px;font-size:.84rem;font-weight:700;cursor:pointer;color:var(--steel)}
 .daysRow button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
 .findBar{display:flex;gap:8px;margin-bottom:12px}
-.findBar input{flex:1;min-width:0;min-height:50px;font-size:1.02rem}
+.findBar{position:relative}
+.findBar input{flex:1;min-width:0;min-height:50px;font-size:1.02rem;padding-right:44px}
+.clearX{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;
+  border:0;background:#EDEFF2;color:var(--steel);font-size:1.2rem;cursor:pointer}
 .findBar .btn{flex:0 0 auto;min-width:88px}
 #coChips{display:flex;flex-direction:column;gap:8px}
 .coRow{display:grid;grid-template-columns:minmax(140px,1fr) auto auto;align-items:center;gap:10px 14px;
@@ -323,7 +374,11 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 .coChip button{border:0;background:#EFF1F4;color:var(--steel);border-radius:50%;
   width:26px;height:26px;font-size:1rem;line-height:1;cursor:pointer}
 .coChip button:hover{background:var(--signal-8);color:var(--signal)}
-.statRow{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.statRow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:12px}
+.statRow .stat{flex:none;min-height:0;padding:10px 6px}
+.statRow .stat b{font-size:1.25rem}
+.statRow .stat u{font-size:.72rem;word-break:keep-all}
+.statRow .stat:nth-child(n+5){grid-column:span 2}
 .resultHead{display:flex;align-items:center;justify-content:space-between;
   margin-bottom:10px;min-height:22px}
 .resultHead .findCount{margin-left:0}
@@ -350,7 +405,8 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
   position:sticky;top:8px;z-index:5}
 .prAll{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;cursor:pointer}
 .prAll input{width:22px;height:22px}
-.prBar .btn{margin-left:auto;min-height:46px;min-width:140px}
+.prBar .btn{min-height:46px;min-width:120px}
+.prBar #prPrint{margin-left:auto}
 .prItem{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--line);
   border-radius:12px;padding:13px 16px;margin-bottom:7px;cursor:pointer}
 .prItem:hover{border-color:var(--ink)}
@@ -379,7 +435,10 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
   .findRail .findBar .btn{width:100%;min-width:0}
   .findRail .filterRow{flex-direction:column;align-items:stretch;gap:6px;margin-bottom:14px}
   .findRail .filterRow select{flex:none;width:100%}
-  .findRail .statRow{flex-direction:column;gap:6px;margin-bottom:0}
+  .findRail .chipRow{flex-direction:column;align-items:stretch;gap:8px}
+  .findRail .chipRow .coSel{flex:none;width:100%}
+  .findRail .statRow{grid-template-columns:1fr;gap:6px;margin-bottom:0}
+  .findRail .statRow .stat:nth-child(n+5){grid-column:auto}
   .findRail .stat{flex:none;display:flex;align-items:baseline;gap:10px;
     text-align:left;padding:12px 14px;min-height:0}
   .findRail .stat b{font-size:1.25rem;min-width:34px}
@@ -391,13 +450,14 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255
 /* ── 휴대폰에서 "근로자 찾기"가 첫 화면에 나오도록 위쪽을 줄인다.
    현장 담당자는 폰으로 이 화면을 열자마자 이름을 봐야 한다. ── */
 @media (max-width:759px){
+  #zoomFitBtn{display:none}            /* 화면 맞춤이 기본값 — 폰에서는 "크게 보기"만 */
+  .fin .btn{white-space:nowrap;padding:0 10px;font-size:.92rem;min-width:0}
   .admPage > .lead{margin-bottom:12px}
   .admPage > .lead h2{font-size:1.5rem}
   .admPage > .lead p:not(.badgeRow){display:none}
-  .admtabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
-    scrollbar-width:none;margin-bottom:12px}
-  .admtabs::-webkit-scrollbar{display:none}
-  .admtabs button{flex:0 0 auto;min-width:0;white-space:nowrap;padding:0 16px;min-height:46px}
+  .admtabs{flex-wrap:wrap;margin-bottom:12px}
+  .admtabs button{flex:1 1 30%;min-width:0;white-space:nowrap;padding:0 8px;min-height:44px}
+  .admtabs .more{flex:1 1 30%}
   #admFind > .note{display:none}
   .findBar{margin-bottom:8px}
   .findBar input{min-height:46px}
@@ -776,10 +836,11 @@ html.xl{--shell:840px}
   #sheetWrap.on{display:flex;flex-direction:column}
   #sheetWrap > .sheetTitleBar{order:1}
   #sheetWrap > .docTabs{order:2}
-  #sheetWrap > #sheetFlag{order:3}
-  #sheetWrap > #sheetBp{order:3}
-  #sheetWrap > #sheetPhotos{order:4;margin-bottom:14px}
-  #sheetWrap > #sheetScroll{order:5}
+  #sheetWrap > #sheetFlag{order:3}     /* 소속 확인 요청은 급한 것 → 제목 바로 아래 */
+  #sheetWrap > #sheetBp{order:4}       /* 현장에서 할 일 순서: 혈압 → 사진 → 판정 */
+  #sheetWrap > #sheetPhotos{order:5;margin-bottom:14px}
+  #sheetWrap > #sheetRisk{order:6}
+  #sheetWrap > #sheetScroll{order:7}
   .photoSlots{display:grid;grid-template-columns:1fr;gap:8px}
   .sheetPhotos .pslot{width:auto;display:grid;
     grid-template-columns:58px minmax(0,1fr);
@@ -1278,40 +1339,41 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 
 <div class="admPage">
 <section class="adm" id="adm">
-  <div class="lead"><h2>관리자</h2><p style="color:var(--steel);font-size:.9rem">근로자가 미리 작성한 서류를 확인하고, 현장에서 혈압을 측정해 기록합니다.</p>
-    <p style="margin-top:8px" class="badgeRow"><span class="tag" id="fbBadge" style="background:#EFF1F4;color:var(--steel)">확인 중…</span>
-      <button type="button" class="btn small" id="btnReload">↻ 다시 불러오기</button>
-      <button type="button" class="btn small" id="btnDiag">연결 진단</button></p>
-    <p class="whoami hidden" id="whoami"></p></div>
+  <div class="statusBar">
+    <span class="tag" id="fbBadge">확인 중…</span>
+    <button type="button" class="iconBtn" id="btnReload" title="다시 불러오기" aria-label="다시 불러오기">↻</button>
+    <span class="whoami hidden" id="whoami"></span>
+  </div>
   <div class="admtabs">
-    <button type="button" id="tabFind" aria-pressed="true">근로자 찾기</button>
-    <button type="button" id="tabToday" aria-pressed="false">날짜별 제출</button>
-    <button type="button" id="tabRisk" aria-pressed="false">취약 근로자</button>
-    <button type="button" id="tabRoster" aria-pressed="false">투입 예정자</button>
-    <button type="button" id="tabPrint" aria-pressed="false">일괄 PDF</button>
+    <button type="button" id="tabFind" aria-pressed="true">근로자</button>
+    <button type="button" id="tabToday" aria-pressed="false">날짜별</button>
+    <button type="button" id="tabRisk" aria-pressed="false">취약</button>
+    <button type="button" id="tabRoster" aria-pressed="false">예정자</button>
+    <button type="button" id="tabPrint" aria-pressed="false">출력</button>
+    <button type="button" id="tabMore" class="more" aria-pressed="false" aria-expanded="false">⚙ 관리</button>
+  </div>
+  <div class="admtabs sub hidden" id="admSubTabs">
     <button type="button" id="tabCo" aria-pressed="false">협력사 등록</button>
     <button type="button" id="tabAcct" aria-pressed="false">계정 관리</button>
     <button type="button" id="tabTpl" aria-pressed="false">설정</button>
   </div>
 
   <div id="admFind" class="hidden">
-    <p class="note">근로자가 <b>미리 작성해 온 서류</b>를 찾는 화면입니다. 날짜와 상관없이 전부 검색합니다.</p>
     <div class="findRail">
-      <div class="daysRow" id="daysRow">
-        <button type="button" data-days="0" aria-pressed="true">전체</button>
-        <button type="button" data-days="7">최근 7일</button>
-        <button type="button" data-days="1">오늘 작성</button>
-      </div>
       <div class="findBar">
         <input type="search" id="findName" placeholder="이름 · 전화 뒷자리 · 관리번호" autocomplete="off">
-        <button type="button" class="btn small" id="findClear">지우기</button>
+        <button type="button" class="clearX hidden" id="findClear" aria-label="지우기">×</button>
       </div>
-      <div class="filterRow">
-        <label for="findCo">업체</label>
-        <select id="findCo"><option value="">전체</option></select>
+      <div class="chipRow">
+        <div class="daysRow" id="daysRow">
+          <button type="button" data-days="0" aria-pressed="true">전체</button>
+          <button type="button" data-days="7">7일</button>
+          <button type="button" data-days="1">오늘</button>
+        </div>
+        <select id="findCo" class="coSel" aria-label="업체"><option value="">업체 전체</option></select>
       </div>
       <div class="statRow" id="statRow"></div>
-      <button class="btn small" type="button" id="btnCopyLink2" style="width:100%;margin-top:12px;min-height:44px">근로자 안내문 복사</button>
+      <button class="linkbtn quiet" type="button" id="btnCopyLink2" style="margin-top:10px">근로자 안내문 복사</button>
     </div>
     <div class="findResults">
       <div class="resultHead"><span class="findCount" id="findCount"></span>
@@ -1370,9 +1432,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   </div>
 
   <div id="admPrint" class="hidden">
-    <p class="note info">근로자를 고른 뒤 <b>PDF 저장</b>을 누르세요. 한 사람당 A4 한 장씩,
-      <b>PDF 한 파일</b>로 만들어집니다. 취약 근로자는 전용 양식으로 들어갑니다.
-      PDF를 열어 인쇄하면 어느 프린터에서도 같은 모양으로 나옵니다.</p>
+    <p class="note info">근로자를 고른 뒤 <b>출력</b> 또는 <b>PDF 저장</b>을 누르세요. 한 사람당 A4 한 장씩 나오며,
+      취약 근로자는 전용 양식으로 들어갑니다. 양식을 그림으로 만들어 찍기 때문에
+      프린터·브라우저 설정과 상관없이 같은 모양으로 나옵니다.</p>
     <div class="findRail" style="margin-bottom:14px">
       <div class="findBar">
         <input type="search" id="prName" placeholder="이름 검색" autocomplete="off">
@@ -1388,6 +1450,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <div class="prBar">
       <label class="prAll"><input type="checkbox" id="prAll"> 보이는 사람 전체 선택</label>
       <span class="findCount" id="prCount"></span>
+      <button class="btn" type="button" id="prPrint" disabled>🖨 출력</button>
       <button class="btn danger" type="button" id="prGo" disabled>PDF 저장</button>
     </div>
     <div id="prList"></div>
@@ -1418,6 +1481,12 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
   </div>
 
   <div id="admTpl" class="hidden">
+    <div class="card">
+      <h3>연결 진단</h3>
+      <p class="note info" style="margin:0 0 12px">저장이나 로그인이 안 될 때 어디서 막히는지 단계별로 확인합니다.</p>
+      <button type="button" class="btn" id="btnDiag" style="min-height:48px">연결 진단 실행</button>
+    </div>
+
     <div class="card">
       <h3>현장 태블릿 모드</h3>
       <p class="note info" style="margin:0 0 12px">여러 근로자가 돌려 쓰는 <b>현장 태블릿에서만</b> 켜세요.
@@ -1487,8 +1556,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button type="button" id="sheetClose">닫기</button>
   </div>
   <div class="docTabs hidden" id="docTabs">
-    <button type="button" id="tabDocForm" aria-pressed="true">준수사항 양식</button>
-    <button type="button" id="tabDocPhoto" aria-pressed="false">사진 대지</button>
+    <button type="button" id="tabDocForm" aria-pressed="true" style="white-space:nowrap">양식</button>
+    <button type="button" id="tabDocPhoto" aria-pressed="false" style="white-space:nowrap">사진대지</button>
   </div>
   <div id="sheetScroll"><div id="sheetPage"></div></div>
   <div class="sheetPhotos hidden flagNote" id="sheetFlag"></div>
@@ -1502,16 +1571,21 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
     <button class="btn ghost" type="button" id="btnPrev" data-i18n="btn.prev">이전</button>
     <button class="btn prime" type="button" id="btnNext" data-i18n="btn.next">다음</button>
     <button class="btn ghost hidden" type="button" id="btnAdmClose">닫기</button>
-    <button class="btn ghost hidden sheetDel" type="button" id="btnDelOne">삭제</button>
-    <button class="btn ghost hidden" type="button" id="btnEdit">✎ 내용 수정</button>
-    <button class="btn ghost hidden" type="button" id="btnWrongCo">소속이 다릅니다</button>
-    <button class="btn ghost hidden" type="button" id="btnCopy">📋 복사</button>
+    <span class="sheetMore hidden" id="sheetMore">
+      <button class="btn ghost hidden sheetDel" type="button" id="btnDelOne">삭제</button>
+      <button class="btn ghost hidden" type="button" id="btnEdit">✎ 내용 수정</button>
+      <button class="btn ghost hidden" type="button" id="btnWrongCo">소속이 다릅니다</button>
+    </span>
+    <button class="btn ghost hidden" type="button" id="btnMore" aria-expanded="false" aria-label="더보기">⋯</button>
+    <button class="btn ghost hidden" type="button" id="btnPrint">🖨 출력</button>
     <button class="btn danger hidden" type="button" id="btnPdf">📄 PDF 저장</button>
   </div>
 </footer>
 
 <!-- 일괄 인쇄용 보관함: 화면에는 숨겨져 있다가 인쇄할 때만 사람 수만큼 페이지로 펼쳐진다 -->
 <div id="printBatch" aria-hidden="true"></div>
+
+<div id="printHost" aria-hidden="true"></div>
 
 <div class="overlay hidden" id="consentOverlay">
   <div class="modal">
@@ -2348,7 +2422,7 @@ function paint(){
   $("#adm").classList.remove("on");
   $("#sheetWrap").classList.remove("on");
  
-  $("#btnPdf").classList.add("hidden"); $("#btnCopy").classList.add("hidden");
+  $("#btnPdf").classList.add("hidden"); $("#btnPrint").classList.add("hidden"); $("#btnMore").classList.add("hidden"); $("#sheetMore").classList.add("hidden"); document.body.classList.remove("sheetMoreOpen");
   $("#btnPrev").classList.remove("hidden");
   $("#btnNext").classList.remove("hidden");
   $("#btnAdmClose").classList.add("hidden");
@@ -3329,7 +3403,7 @@ async function openSheetFor(r, title){
   $("#btnEdit").classList.toggle("hidden", authReady() && !(isGC() || isSub()));
   $("#btnWrongCo").classList.toggle("hidden", !isSub());
   renderFlagNote(r);
-  $("#btnPdf").classList.remove("hidden"); $("#btnCopy").classList.remove("hidden");
+  $("#btnPdf").classList.remove("hidden"); $("#btnPrint").classList.remove("hidden"); $("#btnMore").classList.remove("hidden"); $("#sheetMore").classList.remove("hidden");
   renderSheetBp(r);
   renderSheetPhotos(r);
   fitSheetView(); window.scrollTo(0,0);
@@ -3840,14 +3914,14 @@ function renderFind(){
   }));
 }
 
-$("#findName").addEventListener("input", e => { findQ = e.target.value; renderFind(); });
+$("#findName").addEventListener("input", e => { findQ = e.target.value; $("#findClear").classList.toggle("hidden", !findQ); renderFind(); });
 $$("#daysRow button").forEach(b => b.addEventListener("click", () => {
   findDays = +b.dataset.days;
   $$("#daysRow button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
   renderFind();
 }));
 $("#findCo").addEventListener("change", e => { findCo = e.target.value; renderFind(); });
-$("#findClear").addEventListener("click", () => { findQ = ""; findCo = ""; findOnly = ""; renderFind(); $("#findName").focus(); });
+$("#findClear").addEventListener("click", () => { findQ = ""; $("#findName").value = ""; $("#findClear").classList.add("hidden"); renderFind(); $("#findName").focus(); });
 
 /* ── 현장 혈압 입력 ────────────────────────────────────────────
    근로자는 집에서 작성해 오고, 혈압은 현장에서 담당자가 재서 여기에 넣는다.
@@ -4289,7 +4363,39 @@ async function copySheetImage(r){
     }
   }
 }
-$("#btnCopy").addEventListener("click", () => copySheetImage(current));
+/* ── 출력 ────────────────────────────────────────────────────
+   양식을 PDF 와 같은 캡처로 그림 한 장으로 만든 뒤, 그 그림만 A4 에 꽉 맞춰 인쇄한다.
+   브라우저가 양식을 종이에 다시 그리지 않으므로 여백·배율 설정에 상관없이 똑같이 나온다. */
+function printImages(urls, done){
+  const host = $("#printHost");
+  host.innerHTML = urls.map(u => '<div class="pPage"><img src="'+u+'" alt=""></div>').join("");
+  const imgs = Array.from(host.querySelectorAll("img"));
+  const ready = Promise.all(imgs.map(im => im.complete ? Promise.resolve() : new Promise(r => { im.onload = r; im.onerror = r; })));
+  ready.then(() => {
+    document.body.classList.add("printImg");
+    const cleanup = () => { document.body.classList.remove("printImg"); host.innerHTML = ""; window.removeEventListener("afterprint", cleanup); if(done) done(); };
+    window.addEventListener("afterprint", cleanup);
+    setTimeout(() => window.print(), 80);
+    setTimeout(cleanup, 120000);   // afterprint 가 안 오는 브라우저 대비
+  });
+}
+async function printSheet(r){
+  if(!r){ alert("먼저 근로자를 선택해 주세요."); return; }
+  setBusy(true, "출력을 준비하는 중입니다…");
+  try{
+    const canvas = await captureSheet();
+    setBusy(false);
+    printImages([canvas.toDataURL("image/jpeg", 0.95)]);
+  }catch(e){
+    setBusy(false);
+    alert("출력을 준비하지 못했습니다.\n\n" + ((e && e.message) || e) + "\n\n인터넷이 연결되어 있는지 확인한 뒤 다시 시도해 주세요.");
+  }
+}
+$("#btnPrint").addEventListener("click", () => printSheet(current));
+$("#btnMore").addEventListener("click", () => {
+  const open = document.body.classList.toggle("sheetMoreOpen");
+  $("#btnMore").setAttribute("aria-expanded", String(open));
+});
 
 async function exportSheetToPdf(r){
   if(!r){ alert("먼저 근로자를 선택해 주세요."); return; }
@@ -4835,10 +4941,11 @@ function applyRoleToUI(){
   const gc = !authReady() || isGC();
   $("#tabAcct").classList.toggle("hidden", !gc);
   $("#tabCo").classList.toggle("hidden", !gc);
+  $("#tabMore").classList.toggle("hidden", !gc);
+  if(!gc) $("#admSubTabs").classList.add("hidden");
   $("#tabTpl").classList.toggle("hidden", !gc);
   // 협력사는 자기 회사만 보므로 업체 고르기가 의미 없다
-  const coRow = $("#findCo") && $("#findCo").closest(".filterRow");
-  if(coRow) coRow.classList.toggle("hidden", isSub());
+  const coSel = $("#findCo"); if(coSel) coSel.classList.toggle("hidden", isSub());
   // 삭제·내보내기는 원청만
   ["#delSelected","#wipe","#expCsv","#expJson","#expCsvFind"].forEach(sel => {
     const el = $(sel); if(el) el.classList.toggle("hidden", !gc);
@@ -4868,7 +4975,7 @@ function tryPw(){
     $("#pwErr").classList.add("on");
   }
 }
-const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", roster:"투입 예정자", print:"일괄 PDF", co:"협력사 등록", acct:"계정 관리", tpl:"설정" };
+const ADM_TITLE = { find:"근로자 찾기", today:"날짜별 제출", risk:"취약 근로자", roster:"투입 예정자", print:"일괄 출력", co:"협력사 등록", acct:"계정 관리", tpl:"설정" };
 async function openAdm(tab){
   lastAdmTab = tab || "today";
   await ensureSubmissionsLoaded();   // 여기서 처음으로 목록을 받아 온다
@@ -4880,7 +4987,7 @@ async function openAdm(tab){
   $("#sheetWrap").classList.remove("on");
   $("#adm").classList.add("on");
   $("#btnNext").classList.add("hidden"); $("#btnPrev").classList.add("hidden");
-  $("#btnPdf").classList.add("hidden"); $("#btnCopy").classList.add("hidden");
+  $("#btnPdf").classList.add("hidden"); $("#btnPrint").classList.add("hidden"); $("#btnMore").classList.add("hidden"); $("#sheetMore").classList.add("hidden"); document.body.classList.remove("sheetMoreOpen");
   $("#btnAdmClose").classList.remove("hidden");
   $("#hTitle").textContent = "관리자"; $("#hStep").textContent = "";
   $$("#prog i").forEach(el => el.className = "done");
@@ -5019,40 +5126,35 @@ $("#btnDiag").addEventListener("click", diagnoseConnection);
 async function updateFbBadge(){
   const b = $("#fbBadge");
   const mine = submissions.length;
-  const paint = (txt, bg, fg) => { b.textContent = txt; b.style.background = bg; b.style.color = fg; };
+  // 짧게 보여 주고, 자세한 설명은 title(길게 누르면)로 둔다
+  const paint = (txt, state, detail) => { b.textContent = txt; b.className = "tag " + (state||""); b.title = detail || txt;
+    b.style.background = ""; b.style.color = state === "bad" ? "#960014" : state === "warn" ? "#8A5400" : ""; };
 
   if(!fbEnabled()){
-    paint("💾 이 기기에만 저장 (Firebase 미설정) · "+mine+"건", "#EFF1F4", "var(--steel)");
-    return;
+    paint("이 기기에만 저장 · "+mine+"건", "warn", "Firebase 미설정"); return;
   }
   if(LIVE.on){
-    // 실시간 연결 중에는 항상 최신이므로 따로 확인할 필요가 없다
-    paint("☁ 실시간 연결됨 · "+mine+"건 — 다른 기기 변경이 바로 반영됩니다",
-      "var(--go-8)", "#075C32");
-    return;
+    paint("실시간 연결 · "+mine+"건", "ok", "다른 기기 변경이 바로 반영됩니다"); return;
   }
-  paint("☁ 서버 확인 중…", "#EFF1F4", "var(--steel)");
+  paint("서버 확인 중…", "", "");
   const r = await Store.checkFirebase();
 
   if(!r.on){
     const x = explainFbError({ message: r.error || "", code: r.code || "" });
-    paint("⚠ 서버 연결 실패 — " + x.why + " (지금 보이는 "+mine+"건은 이 기기 자료)",
-      "var(--signal-8)", "#960014");
+    paint("연결 안 됨 · 기기 자료 "+mine+"건", "bad", "서버 연결 실패 — " + x.why);
     console.warn("Firebase 연결 실패:", r.error);
     return;
   }
   if(Store.source !== "server"){
     // 서버는 살아 있는데 화면 자료는 이 기기 것 → 페이지를 연 뒤 연결이 끊겼다가 돌아온 경우
-    paint("⚠ 화면 자료가 오래되었습니다 (이 기기 "+mine+"건 / 서버 "+r.count+"건) · 다시 불러오기를 누르세요",
-      "var(--amber-8)", "#8A5400");
+    paint("오래된 화면 · ↻ 눌러 새로고침", "warn", "이 기기 "+mine+"건 / 서버 "+r.count+"건");
     return;
   }
   if(r.count !== mine){
-    paint("⚠ 서버에 "+r.count+"건이 있는데 화면에는 "+mine+"건입니다 · 다시 불러오기를 누르세요",
-      "var(--amber-8)", "#8A5400");
+    paint("서버 "+r.count+"건 / 화면 "+mine+"건 · ↻", "warn", "다시 불러오기를 누르세요");
     return;
   }
-  paint("☁ 서버에서 "+mine+"건 불러옴 — 모든 기기에서 공유됩니다", "var(--go-8)", "#075C32");
+  paint("서버 연결 · "+mine+"건", "ok", "모든 기기에서 공유됩니다");
 }
 
 /* ── 실시간 동기화 ────────────────────────────────────────────────
@@ -5152,6 +5254,9 @@ function setAdmTab(tab){
     $("#tab"+t[0].toUpperCase()+t.slice(1)).setAttribute("aria-pressed", String(t===tab));
     $("#adm"+t[0].toUpperCase()+t.slice(1)).classList.toggle("hidden", t!==tab);
   });
+  const inMore = ["co","acct","tpl"].includes(tab);
+  $("#tabMore").setAttribute("aria-pressed", String(inMore));
+  if(inMore){ $("#admSubTabs").classList.remove("hidden"); $("#tabMore").setAttribute("aria-expanded","true"); }
   $("#hTitle").textContent = ADM_TITLE[tab] || "관리자";
   if(tab==="find") renderFind();
   if(tab==="print") renderPrintTab();
@@ -5167,6 +5272,10 @@ $("#tabFind").addEventListener("click", () => setAdmTab("find"));
 $("#tabPrint").addEventListener("click", () => setAdmTab("print"));
 $("#tabRoster").addEventListener("click", () => setAdmTab("roster"));
 $("#tabCo").addEventListener("click", () => setAdmTab("co"));
+$("#tabMore").addEventListener("click", () => {
+  const sub = $("#admSubTabs"); const open = sub.classList.toggle("hidden");
+  $("#tabMore").setAttribute("aria-expanded", String(!open));
+});
 $("#tabAcct").addEventListener("click", () => setAdmTab("acct"));
 $("#tabToday").addEventListener("click", () => setAdmTab("today"));
 $("#tabRisk").addEventListener("click", () => setAdmTab("risk"));
@@ -5523,6 +5632,7 @@ function updatePrBar(){
   const go = $("#prGo");
   go.disabled = n === 0;
   go.textContent = n > 0 ? "PDF 저장 ("+n+"장)" : "PDF 저장";
+  const pr = $("#prPrint"); if(pr){ pr.disabled = n === 0; pr.textContent = n > 0 ? "🖨 출력 ("+n+"장)" : "🖨 출력"; }
 }
 $("#prAll").addEventListener("change", e => {
   const ids = prVisible().map(docId);
@@ -5534,10 +5644,58 @@ $("#prClear").addEventListener("click", () => { prQ = ""; $("#prName").value = "
 $("#prCo").addEventListener("change", e => { prCoF = e.target.value; renderPrintTab(); });
 $("#prDate").addEventListener("change", e => { prDateF = e.target.value; renderPrintTab(); });
 $("#prGo").addEventListener("click", () => exportListToPdf(submissions.filter(r => prSel.has(docId(r)))));
+$("#prPrint").addEventListener("click", () => printList(submissions.filter(r => prSel.has(docId(r)))));
 
 /* 여러 명을 PDF 한 파일로 (사람마다 A4 한 장).
    브라우저 인쇄는 기기마다 설정이 달라 결과가 제각각이라 쓰지 않는다.
    단일 PDF 저장과 같은 방식으로 찍어서 어디서 열어도 같은 모양이 나온다. */
+/* 여러 명을 한 장씩 그림으로 찍는다 (PDF 저장·출력 공통) */
+async function captureList(list, label){
+  const keepCur = current, keepKind = sheetKind;
+  const wrap = $("#sheetWrap"), page = $("#sheetPage"), scroll = $("#sheetScroll");
+  const keepStyle = { transform:page.style.transform, marginLeft:page.style.marginLeft,
+    shadow:page.style.boxShadow, height:scroll.style.height, overflow:scroll.style.overflow };
+  wrap.classList.add("measuring");
+  const out = [];
+  try{
+    await loadPdfLibs();
+    for(let i = 0; i < list.length; i++){
+      $("#busyText").textContent = label + " (" + (i+1) + "/" + list.length + ")";
+      current = list[i]; sheetKind = "form";
+      renderSheetDOM(); fillActiveSheet(list[i]);
+      page.style.transform = "none"; page.style.marginLeft = "0"; page.style.boxShadow = "none";
+      scroll.style.height = "auto"; scroll.style.overflow = "visible";
+      await new Promise(r => setTimeout(r, 60));
+      const w = page.scrollWidth, h = page.scrollHeight;
+      const canvas = await window.html2canvas(page, {
+        backgroundColor:"#ffffff", scale: Math.min(3, Math.max(2, 1700 / Math.max(1, w))),
+        useCORS:true, logging:false, imageTimeout:0, scrollX:0, scrollY:0, width:w, height:h });
+      out.push(canvas);
+    }
+  }finally{
+    page.style.transform = keepStyle.transform; page.style.marginLeft = keepStyle.marginLeft;
+    page.style.boxShadow = keepStyle.shadow; scroll.style.height = keepStyle.height; scroll.style.overflow = keepStyle.overflow;
+    wrap.classList.remove("measuring");
+    current = keepCur; sheetKind = keepKind;
+  }
+  return out;
+}
+async function printList(sel){
+  const list = (sel || []).slice()
+    .sort((a,b) => String(a.company||"").localeCompare(String(b.company||""))
+                || String(a.name||"").localeCompare(String(b.name||"")));
+  if(!list.length){ alert("출력할 사람을 먼저 골라 주세요."); return; }
+  if(list.length > 40 && !confirm(list.length + "명입니다. 준비에 시간이 걸릴 수 있습니다. 계속할까요?")) return;
+  setBusy(true, "출력을 준비하는 중…");
+  try{
+    const canvases = await captureList(list, "출력을 준비하는 중…");
+    setBusy(false);
+    printImages(canvases.map(c => c.toDataURL("image/jpeg", 0.95)));
+  }catch(e){
+    setBusy(false);
+    alert("출력을 준비하지 못했습니다.\n\n" + ((e && e.message) || e) + "\n\n인터넷 연결을 확인한 뒤 다시 시도해 주세요.");
+  }
+}
 async function exportListToPdf(sel){
   const list = (sel || []).slice()
     .sort((a,b) => String(a.company||"").localeCompare(String(b.company||""))
