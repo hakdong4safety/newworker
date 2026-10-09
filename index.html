@@ -929,6 +929,65 @@ html.xl{--shell:840px}
 .admtabs button:focus-visible,.docTabs button:focus-visible,.datebar button:focus-visible,
 .switch:focus-visible,.admlink:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
+
+/* ═══════════════════════════════════════════════════════════════
+   디자인 정리 (마지막에 두어 앞의 규칙을 덮는다)
+   ───────────────────────────────────────────────────────────────
+   원칙 ① 강한 것은 하나 — 검은 머리띠와 빨간 진행선. 나머지는 조용히.
+        ② 상자를 줄인다 — 섹션은 테두리·그림자 없이 흰색만, 누르는 것만 테두리.
+        ③ 빨강은 "주의"에만 — 경고·필수·삭제. 저장 같은 주된 행동은 검정.
+        ④ 제목은 글자로 — 작은 회색 눈썹+선 대신, 진한 글자 한 줄. ═══ */
+:root{--line:#E3E6EA;--line-2:#EEF0F3;--field:#EEF0F3;--r-box:16px;--r-ctl:10px}
+body{background:var(--field)}
+
+/* 섹션(카드) */
+.card{border:0;box-shadow:none;border-radius:var(--r-box);padding:20px 18px;margin-bottom:12px}
+.card > h3{font-size:1.08rem;font-weight:800;letter-spacing:-.01em;color:var(--ink);text-transform:none;margin:0 0 14px;gap:0}
+.card > h3::after{display:none}
+.stepAside .card > h3{font-size:.98rem}
+
+/* 안내문: 색 상자 → 왼쪽 선 하나 */
+.note{background:transparent;border:0;border-left:3px solid var(--line);border-radius:0;padding:2px 0 2px 12px;margin:0 0 14px;color:var(--steel)}
+.note.info{background:transparent;border:0;border-left:3px solid #C9D0DA;color:#4A525E}
+.note.warn{background:transparent;border:0;border-left:3px solid var(--amber);color:#7A4B00}
+.note.warn b{color:#7A4B00}
+.card .note{margin-top:10px}
+
+/* 조작부: 한 가지 모서리, 더 옅은 선 */
+.btn,.opt,input:not([type=checkbox]):not([type=file]),select,textarea,.langbar button,.daysRow button,.admtabs button,.stat{border-radius:var(--r-ctl)}
+.btn{border-color:var(--line)}
+.btn.ghost{color:var(--ink);border-color:var(--line)}
+.opt{border-color:var(--line);font-weight:600}
+.opt[aria-pressed=true]{border-width:1.5px}
+.langbar button{border-color:var(--line)}
+
+/* 빨강 정리: 저장은 검정으로 */
+#btnPdf,#prGo{background:var(--ink);border-color:var(--ink);color:#fff}
+.photoBtn{border-radius:var(--r-ctl)}
+
+/* 글씨 크게 보기: 카드가 아니라 작은 스위치 한 줄 */
+.xlrow{border:0;background:transparent;padding:4px 0 0;justify-content:flex-start;gap:10px;font-size:.86rem;color:var(--steel);margin-bottom:10px}
+.xlrow .switch{transform:scale(.85);transform-origin:left center}
+
+/* 글자 체계 */
+.lead h2{letter-spacing:-.02em}
+.f > label{font-size:.95rem}
+.fsub,.f .hint{color:var(--steel)}
+
+/* 목록 줄·계정 줄: 상자 테두리 제거 */
+.hit,.acct,.coRow,.rItem,.prItem{border:0;border-radius:14px}
+.hit{padding:14px 16px}
+.stat{border-color:var(--line)}
+
+/* 포커스: 키보드·태블릿에서 어디에 있는지 보이게 */
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+input:focus,select:focus,textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(21,23,28,.08);outline:none}
+
+/* 관리자 상태 줄은 더 가볍게 */
+.statusBar{font-size:.78rem}
+.admtabs button{border-color:var(--line)}
+
+@media (prefers-reduced-motion:reduce){ *{transition:none !important;animation:none !important} }
 </style>
 </head>
 <body>
